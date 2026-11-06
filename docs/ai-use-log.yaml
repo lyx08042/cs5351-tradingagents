@@ -1,0 +1,55 @@
+schema_version: "1.0"
+status: bootstrap
+entries:
+  - id: AI-USE-0001
+    date: "2026-11-06"
+    model: "CityU CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode"
+    session_id: "ses_e50a80ed0ffeBfILAm15AS6IVA"
+    actor: "coding-agent"
+    orchestration: "OpenCode assisted via Codex orchestration"
+    member: "not authored or claimed by a student (student identity unknown)"
+    scope: "initial-scaffold"
+    summary: >
+      Initial course scaffold: preserved upstream README as README.upstream.md,
+      prepended Chinese onboarding to README.md, and added START-HERE.md,
+      AGENTS.md, Prompt.md, architecture-blueprint.md, docs/req/,
+      docs/architecture/, docs/code-governance/, tasks/, templates/, prompts/,
+      docs/evaluation/, course docs, requirements-course.txt,
+      scripts/check_course.py, test/offline/test_course_scaffold.py,
+      course-bootstrap CI and PR template.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: false
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: true
+    license_changed: false
+    approvals_created: false
+    review_corrections:
+      summary: true
+      details: >
+        Supervisor review rounds corrected bootstrap-only files. Real negative
+        course-test failures observed and fixed: (a) fit.threshold used an
+        overlapping oneOf[number, integer] so integer thresholds failed schema
+        validation; replaced with type ["number","string"]. (b) trace-matrix.md
+        omitted exact requirement IDs (NFR-001/002/003/005, GOV-001/002), so
+        trace coverage failed; rewrote matrix with every registry ID. (c)
+        run_checks skipped trace coverage and required-file checks when an
+        alternate --requirements YAML was supplied, allowing coverage bypass;
+        made both checks unconditional against --root. Also fixed Ruff UP032
+        (use f-strings) and B904 (raise ... from exc) in the checker. No human
+        approval was granted or claimed for these corrections.
+    caveats: >
+      The scaffold is not course compliance; F1-F5 are unimplemented;
+      architecture and requirements are PROPOSED.
+policy:
+  - "Append a new entry for every application-code or prompt PR; never edit historical entries."
+  - "Do not claim student authorship; the member field is filled by a human after real contribution."
+  - "Do not record secrets or personal data in this file."
+  - "This entry records scaffold generation by the coding agent, not student human authorship."
+transcript_status:
+  full_student_transcripts_submitted: false
+  note: >
+    No full student transcripts exist yet; transcripts/ contains only its
+    README. This bootstrap entry must not be presented as a student transcript.

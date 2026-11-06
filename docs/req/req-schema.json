@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lyx08042/cs5351-tradingagents/docs/req/req-schema.json",
+  "title": "CS5351 requirements registry",
+  "description": "Schema for docs/req/requirements.yaml. Status is proposed during bootstrap; bootstrap files are validated by scripts/check_course.py.",
+  "type": "object",
+  "required": ["schema_version", "status", "project", "baseline", "sources", "requirements"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+    "status": { "type": "string", "enum": ["proposed", "approved", "superseded"] },
+    "project": { "type": "string", "minLength": 1 },
+    "baseline": {
+      "type": "object",
+      "required": ["upstream", "version", "commit"],
+      "additionalProperties": true,
+      "properties": {
+        "upstream": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+        "team_repo": { "type": "string" }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^SRC-[A-Z0-9-]+$" },
+          "description": { "type": "string", "minLength": 1 },
+          "pages": { "type": ["string", "null"] },
+          "bundled": { "type": "boolean" }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/requirement" }
+    }
+  },
+  "$defs": {
+    "statement": {
+      "description": "Requirement statements must be concrete. Placeholders (TODO/TBD/etc.) are tolerated only while status is 'proposed'; scripts/check_course.py additionally rejects them for every non-proposed status.",
+      "type": "string",
+      "minLength": 1
+    },
+    "requirement": {
+      "type": "object",
+      "required": ["id", "type", "statement", "priority", "tradeoff", "source", "owner", "status", "fit"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "pattern": "^(BASE|FR|NFR|INV|GOV|SEC)-[0-9]{3}$" },
+        "type": {
+          "type": "string",
+          "enum": ["base", "functional", "nonfunctional", "invariant", "governance", "security"]
+        },
+        "statement": { "$ref": "#/$defs/statement" },
+        "priority": { "type": "string", "enum": ["must", "should", "could", "wont"] },
+        "tradeoff": { "type": "string", "minLength": 1 },
+        "source": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^SRC-[A-Z0-9-]+$" }
+        },
+        "owner": { "type": "string", "pattern": "^([A-E]|shared)$" },
+        "status": { "type": "string", "enum": ["proposed", "approved", "implemented", "superseded"] },
+        "fit": { "$ref": "#/$defs/fit" },
+        "invariants": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^INV-[0-9]{3}$" }
+        },
+        "code_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fit": {
+      "type": "object",
+      "required": ["metric", "threshold", "verification"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": { "type": "string", "minLength": 1 },
+        "threshold": {
+          "description": "JSON-compatible value. Integers and floats satisfy type 'number'; strings carry ordinal/descriptive targets.",
+          "type": ["number", "string"]
+        },
+        "verification": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

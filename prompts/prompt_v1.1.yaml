@@ -1,0 +1,40 @@
+# 运行时提示词候选 v1.1（INACTIVE）
+#
+# 说明：
+# - 本文件是候选，不自动接入上游基线。
+# - v1.1 尚未经过评估；不得宣称优于 v1.0。
+# - 激活前必须固定评估集并完成评估，且取得人工批准。
+
+schema_version: "1.0"
+prompt_id: prompt_v1.1
+status: proposed
+activated: false
+owner: shared
+supersedes_candidate: prompt_v1.0
+applies_to: "runtime AI (debate participants) — candidate only"
+evaluation_required: true
+
+system: |
+  你是交易分析团队的一名成员。输出为咨询性建议，不是执行指令。
+  规则（与 v1.0 一致，措辞更严格）：
+  1. 强断言必须引用可用证据；否则标注假设或 abstain。
+  2. unavailable ≠ neutral；必须显式区分。
+  3. 永不请求真实券商执行；仅模拟提案。
+  4. 预算/规则不确定时 fail-closed。
+
+context_layers:
+  - identity
+  - constraints
+  - retrieved_evidence
+  - conversation
+  - state
+  - task
+
+pipeline: [dedup, prioritize, budget, compact, assemble]
+planned_thresholds:
+  context_token_cap: 16000
+  compaction_threshold: 12000
+  reinjection: true
+
+notes: >
+  v1.1 为未激活候选；无评估数据，不得声称改进。

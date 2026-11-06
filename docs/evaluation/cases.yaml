@@ -1,0 +1,116 @@
+# 固定初始评估场景集（PROPOSED，人工设计）
+#
+# 重要：
+# - 这些是人工设计的初始场景，不是真实数据集质量结果。
+# - 当前没有运行器；F1-F5 未实现。本文件仅为未来评估的固定基线。
+# - 状态 planned；无任何通过的记录。
+
+schema_version: "1.0"
+status: proposed
+dataset_kind: manually_designed_initial
+runner: none
+last_run: null
+
+rubric:
+  deterministic_state:
+    description: "期望的确定性状态（available/unavailable/reject/abstain/review/superseded）"
+  semantic_score:
+    scale: "0-2"
+    anchors:
+      0: "错误或违反不变量"
+      1: "部分正确但证据/标签不完整"
+      2: "正确且证据/标签完整"
+
+cases:
+  - id: EVAL-001
+    requirement: FR-003
+    invariant: INV-003
+    title: 缺 holdings_snapshot 的模拟提案
+    input: "{action: buy, units: 10, price: 150.0, currency: USD, rule_version: v1}"
+    expected_state: reject
+    reason: missing_holdings_snapshot
+    semantic_score_target: 2
+
+  - id: EVAL-002
+    requirement: FR-003
+    invariant: INV-003
+    title: Buy 时 units=0（非 Hold）
+    input: "{action: buy, units: 0, price: 150.0, currency: USD, holdings_snapshot: {...}, rule_version: v1}"
+    expected_state: reject
+    reason: non_positive_units_for_buy
+    note: "Hold/no-op 应使用 action=hold 且 units=0（EVAL-007 为合法案例）"
+    semantic_score_target: 2
+
+  - id: EVAL-003
+    requirement: FR-004
+    invariant: INV-004
+    title: 历史新闻/社交不可用，不得记中性
+    input: "{news: unavailable, social: unavailable, macro: unavailable}"
+    expected_state: abstain_or_review
+    reason: unavailable_must_not_be_neutral
+    semantic_score_target: 2
+
+  - id: EVAL-004
+    requirement: FR-002
+    invariant: INV-002
+    title: 超预算调用
+    input: "{limit_calls: 10, attempted_call: 11}"
+    expected_state: reject
+    reason: budget_exceeded
+    semantic_score_target: 2
+
+  - id: EVAL-005
+    requirement: FR-005
+    invariant: INV-005
+    title: 覆盖终局决策
+    input: "{final_decision: d-001, new_decision: d-002, mode: overwrite}"
+    expected_state: reject
+    reason: overwrite_forbidden_require_supersede
+    semantic_score_target: 2
+
+  - id: EVAL-006
+    requirement: FR-001
+    invariant: INV-001
+    title: 预测性断言（股价必涨）
+    input: "{claim: 'MACD 金叉，股价必涨', evidence: none}"
+    expected_state: hypothesis
+    reason: forecast_requires_hypothesis_label
+    semantic_score_target: 2
+
+  - id: EVAL-007
+    requirement: FR-003
+    invariant: INV-003
+    title: 合法 Hold（units=0）
+    input: "{action: hold, units: 0, price: 150.0, currency: USD, holdings_snapshot: {...}, rule_version: v1}"
+    expected_state: accept
+    reason: hold_noop_is_legal
+    semantic_score_target: 2
+
+  - id: EVAL-008
+    requirement: FR-001
+    invariant: INV-001
+    title: 事实性断言 + 合法证据（日期早于分析日、新鲜度内）
+    input: "{claim: 'MACD golden cross', evidence: {id: ev-1, published_at: 2026-08-30, available_as_of: 2026-08-30}, analysis_date: 2026-09-01}"
+    expected_state: accept_factual
+    reason: evidence_supports_factual_claim
+    semantic_score_target: 2
+
+  - id: EVAL-009
+    requirement: FR-001
+    invariant: INV-001
+    title: 证据可用日期晚于分析日期（未来泄漏）
+    input: "{evidence: {id: ev-2, available_as_of: 2026-09-05}, analysis_date: 2026-09-01}"
+    expected_state: reject
+    reason: future_leakage
+    semantic_score_target: 2
+
+  - id: EVAL-010
+    requirement: FR-004
+    invariant: INV-004
+    title: 数据域状态 unknown（default-deny）
+    input: "{domain: news, status: unknown}"
+    expected_state: abstain_or_review
+    reason: unknown_must_not_be_available
+    semantic_score_target: 2
+
+records: []

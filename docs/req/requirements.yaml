@@ -1,0 +1,315 @@
+schema_version: "1.0"
+status: proposed
+project: cs5351-tradingagents
+baseline:
+  upstream: TauricResearch/TradingAgents
+  version: v0.7.1
+  commit: 9fa1196fffbcfd9de5146d2dd2869df84ab99838
+  team_repo: https://github.com/lyx08042/cs5351-tradingagents
+sources:
+  - id: SRC-PROJECT-SHEET
+    description: "课程项目材料 project sheet，第 3-10 页"
+    pages: "3-10"
+    bundled: false
+    note: "PDF 未随仓库分发；引用仅为页码，不作网页断言。"
+  - id: SRC-INTRO
+    description: "课程介绍材料 intro，第 20-25 页"
+    pages: "20-25"
+    bundled: false
+    note: "PDF 未随仓库分发。"
+  - id: SRC-UPSTREAM
+    description: "上游 TradingAgents v0.7.1 源码与 README"
+    pages: null
+    bundled: true
+    note: "commit 9fa1196fffbcfd9de5146d2dd2869df84ab99838；见 README.upstream.md 与 src/README.md。"
+  - id: SRC-BASELINE-RUN
+    description: "本仓库一次基线运行记录（脱敏）"
+    pages: null
+    bundled: true
+    note: "见 docs/baseline.md；单次运行不代表总体质量。"
+
+requirements:
+  - id: BASE-001
+    type: base
+    statement: "保留上游包导入路径与主工作流（TradingAgentsGraph.propagate 等），课程扩展不得破坏既有公共导入。"
+    priority: must
+    tradeoff: "冻结导入面会限制重构自由度。"
+    source: [SRC-UPSTREAM]
+    owner: "shared"
+    status: proposed
+    fit:
+      metric: "上游 README 示例导入与 propagate 调用在固定 commit 下仍可执行"
+      threshold: 1
+      verification: "冒烟导入测试 + 主流程 smoke（planned）"
+    source_paths: ["tradingagents/__init__.py", "tradingagents/graph/trading_graph.py", "cli/main.py"]
+
+  - id: BASE-002
+    type: base
+    statement: "所有既有上游测试在固定 commit 下保持通过；课程改动不得删除/跳过/放宽既有断言。"
+    priority: must
+    tradeoff: "强约束既有测试会限制不兼容改动。"
+    source: [SRC-UPSTREAM, SRC-BASELINE-RUN]
+    owner: "shared"
+    status: proposed
+    fit:
+      metric: "上游 pytest 通过率"
+      threshold: 1
+      verification: "pytest（含 1 skip / 1 deselected 基线，见 docs/baseline.md）"
+    source_paths: ["tests/"]
+
+  - id: FR-001
+    type: functional
+    statement: "辩论中的强断言必须绑定至少一个已检索证据单元；证据可用日期不得超过分析日期（防未来泄漏），证据日期可早于分析日并按可配置新鲜度策略判定；无证据的强断言与预测性断言必须标注为假设或 abstain。"
+    priority: must
+    tradeoff: "证据绑定降低幻觉但可能限制表达灵活性。"
+    source: [SRC-PROJECT-SHEET]
+    owner: A
+    status: proposed
+    fit:
+      metric: "无证据强断言比例"
+      threshold: 0.0
+      verification: "固定场景集下的证据绑定校验（planned）"
+    invariants: [INV-001]
+    code_paths: ["tradingagents/course/evidence/"]
+
+  - id: FR-002
+    type: functional
+    statement: "一次分析运行必须使用可计量的预算账本：调用前预留、调用后结算；超出预算即 fail-closed 拒绝后续调用。"
+    priority: must
+    tradeoff: "预算中断可能降低完整性以换取成本可控。"
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "超预算后仍发生的调用次数"
+      threshold: 0
+      verification: "负向测试：超预算调用被拒绝（planned）"
+    invariants: [INV-002]
+    code_paths: ["tradingagents/course/budget/"]
+
+  - id: FR-003
+    type: functional
+    statement: "LLM 只产出结构化模拟提案，由确定性代码裁定（action/units/price/currency/holdings_snapshot/rule_version/status）；不默认 flat，缺失快照或规则版本即拒绝；Hold 用 units=0 合法，Buy/Sell units>0 且资金/持仓充足；采用显式 long-only 策略；永不触达真实券商。"
+    priority: must
+    tradeoff: "确定性约束限制自由度，但保证可复现与安全。"
+    source: [SRC-PROJECT-SHEET]
+    owner: C
+    status: proposed
+    fit:
+      metric: "非法提案被拒绝率"
+      threshold: 1.0
+      verification: "负向测试：缺快照/非法 units/未声明 flat（planned）"
+    invariants: [INV-003]
+    code_paths: ["tradingagents/course/safety/"]
+
+  - id: FR-004
+    type: functional
+    statement: "必须区分数据 'available'、'unavailable' 与 'unknown'：缺失/未知数据不得被当作中性信号（default-deny unknown），下游必须 abstain 或降级为 review。"
+    priority: must
+    tradeoff: "严格缺失语义会增加 abstain 比例。"
+    source: [SRC-PROJECT-SHEET]
+    owner: D
+    status: proposed
+    fit:
+      metric: "unavailable/unknown 被误标为 neutral 的次数"
+      threshold: 0
+      verification: "负向测试：缺失被当中性被拒（planned）"
+    invariants: [INV-004]
+    code_paths: ["tradingagents/course/data_quality/"]
+
+  - id: FR-005
+    type: functional
+    statement: "最终决策必须可验证审计：记录不可变、终局决策唯一且具权威性、修订以 supersede 链保存、支持离线 gate 回放。"
+    priority: must
+    tradeoff: "保留全部修订会增大存储与复杂度。"
+    source: [SRC-PROJECT-SHEET]
+    owner: E
+    status: proposed
+    fit:
+      metric: "审计回放一致率"
+      threshold: 1.0
+      verification: "覆盖终局决策被拒 + 回放一致性测试（planned）"
+    invariants: [INV-005]
+    code_paths: ["tradingagents/course/audit/"]
+
+  - id: NFR-001
+    type: nonfunctional
+    statement: "成本：相对于基线重复评估，令牌/调用成本下降目标为 20%（临时目标，需先建立基线）。"
+    priority: should
+    tradeoff: "成本下降不得以质量劣化为代价。"
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "相对基线的成本下降百分比"
+      threshold: 0.20
+      verification: "重复评估对照（planned）；见 docs/evaluation/"
+    invariants: [INV-002]
+
+  - id: NFR-002
+    type: nonfunctional
+    statement: "质量：成本优化下决策质量不劣化超过 3 个百分点（临时目标，需先建立基线）。"
+    priority: should
+    tradeoff: "与成本下降共同约束优化空间。"
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "质量分相对基线的变化（百分点）"
+      threshold: -3
+      verification: "固定评估集对照（planned）"
+    invariants: [INV-002]
+
+  - id: NFR-003
+    type: nonfunctional
+    statement: "确定性：相同输入与规则版本下，安全判定与审计回放必须可重现。"
+    priority: must
+    tradeoff: "确定性要求排除非确定性的启发式安全规则。"
+    source: [SRC-PROJECT-SHEET]
+    owner: C
+    status: proposed
+    fit:
+      metric: "重复回放一致率"
+      threshold: 1.0
+      verification: "重复回放一致性测试（planned）"
+    invariants: [INV-003, INV-005]
+
+  - id: NFR-004
+    type: nonfunctional
+    statement: "可审计性：任何拒绝/abstain/review 事件都必须留下可检索记录。"
+    priority: must
+    tradeoff: "全量留痕增加存储。"
+    source: [SRC-PROJECT-SHEET]
+    owner: E
+    status: proposed
+    fit:
+      metric: "拒绝/abstain 事件中留痕比例"
+      threshold: 1.0
+      verification: "事件留痕覆盖测试（planned）"
+    invariants: [INV-005]
+
+  - id: NFR-005
+    type: nonfunctional
+    statement: "可维护性：叶子模块无循环导入，契约变更需 ADR 记录。"
+    priority: should
+    tradeoff: "契约层增加样板代码。"
+    source: [SRC-PROJECT-SHEET]
+    owner: "shared"
+    status: proposed
+    fit:
+      metric: "检测到的循环导入数"
+      threshold: 0
+      verification: "导入方向结构性检查（planned，见 structural-constraints.md）"
+    invariants: []
+
+  - id: INV-001
+    type: invariant
+    statement: "强断言必须绑定至少一个证据；无证据不得作为确定性结论。"
+    priority: must
+    tradeoff: "可能降低表达丰富度。"
+    source: [SRC-PROJECT-SHEET]
+    owner: A
+    status: proposed
+    fit:
+      metric: "无证据强断言数"
+      threshold: 0
+      verification: "负向测试（planned）"
+    invariants: []
+
+  - id: INV-002
+    type: invariant
+    statement: "LLM 调用必须先预留后结算；超预算 fail-closed。"
+    priority: must
+    tradeoff: "可能中断运行。"
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "超预算调用数"
+      threshold: 0
+      verification: "负向测试（planned）"
+    invariants: []
+
+  - id: INV-003
+    type: invariant
+    statement: "确定性代码必须对结构化模拟提案给出 verdict：字段齐全合法；不默认 flat；Buy/Sell units>0 且资金/持仓充足；Hold 为 units=0 合法；long-only 为显式策略。"
+    priority: must
+    tradeoff: "限制提案自由度。"
+    source: [SRC-PROJECT-SHEET]
+    owner: C
+    status: proposed
+    fit:
+      metric: "非法提案通过数"
+      threshold: 0
+      verification: "负向测试（planned）"
+    invariants: []
+
+  - id: INV-004
+    type: invariant
+    statement: "unavailable 与 unknown 不得当作 neutral（default-deny unknown）。"
+    priority: must
+    tradeoff: "增加 abstain。"
+    source: [SRC-PROJECT-SHEET]
+    owner: D
+    status: proposed
+    fit:
+      metric: "unavailable/unknown 被误标 neutral 的次数"
+      threshold: 0
+      verification: "负向测试（planned）"
+    invariants: []
+
+  - id: INV-005
+    type: invariant
+    statement: "审计不可变；终局决策唯一；修订以 supersede 链保存且可回放。"
+    priority: must
+    tradeoff: "存储与复杂度增加。"
+    source: [SRC-PROJECT-SHEET]
+    owner: E
+    status: proposed
+    fit:
+      metric: "回放不一致数"
+      threshold: 0
+      verification: "负向+回放测试（planned）"
+    invariants: []
+
+  - id: GOV-001
+    type: governance
+    statement: "在实现之前必须完成并经人工批准：测试计划、实现计划；安全变更需 ADR。"
+    priority: must
+    tradeoff: "增加流程开销。"
+    source: [SRC-PROJECT-SHEET]
+    owner: "shared"
+    status: proposed
+    fit:
+      metric: "无批准即实现的 PR 数"
+      threshold: 0
+      verification: "PR 审阅（planned，人工）"
+    invariants: []
+
+  - id: GOV-002
+    type: governance
+    statement: "禁止伪造批准、身份、结果、完成、评审、bug、transcript；所有状态如实标注。"
+    priority: must
+    tradeoff: "无。"
+    source: [SRC-INTRO]
+    owner: "shared"
+    status: proposed
+    fit:
+      metric: "被发现的伪造记录数"
+      threshold: 0
+      verification: "人工审阅（planned）"
+    invariants: []
+
+  - id: SEC-001
+    type: security
+    statement: "系统永不连接真实券商或执行真实下单；所有交易动作仅为模拟提案。"
+    priority: must
+    tradeoff: "限制真实交易能力（课程设计如此）。"
+    source: [SRC-PROJECT-SHEET]
+    owner: C
+    status: proposed
+    fit:
+      metric: "真实执行路径数"
+      threshold: 0
+      verification: "安全负向测试 + 代码审阅（planned）"
+    invariants: [INV-003]
