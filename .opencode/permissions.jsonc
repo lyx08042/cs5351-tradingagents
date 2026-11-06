@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "status": "proposed",
+  "artifact_type": "course_permissions_artifact",
+  "enforcement": {
+    "automatically_loaded_by_opencode": false,
+    "executable_runtime_role_isolation": false,
+    "caveat": "This file is a COURSE artifact. OpenCode does NOT automatically load it, and it does not provide executable runtime role isolation. Real isolation depends on opencode.json permissions plus human review discipline."
+  },
+  "defaults": {
+    "read": "deny",
+    "write": "deny",
+    "bash": "ask"
+  },
+  "frozen_paths": [
+    ".env*",
+    "**/auth*",
+    ".git/**",
+    "LICENSE",
+    "tests/**",
+    "pyproject.toml",
+    ".github/**",
+    "scripts/**",
+    "AGENTS.md",
+    "Prompt.md",
+    "opencode.json",
+    "docs/approvals/**",
+    ".opencode/rules.md"
+  ],
+  "roles": {
+    "A": {
+      "name": "evidence",
+      "feature": "FR-001",
+      "invariants": ["INV-001"],
+      "read_allow": [
+        "AGENTS.md",
+        "START-HERE.md",
+        "Prompt.md",
+        "README.md",
+        "architecture-blueprint.md",
+        "docs/**",
+        "tasks/**",
+        "templates/**",
+        "prompts/**",
+        "tradingagents/**",
+        "cli/**",
+        "test/**",
+        ".agent/rules.md",
+        ".opencode/permissions.jsonc",
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "write_allow": [
+        "tradingagents/course/evidence/**",
+        "test/offline/**",
+        "tasks/A-evidence.md"
+      ],
+      "write_mode": "ask",
+      "read_deny": [".env*", "**/auth*", ".git/**"]
+    },
+    "B": {
+      "name": "budget",
+      "feature": "FR-002",
+      "invariants": ["INV-002"],
+      "read_allow": [
+        "AGENTS.md",
+        "START-HERE.md",
+        "Prompt.md",
+        "README.md",
+        "architecture-blueprint.md",
+        "docs/**",
+        "tasks/**",
+        "templates/**",
+        "prompts/**",
+        "tradingagents/**",
+        "cli/**",
+        "test/**",
+        ".agent/rules.md",
+        ".opencode/permissions.jsonc",
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "write_allow": [
+        "tradingagents/course/budget/**",
+        "test/offline/**",
+        "tasks/B-budget.md"
+      ],
+      "write_mode": "ask",
+      "read_deny": [".env*", "**/auth*", ".git/**"]
+    },
+    "C": {
+      "name": "safety",
+      "feature": "FR-003",
+      "invariants": ["INV-003"],
+      "read_allow": [
+        "AGENTS.md",
+        "START-HERE.md",
+        "Prompt.md",
+        "README.md",
+        "architecture-blueprint.md",
+        "docs/**",
+        "tasks/**",
+        "templates/**",
+        "prompts/**",
+        "tradingagents/**",
+        "cli/**",
+        "test/**",
+        ".agent/rules.md",
+        ".opencode/permissions.jsonc",
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "write_allow": [
+        "tradingagents/course/safety/**",
+        "test/offline/**",
+        "tasks/C-safety.md"
+      ],
+      "write_mode": "ask",
+      "read_deny": [".env*", "**/auth*", ".git/**"]
+    },
+    "D": {
+      "name": "data_quality",
+      "feature": "FR-004",
+      "invariants": ["INV-004"],
+      "read_allow": [
+        "AGENTS.md",
+        "START-HERE.md",
+        "Prompt.md",
+        "README.md",
+        "architecture-blueprint.md",
+        "docs/**",
+        "tasks/**",
+        "templates/**",
+        "prompts/**",
+        "tradingagents/**",
+        "cli/**",
+        "test/**",
+        ".agent/rules.md",
+        ".opencode/permissions.jsonc",
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "write_allow": [
+        "tradingagents/course/data_quality/**",
+        "test/offline/**",
+        "tasks/D-data-quality.md"
+      ],
+      "write_mode": "ask",
+      "read_deny": [".env*", "**/auth*", ".git/**"]
+    },
+    "E": {
+      "name": "audit",
+      "feature": "FR-005",
+      "invariants": ["INV-005"],
+      "read_allow": [
+        "AGENTS.md",
+        "START-HERE.md",
+        "Prompt.md",
+        "README.md",
+        "architecture-blueprint.md",
+        "docs/**",
+        "tasks/**",
+        "templates/**",
+        "prompts/**",
+        "tradingagents/**",
+        "cli/**",
+        "test/**",
+        ".agent/rules.md",
+        ".opencode/permissions.jsonc",
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "write_allow": [
+        "tradingagents/course/audit/**",
+        "test/offline/**",
+        "tasks/E-audit.md"
+      ],
+      "write_mode": "ask",
+      "read_deny": [".env*", "**/auth*", ".git/**"]
+    }
+  },
+  "human_only_write_deny": [
+    ".opencode/rules.md",
+    "docs/approvals/**",
+    ".github/**",
+    "scripts/**",
+    "AGENTS.md",
+    "Prompt.md",
+    "opencode.json"
+  ]
+}
