@@ -1,0 +1,30 @@
+name: course-bootstrap
+
+# Course scaffolding check ONLY (schema + trace coverage + required files).
+# This is NOT a full six-gate course compliance check and does not run any
+# F1-F5 feature tests. The original upstream CI (ci.yml) is unchanged.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  course-scaffold:
+    name: course scaffold schema/trace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install course checker dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-course.txt pytest
+      - name: Check course scaffold
+        run: python scripts/check_course.py --root .
+      - name: Run course scaffold tests (offline)
+        run: pytest -o testpaths=test/offline test/offline/test_course_scaffold.py
