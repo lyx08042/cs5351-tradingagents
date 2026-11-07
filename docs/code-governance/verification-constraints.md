@@ -1,5 +1,8 @@
 # 验证约束（PROPOSED，权威）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求（含 G-1 的实现前批准）均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。
+
 > 状态：**PROPOSED**。除已实现部分外，多数自动化为 **pending**。本文件**不**被任何 checklist 强制执行；它是治理约定。
 
 ## 1. 六道课程阻断 Gate（精确）
