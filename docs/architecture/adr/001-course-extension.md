@@ -1,5 +1,8 @@
 # ADR-001：课程扩展（F1–F5）架构基线
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。写计划+测试设计（工作文档）后**继续实现**；安全/接口变更创建 ADR/设计记录，**无实现前批准人**。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。本 ADR 的 `PROPOSED` 状态**不**因本政策变为 `APPROVED`。
+
 - **状态：PROPOSED（待人工批准）**
 - **日期：2026-11-06**
 - **决策者：CS5351 五人小组（成员身份待填，不得虚构）**
@@ -94,3 +97,5 @@ dedup → prioritize → budget → compact → assemble
 - 关联 commit：**待填**
 
 > 在本节被真实人工填写之前，本 ADR 保持 **PROPOSED**。
+>
+> 注：owner 于 2026-11-07 取消实现前批准（`DEVELOPMENT-POLICY.md`）；这**不**等于批准本 ADR，`PROPOSED` 不会因此变为 `APPROVED`。安全/接口变更仍创建 ADR/设计记录，但无实现前批准人。
