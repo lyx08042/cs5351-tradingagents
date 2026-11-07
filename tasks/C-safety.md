@@ -1,7 +1,10 @@
 # 任务 C：确定性模拟安全（F3, deterministic simulation safety）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断本任务实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。开始前对 feature 分支 `git fetch origin` + `git merge origin/main`（不 reset、不 force）。
+
 > 状态：**PROPOSED 计划**。未实现。成员身份未知，不得虚构。
-> 先读 `AGENTS.md` 与 `Prompt.md`；严格遵守停止门。安全相关变更需 **ADR + 人工批准**。
+> 规划顺序：先写计划+测试设计（工作文档），然后继续实现。安全相关变更**创建 ADR/设计记录**，但无实现前批准人。
 
 ## 1. 交付物（Deliverables）
 
@@ -19,7 +22,7 @@
 
 - `tradingagents/course/safety/`（新增）
 - 测试：`test/offline/`（新增）
-- ADR（策略/规则变更）：`docs/architecture/adr/`（需人工批准）
+- ADR（策略/规则变更）：`docs/architecture/adr/`（创建记录，无实现前批准人）
 
 ## 4. 依赖与契约
 
@@ -34,7 +37,7 @@
 ## 5. 冻结范围
 
 - 既有 trader/PM 公共行为、`tests/`、`pyproject.toml` 受保护；不整树替换基线。
-- 窄范围集成编辑需：显式 scope + 接口契约 + 人工计划/测试批准 + 安全 ADR。
+- 窄范围集成编辑需：明确 scope + 接口契约 + 安全 ADR/设计记录（无实现前批准人）。
 - 不连接真实券商（永久排除）。
 
 ## 6. 验收与负向测试
@@ -55,8 +58,8 @@
 ## 7. 里程碑
 
 - M1：schema（含 Hold）、策略文档 + ADR 草案。
-- M2：确定性校验器 + 负向测试（需批准）。
-- M3：集成（协调 PR + 窄范围批准）。
+- M2：确定性校验器 + 负向测试。
+- M3：集成（协调 PR + 窄范围 scope）。
 - M4：非作者（B）评审。
 
 ## 8. 具体示例
@@ -68,15 +71,21 @@
 ## 9. 自包含可复制提示词
 
 ```text
+[CURRENT OVERRIDE — 最高项目政策：DEVELOPMENT-POLICY.md（ACTIVE, owner-selected, 2026-11-07）]
+旧的实现前计划/测试/安全批准、PENDING、STOP 要求均为 HISTORICAL / NOT EXECUTED，不阻断本任务实现；
+写计划+测试设计（工作文档）后继续实现，无需 approval_refs。课程 G-1/D9 未满足；非教师 waiver、非伪造批准。
+最终 PR + 非作者评审 + CI + 合并授权保留；不自动合并 main。开始前 git fetch origin + git merge origin/main（不 reset/force）。
+
 你是 CS5351 team 的编码代理，负责角色 C（F3 确定性模拟安全）。
-必读：AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
+必读：DEVELOPMENT-POLICY.md、AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
 tasks/C-safety.md、docs/req/requirements.yaml、docs/code-governance/*、
 docs/architecture/invariants.md、permission-model.md 与 trace-matrix.md。
 
 任务范围：仅 FR-003/SEC-001/INV-003，路径限于 tradingagents/course/safety/ 与 test/offline/。
-写代码前输出结构化清单；安全变更需 ADR + 人工批准，否则 STOP。
+改动前输出计划与测试策略，然后继续实现与验证；不要停在计划。安全变更创建 ADR/设计记录（无实现前批准人）。
+仅当真实的范围外/不可逆/凭证问题才请求用户；不因 PENDING、缺失计划批准或 proposed 状态停下。
 不得实现真实下单；不得把 long-only 说成通用禁止负值；不得让 LLM 文本覆盖代码 verdict；
-不得伪造测试结果；默认离线；不得无人值守推送。
+不得伪造测试结果；默认离线；不自动合并 main。
 ```
 
 ## 10. 交接（Handoff）
