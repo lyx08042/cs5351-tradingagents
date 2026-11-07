@@ -1,7 +1,10 @@
 # 任务 A：证据约束辩论（F1, evidence-grounded debate）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断本任务实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。开始前对 feature 分支 `git fetch origin` + `git merge origin/main`（不 reset、不 force）。
+
 > 状态：**PROPOSED 计划**。未实现。成员身份未知，不得虚构。
-> 先读 `AGENTS.md` 与 `Prompt.md`；严格遵守停止门。
+> 规划顺序：先写计划+测试设计（工作文档），然后继续实现。
 
 ## 1. 交付物（Deliverables）
 
@@ -42,7 +45,7 @@
 ## 5. 冻结范围
 
 - 既有 `tradingagents/**`、`cli/**`、`tests/**`、`pyproject.toml`、`LICENSE` 受保护；**不得整树替换基线**。
-- 如需在既有模块内做**窄范围集成编辑**（例如把证据校验接入辩论节点），必须满足：显式书面 scope + 接口契约 + 人工实现/测试计划批准（安全相关再加 ADR）；否则 STOP。
+- 如需在既有模块内做**窄范围集成编辑**（例如把证据校验接入辩论节点），需明确书面 scope + 接口契约（实现前人工批准不再是硬门；安全/接口变更创建 ADR/设计记录，无实现前批准人）。
 - 不改预算/安全/审计模块。
 
 ## 6. 验收与负向测试
@@ -58,7 +61,7 @@
 ## 7. 里程碑
 
 - M1：契约、日期语义与新鲜度策略文档（无代码）。
-- M2：校验器 + 单元/负向测试（批准后）。
+- M2：校验器 + 单元/负向测试。
 - M3：集成到辩论（协调 PR + 窄范围集成批准）+ 负向测试。
 - M4：非作者（E）评审 + 记录。
 
@@ -73,16 +76,21 @@
 ## 9. 自包含可复制提示词
 
 ```text
+[CURRENT OVERRIDE — 最高项目政策：DEVELOPMENT-POLICY.md（ACTIVE, owner-selected, 2026-11-07）]
+旧的实现前计划/测试/安全批准、PENDING、STOP 要求均为 HISTORICAL / NOT EXECUTED，不阻断本任务实现；
+写计划+测试设计（工作文档）后继续实现，无需 approval_refs。课程 G-1/D9 未满足；非教师 waiver、非伪造批准。
+最终 PR + 非作者评审 + CI + 合并授权保留；不自动合并 main。开始前 git fetch origin + git merge origin/main（不 reset/force）。
+
 你是 CS5351 team 的编码代理，负责角色 A（F1 证据约束辩论）。
-必读：AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
+必读：DEVELOPMENT-POLICY.md、AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
 tasks/A-evidence.md、docs/req/requirements.yaml、docs/code-governance/*、
 docs/architecture/invariants.md 与 trace-matrix.md。
 
 任务范围：仅 FR-001 / INV-001，路径限于 tradingagents/course/evidence/ 与 test/offline/。
-写代码前输出结构化清单（requirement/trace/interface/invariants/risk/negative tests/
-change scope/steps/approval）。若没有真实的测试计划与实现计划批准（docs/approvals/），
-或需要对既有源码做窄范围集成、跨角色、改提示词，必须 STOP 并请求人工审批。
-不得伪造证据/结果/批准；不得读取秘密；默认离线；不得无人值守推送。
+改动前输出计划与测试策略（requirement/trace/interface/invariants/risk/negative tests/
+change scope/steps），然后继续实现与验证；不要停在计划。
+仅当真实的范围外/不可逆/凭证问题才请求用户；不因 PENDING、缺失计划批准或 proposed 状态停下。
+不得伪造证据/结果/批准；不得读取秘密；默认离线；不自动合并 main。
 ```
 
 ## 10. 交接（Handoff）
