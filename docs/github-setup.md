@@ -1,5 +1,8 @@
 # GitHub 设置指南（Owner 人工操作）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留；不自动合并 main**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。
+
 > 状态：**说明**。本地文件**不会**修改 GitHub 设置；以下需仓库 owner 在网页端人工完成。
 > 团队仓库：<https://github.com/lyx08042/cs5351-tradingagents>（public）
 
@@ -42,4 +45,6 @@
 ## 6. 不得声称
 
 - 不得声称“已自动完成课程 gate”。
-- 不得声称“测试批准/安全 ADR 已自动化”（PENDING）。
+- 不得声称“测试批准/安全 ADR 已自动化”。
+- 不得声称满足 G-1/D9 或获得教师 waiver（owner 2026-11-07 取消实现前批准属课程偏离，见 `DEVELOPMENT-POLICY.md`）。
+- 分支保护/非作者评审/CI 仍为合并前必需，不自动合并 `main`。
