@@ -1,7 +1,15 @@
 # START-HERE — CS5351 五人小组启动流程
 
-> 状态：**初始化脚手架（initial scaffolding）**。本文件由编码代理起草，真实批准与实施需由五名成员人工完成。
-> 本文件不承诺任何交付完成度；模板与门禁不会替人产生“已完成”。
+> 状态：**初始化脚手架（initial scaffolding）**。本文件不承诺任何交付完成度；模板不会替人产生“已完成”。
+
+> ## ⚠️ 当前生效政策（CURRENT OVERRIDE）：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+>
+> - Owner `@lyx08042` 于 2026-11-07 在当前对话中**显式决定取消所有成员的实现前批准**，在被告知此举**违反课程实现前测试/计划批准要求**之后仍选择为之。由 **Codex 编排 OpenCode** 记录，**非教师批准**。
+> - **这是一个用户选择的课程偏离（course deviation），不是课程 waiver，也不是伪造批准。**
+> - **偏离内容**：缺失课程阻断 gate **G-1（实现前测试批准）** 与 **D9 计划/停止要求**及其人工监督；本仓库**不声称课程合规**。
+> - **修订后的工作流（不再等待）**：写计划 + 测试设计（工作文档）→ 直接在**自己的模块**实现/测试/评审修复 → 最终 PR + 非作者评审 + CI + 合并授权。无需 `approval_refs`，`PENDING`/缺失批准文件/`proposed` 状态**不是阻断项**。
+> - **先初始化再编辑**：开始前对自己的 feature 分支执行 `git fetch origin` 与 `git merge origin/main`（**不 reset、不 force**）以取得本政策。
+> - 下列正文若仍出现旧的实现前批准/停止门表述，均为 **HISTORICAL（不执行）**，以 `DEVELOPMENT-POLICY.md` 为准。`PROPOSED` 不会因此变成 `APPROVED`。
 
 ## 1. 仓库与访问
 
@@ -68,23 +76,23 @@ pip install -r requirements-course.txt
 
 **五角色轮换（仅流程角色，功能责任不变）**：A–E 模块负责人固定；每个 sprint 在 coordinator / architect / OpenCode build operator / verifier / reviewer-release 之间轮换。见 `tasks/README.md`。
 
-## 5. 工作流（每个变更都必须遵守）
+## 5. 工作流（活跃，遵循 `DEVELOPMENT-POLICY.md`）
 
-1. **先看角色与任务范围**：确认你改动的模块属于你的角色职责；跨角色修改需协调 PR。
-2. **先写测试计划，并取得人工批准**：使用 `templates/test-plan.md`，记录到 `docs/approvals/`，在**实现之前**获得批准。
-3. **获得功能计划批准**：使用 `templates/implementation-plan.md`，同样走人工批准。
-4. **实现**：通过 OpenCode/编码代理完成业务编码（见 `AGENTS.md` 的硬性约束）。
-5. **提交 PR**：使用 `.github/PULL_REQUEST_TEMPLATE.md`，如实填写 gate 状态。
-6. **人工评审**：评审人非作者；记录到 `templates/review-memo.md`。
-7. **合并后更新**：`docs/ai-use-log.yaml`、`docs/architecture/evaluation-logbook.md`、按需更新交接与债务台账。
+1. **先初始化分支**：`git fetch origin`，然后 `git merge origin/main` 到你的 feature 分支（不 reset、不 force），以取得当前政策。
+2. **确认角色与任务范围**：只改你负责的模块；跨角色修改走协调 PR。
+3. **写计划 + 测试设计（工作文档，非批准门）**：使用 `templates/implementation-plan.md`、`templates/test-plan.md` 作为工作记录；无需 `approval_refs`。
+4. **直接实现**：通过 OpenCode/编码代理完成业务编码，运行测试并评审修复，**不等待** leader 或人工测试/实现/ADR 预批准。
+5. **提交 PR**：使用 `.github/PULL_REQUEST_TEMPLATE.md`，如实填写状态与偏离说明。
+6. **非作者评审**：评审人非作者；记录到 `templates/review-memo.md`。
+7. **最终合并授权 + CI + 合并**，随后更新 `docs/ai-use-log.yaml` 等记录。
 
-### 测试与计划批准（硬性顺序）
+### 修订后的顺序（不再等待）
 
 ```
-先测试计划批准 → 再实现计划批准 → 然后编码 → 再评审 → 再合并
+同步分支 → 计划+测试设计（工作文档）→ 编码+测试+评审修复 → 非作者评审 + CI → 合并授权
 ```
 
-没有批准不得开始实现。**提示词/模型变更**必须先固定评估集（`docs/evaluation/cases.yaml`），先评测再改。
+缺失计划批准文件/`PENDING`/`proposed` 状态**不是阻断项**。**提示词/模型变更**仍建议先固定评估集（`docs/evaluation/cases.yaml`）再评测。
 
 ## 6. 离线测试 vs 在线测试
 
