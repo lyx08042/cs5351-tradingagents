@@ -54,6 +54,20 @@
   related: [BASE-001, BASE-002]
   status: accepted
   discovered_at: "2026-11-06"
+
+- id: DEBT-005
+  category: guardrail
+  title: Owner 取消实现前批准导致课程 G-1/D9 未满足（课程偏离）
+  description: >
+    Owner @lyx08042 于 2026-11-07 在当前对话中显式决定取消所有成员的实现前批准，
+    在被告知这违反课程实现前测试/计划批准要求后仍选择为之。由 Codex 编排 OpenCode
+    记录，非教师批准。见 DEVELOPMENT-POLICY.md。GOV-001 保持原始课程表述并标注为 not_satisfied。
+  impact: >
+    缺失课程阻断 gate G-1 与 D9 计划/停止要求及相关人工监督；本仓库不得声称课程合规。
+    非 waiver、非伪造批准；真实历史批准保持原样。
+  related: [GOV-001, G-1, D9]
+  status: accepted
+  discovered_at: "2026-11-07"
 ```
 
 ## 说明
