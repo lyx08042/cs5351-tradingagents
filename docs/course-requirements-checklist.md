@@ -1,5 +1,8 @@
 # 课程要求对照表（D1–D9 与六道 gate）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。
+
 > 状态：**事实台账**。本表如实标注**已存在 / 部分 / 未完成 / PENDING**。**不**声称课程合规。
 > 校验机制见 `scripts/check_course.py`（仅 schema/trace）与 `docs/code-governance/verification-constraints.md`。
 
@@ -15,13 +18,13 @@
 | D6 | 代码实现 F1–F5 | `tradingagents/course/**` | **未实现（目录不存在）** |
 | D7 | 评估 | `docs/evaluation/`、`docs/architecture/evaluation-table.md` | planned，无结果 |
 | D8 | 文档/报告/视频 | `Report.md`、`transcripts/`、`docs/submission-checklist.md` | 提纲/模板，未完成 |
-| D9 | 提交与诚信 | `docs/submission-checklist.md`、`docs/github-setup.md` | 待人工执行 |
+| D9 | 提交与诚信 | `docs/submission-checklist.md`、`docs/github-setup.md` | 待人工执行；**D9 计划/停止要求未满足**（owner 2026-11-07 取消实现前批准，见 `DEVELOPMENT-POLICY.md`） |
 
 ## 2. 六道阻断 Gate 真相表（精确）
 
 | Gate | 描述 | 实现状态 | 说明 |
 |---|---|---|---|
-| G-1 实现前测试批准 | 人工 | **PENDING** | 无自动化；无批准记录 |
+| G-1 实现前测试批准 | 人工 | **PROCESS DISABLED (owner 2026-11-07)** | 课程偏离：owner 取消实现前批准；**G-1 未满足**，无自动化、无新批准记录；见 `DEVELOPMENT-POLICY.md` |
 | G-2 每次提交静态检查（lint/类型/依赖）+ 安全 PR（安全/契约/API/权限） | 继承 CI + 扩展 | lint 继承上游 `ci.yml`（存在）；类型/依赖与安全 PR 审查 **PENDING**；fork Actions owner 启用 **PENDING** |
 | G-3 需求 schema | `scripts/check_course.py` | **已实现**（本地校验通过后）；CI 需 owner 启用 |
 | G-4 提示词/模型变更语义固定集评估 | 固定集 + rubric | **PENDING**（无运行器） |
@@ -41,4 +44,5 @@
 ## 4. 诚实声明
 
 - 本仓库**未**达到课程全部要求；本表不是合规证明，且**不**自动强制任何 gate。
-- G-1/G-2 扩展/G-4/G-6 的自动化为 PENDING；目前依赖人工流程。
+- G-2 扩展/G-4/G-6 的自动化为 PENDING；目前依赖人工流程。
+- **G-1 与 D9 计划/停止要求被 owner 于 2026-11-07 主动取消（课程偏离，非 waiver）；未满足，不得声称合规。**
