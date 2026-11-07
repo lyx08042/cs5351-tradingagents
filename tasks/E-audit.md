@@ -1,7 +1,10 @@
 # 任务 E：可验证审计与决策修订（F5, verifiable audit）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断本任务实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。开始前对 feature 分支 `git fetch origin` + `git merge origin/main`（不 reset、不 force）。
+
 > 状态：**PROPOSED 计划**。未实现。成员身份未知，不得虚构。
-> 先读 `AGENTS.md` 与 `Prompt.md`；严格遵守停止门。审计权威性变更需 **ADR + 人工批准**。
+> 规划顺序：先写计划+测试设计（工作文档），然后继续实现。审计权威性变更**创建 ADR/设计记录**，但无实现前批准人。
 
 ## 1. 交付物（Deliverables）
 
@@ -41,7 +44,7 @@
 ## 5. 冻结范围
 
 - 既有 memory/checkpoint 公共行为、`tests/`、`pyproject.toml` 受保护；不整树替换基线。
-- 窄范围集成编辑需：显式 scope + 接口契约 + 人工计划/测试批准。
+- 窄范围集成编辑需：明确 scope + 接口契约（实现前人工批准不再是硬门）。
 - 不删除或覆盖历史审计记录。
 
 ## 6. 验收与负向测试
@@ -56,7 +59,7 @@
 ## 7. 里程碑
 
 - M1：记录契约 + 修订链 + 回放设计（文档）。
-- M2：实现 + 负向/回放测试（批准后）。
+- M2：实现 + 负向/回放测试。
 - M3：集成（协调 PR）。
 - M4：非作者评审 + 评估记录。
 
@@ -67,14 +70,20 @@
 ## 9. 自包含可复制提示词
 
 ```text
+[CURRENT OVERRIDE — 最高项目政策：DEVELOPMENT-POLICY.md（ACTIVE, owner-selected, 2026-11-07）]
+旧的实现前计划/测试/安全批准、PENDING、STOP 要求均为 HISTORICAL / NOT EXECUTED，不阻断本任务实现；
+写计划+测试设计（工作文档）后继续实现，无需 approval_refs。课程 G-1/D9 未满足；非教师 waiver、非伪造批准。
+最终 PR + 非作者评审 + CI + 合并授权保留；不自动合并 main。开始前 git fetch origin + git merge origin/main（不 reset/force）。
+
 你是 CS5351 team 的编码代理，负责角色 E（F5 可验证审计+修订+离线回放）。
-必读：AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
+必读：DEVELOPMENT-POLICY.md、AGENTS.md、Prompt.md、START-HERE.md、architecture-blueprint.md、
 tasks/E-audit.md、docs/req/requirements.yaml、docs/code-governance/*、
 docs/architecture/invariants.md、evaluation-table.md 与 trace-matrix.md。
 
 任务范围：仅 FR-005/INV-005，路径限于 tradingagents/course/audit/ 与 test/offline/。
-写代码前输出结构化清单；审计权威性变更需 ADR + 人工批准，否则 STOP。
-不得覆盖终局决策；不得伪造回放结果；不得读取秘密；默认离线；不得无人值守推送。
+改动前输出计划与测试策略，然后继续实现与验证；不要停在计划。审计权威性变更创建 ADR/设计记录（无实现前批准人）。
+仅当真实的范围外/不可逆/凭证问题才请求用户；不因 PENDING、缺失计划批准或 proposed 状态停下。
+不得覆盖终局决策；不得伪造回放结果；不得读取秘密；默认离线；不自动合并 main。
 ```
 
 ## 10. 交接（Handoff）
