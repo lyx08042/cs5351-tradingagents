@@ -43,6 +43,50 @@ entries:
     caveats: >
       The scaffold is not course compliance; F1-F5 are unimplemented;
       architecture and requirements are PROPOSED.
+  - id: AI-USE-0002
+    date: "2026-11-07"
+    model: "CityU CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode"
+    session_id: "ses_e49c6f123ffe8jHe5ZCaTshi78"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode"
+    member: "none (owner-explicit governance decision; not student authorship)"
+    scope: "documentation-config-policy-change"
+    summary: >
+      Owner @lyx08042 explicitly decided on 2026-11-07, in the current chat,
+      to CANCEL ALL PRE-CODING APPROVAL for all team members, after being told
+      this violates the course pre-implementation test/plan approval
+      requirements. Added DEVELOPMENT-POLICY.md (ACTIVE owner-selected workflow)
+      and compact consistent policy banners/edits across AGENTS.md, Prompt.md,
+      START-HERE.md, README.md, .agent/rules.md, tasks/*.md,
+      architecture-blueprint.md, docs/code-governance/*, docs/architecture/
+      permission-model.md and adr/001-course-extension.md, docs/approvals/README.md,
+      templates/*, course docs, Report.md, docs/req/requirements.yaml (GOV-001
+      marked course_deviation), and opencode.json/.opencode/permissions.jsonc.
+      Recorded as a user-chosen course deviation (misses G-1/D9), not a teacher
+      waiver and not fake approvals. No business source and no tests were written
+      or changed.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: false
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    historical_approvals_modified: false
+    feature_implemented: false
+    course_deviation: true
+    course_deviation_detail: >
+      Pre-coding plan/test/safety approval and associated human oversight (course
+      block-gate G-1 and D9 plan stop) are intentionally disabled by owner
+      decision. This is NOT teacher-approved and NOT a course waiver; the repo
+      must not claim course compliance for G-1/D9.
+    caveats: >
+      No fabricated results, approvals, identities, or tests. Real earlier
+      approvals (if any) remain historical. Working plans for future work go in
+      tasks/plans/<A-E>/ (not docs/approvals/).
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."
