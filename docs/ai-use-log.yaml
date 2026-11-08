@@ -87,6 +87,46 @@ entries:
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
       tasks/plans/<A-E>/ (not docs/approvals/).
+  - id: AI-USE-0003
+    date: "2026-11-08"
+    model: "CityU CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode"
+    session_id: "ses_e4614ef73ffe1ZIR7uulZGQ8jy"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Supervised OpenCode session operated by the human role-D member; scope checks and prompt drafting were done outside the agent session"
+    member: "60569580 Chaoqun ZHENG (role D)"
+    scope: "FR-004 / INV-004 / NFR-004 data sufficiency admission leaf module and offline tests"
+    summary: >
+      Implemented the D data-quality admission leaf under
+      tradingagents/course/data_quality: contracts, classifier, and admission
+      decision with five required domains, availability states, explicit-zero
+      versus missing distinction, fixed cutoff date, and JSON-serializable
+      decision events. Added offline tests in
+      test/offline/test_data_quality.py. Offline suite: 40 passed; course
+      checker OK; ruff passed. Upstream full regression could not start in the
+      minimal WSL venv because tests/conftest.py imports yfinance and pandas was
+      absent; this was an environment dependency blocker, not a D code failure.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    historical_approvals_modified: false
+    feature_implemented: true
+    course_deviation: false
+    course_deviation_detail: >
+      No new course deviation was introduced by the D implementation. The work
+      still proceeds under the existing owner-selected deviation recorded in
+      AI-USE-0002; G-1/D9 pre-coding gates remain unsatisfied.
+    caveats: >
+      BASE-002 upstream regression is pending in a full-dependency environment
+      or CI. Pending non-author review by C, CI, and merge authorization. No
+      fabricated approval, teacher waiver, or compliance claim is recorded.
+
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."
@@ -95,5 +135,7 @@ policy:
 transcript_status:
   full_student_transcripts_submitted: false
   note: >
-    No full student transcripts exist yet; transcripts/ contains only its
-    README. This bootstrap entry must not be presented as a student transcript.
+    One role-D supervised transcript is present locally under
+    transcripts/60569580-ChaoqunZHENG/; the five required student transcripts
+    are not yet complete or submitted. The bootstrap entry must not be
+    presented as a student transcript.
