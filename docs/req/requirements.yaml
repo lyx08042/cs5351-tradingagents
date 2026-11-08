@@ -280,6 +280,9 @@ requirements:
     source: [SRC-PROJECT-SHEET]
     owner: "shared"
     status: proposed
+    course_deviation: true
+    implementation_policy: pre_coding_approval_disabled_by_owner
+    fulfillment_status: not_satisfied
     fit:
       metric: "无批准即实现的 PR 数"
       threshold: 0

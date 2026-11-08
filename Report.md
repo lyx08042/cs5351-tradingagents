@@ -1,5 +1,8 @@
 # Report.md — 课程报告提纲（**不是**最终报告）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**；报告中须如实记录此课程偏离，不得声称合规。
+
 > 状态：**提纲（OUTLINE）**。本文件**不**声称报告已完成。[`docs/course-requirements-checklist.md`](docs/course-requirements-checklist.md) 显示真实状态。
 
 ## 0. 写作约束

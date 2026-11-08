@@ -1,5 +1,8 @@
 # 架构蓝图（PROPOSED）— CS5351 TradingAgents 课程扩展
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。本文件的 `PROPOSED` 状态**不**因本政策变为 `APPROVED`。开始前对 feature 分支 `git fetch origin` + `git merge origin/main`（不 reset、不 force）。
+
 > **状态：PROPOSED（待学生批准）**。本文件是**提案基线**，不是已达成的实现，也不构成课程合规声明。
 > **规范源**：本文件是权威副本；`docs/architecture/architecture-blueprint.md` 只是指针。
 > **基线**：上游 TauricResearch/TradingAgents v0.7.1，commit `9fa1196fffbcfd9de5146d2dd2869df84ab99838`。

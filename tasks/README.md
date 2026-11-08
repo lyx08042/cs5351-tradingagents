@@ -1,6 +1,9 @@
 # 任务书总览（A–E）
 
-> 状态：**初始化脚手架**。每个任务书是**自包含、可复制**的编码代理提示词，但**都**受 `AGENTS.md` 与 `Prompt.md` 的停止门约束。
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方**所有**旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未被满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。开始前对自己的 feature 分支 `git fetch origin` + `git merge origin/main`（不 reset、不 force）。
+
+> 状态：**初始化脚手架**。每个任务书是**自包含、可复制**的编码代理提示词，受 `DEVELOPMENT-POLICY.md`（最高优先级）与 `AGENTS.md` 约束。
 > 成员姓名/学号**未知**；不得虚构。
 
 ## 1. 功能责任（**稳定，不轮换**）
@@ -53,7 +56,7 @@ A–E 是**模块/功能所有者**，整个课程中**固定不变**。每位�
 
 1. **需求 + fits**：需求 ID、statement、`fit.metric/threshold/verification`。
 2. **设计/接口/ADR/INV**：契约、接口、ADR 引用、不变量与 fail-closed 行为。
-3. **代码 + 测试 + PR + 实现前批准链接**：变更文件、测试、PR、`docs/approvals/` 的测试/实现批准引用。
+3. **代码 + 测试 + PR + 计划记录（可选历史批准引用）**：变更文件、测试、PR、以及计划/测试设计工作文档；`docs/approvals/` 的历史批准引用为**可选**（不再必需）。
 4. **实际评估/配置/结果**：固定评估集、模型/配置、实际结果（如实，含失败）。
 5. **完整原始会话 + 独立干预注释**：`transcripts/<studentid-name>/raw.md`（只读）+ `annotations.md`（单独）。
 6. **AI 使用/评审/bug/债务/变更记录**：`docs/ai-use-log.yaml`、`docs/review-memo.md`、`docs/bug-diary.md`、`docs/debt-register.md`。
@@ -61,13 +64,14 @@ A–E 是**模块/功能所有者**，整个课程中**固定不变**。每位�
 
 > 模块路径、需求、约束**不是**“七类交付物”；它们是上述条目中的**内容**。
 
-## 5. 通用工作约束（所有任务）
+## 5. 通用工作约束（所有任务，见 `DEVELOPMENT-POLICY.md`）
 
-- 实现前必须有人工**测试计划批准**（G-1）；实现计划与安全 ADR 是**附加**控制。
-- 既有 `TradingAgents` 源码/测试/构建默认受保护，**不得整树替换基线**；窄范围集成编辑需显式书面 scope + 接口契约 + 人工批准（安全再加 ADR）。
-- 治理基础设施（`.github/`、`scripts/`、`AGENTS.md`、`Prompt.md`、`opencode.json`）默认 deny 编辑；若确需变更，由人工授权一次**窄范围配置/会话**，OpenCode 生成代码、评审后再恢复保护。
-- **离线优先**：默认不进行在线 API 调用。人工可**显式授权** live 评估的 provider/model/成本上限与安全凭证配置（凭证只在本机，不得读取或发布）。
-- 不得无人值守实现，不得自动推送。
+- 写计划 + 测试设计（工作文档，非批准门）后直接实现；`approval_refs` 不需要，`PENDING`/缺失批准/`proposed` 状态**不是阻断项**。
+- 既有 `TradingAgents` 源码/测试/构建默认受保护，**不得整树替换基线**；窄范围集成编辑需明确 scope + 接口契约。
+- 安全/接口变更创建 ADR/设计记录，但**无实现前批准人**。
+- 治理基础设施（`.github/`、`scripts/`、`AGENTS.md`、`Prompt.md`、`opencode.json`）默认 deny 编辑；`.opencode/rules.md` 人类专属、不编辑。
+- **离线优先**：默认不进行在线 API 调用；live 评估需人工显式授权 provider/model/成本上限与凭证配置（凭证只在本机，不得读取或发布）。
+- 真实 transcript 与诚实 AI 记录照旧；最终 PR + 非作者评审 + CI + 合并授权保留，**不自动合并到 `main`**。
 
 ## 6. 当前状态
 

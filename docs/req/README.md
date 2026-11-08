@@ -1,5 +1,8 @@
 # 需求注册表工作流（PROPOSED）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。GOV-001 保持原始课程表述并标注为 `not_satisfied`；`PROPOSED` 不因本政策变为 `APPROVED`。
+
 > 状态：**PROPOSED**。`requirements.yaml` 中的所有需求均为 `status: proposed`，**未经人工批准**。
 
 ## 1. 文件
@@ -37,8 +40,8 @@
 
 1. **提出**：在 PR 中新增/修改需求，`status: proposed`。
 2. **评审**：由非作者评审，检查可度量性与 trace 覆盖。
-3. **批准**：人工在 `docs/approvals/` 记录后，方可改 `status`（不得由代理写）。
-4. **实现**：通过 OpenCode 实现，`status` 可改为 `implemented`（需测试支撑）。
+3. **实现**：通过 OpenCode 实现；`status` 可改为 `implemented`（需测试支撑）。**计划/测试设计为工作文档，非批准门**（见 `DEVELOPMENT-POLICY.md`）。
+4. **合规偏离**：GOV-001 保留原始课程表述，但以 `course_deviation: true` / `implementation_policy: pre_coding_approval_disabled_by_owner` / `fulfillment_status: not_satisfied` 如实标注；**不得**把教师要求改写为已满足。
 5. **校验**：
    ```bash
    python scripts/check_course.py --root .

@@ -1,5 +1,8 @@
 # 权限模型（PROPOSED）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。安全/凭证约束不变。
+
 > 状态：**PROPOSED**。本文件描述**设计意图**；`.opencode/permissions.jsonc` 是课程制品，**不被 OpenCode 自动加载**，**不提供**可执行的运行时角色隔离。
 
 ## 1. 原则
@@ -27,7 +30,7 @@
 
 **默认受保护（不得整树替换基线）**：既有 `tradingagents/**`、`cli/**`、`tests/**`、`pyproject.toml`、`LICENSE`。
 
-**窄范围集成编辑**（例如在辩论节点接入证据校验）在同时满足以下条件后允许：显式书面 scope + 接口契约 + 人工实现/测试计划批准（安全相关再加 ADR）。这属于正常 agentic 集成，不要求人工手写。
+**窄范围集成编辑**（例如在辩论节点接入证据校验）需：明确书面 scope + 接口契约；安全/接口变更创建 ADR/设计记录（**无实现前批准人**）。这属于正常 agentic 集成，不要求人工手写。
 
 **人类专属路径**：`.opencode/rules.md`、`docs/approvals/**`。
 
@@ -48,6 +51,8 @@
 - 尝试写冻结路径：拒绝并记录到 `docs/bug-diary.md` 或流程记录。
 - 跨角色修改：必须走协调 PR，在 PR 模板中说明。
 - 读取秘密/外部目录：禁止；如发生应视为安全事故并人工复核。
+
+> 注意：owner 于 2026-11-07 取消实现前批准（见 `DEVELOPMENT-POLICY.md`），这是**课内计划审批**的取消，**不**改变上述安全/凭证约束，也**不**提供任何运行时隔离。
 
 ## 6. 当前状态
 

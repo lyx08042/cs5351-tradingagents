@@ -1,6 +1,9 @@
 # 结构性约束（PROPOSED，权威）
 
-> 状态：**PROPOSED**。本文件是课程扩展的**权威集成约束**；未经人工批准不得变更。
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。写计划+测试设计（工作文档）后**继续实现**，无需 `approval_refs`。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。`PROPOSED` 不因本政策变为 `APPROVED`。
+
+> 状态：**PROPOSED**。本文件是课程扩展的**权威集成约束**；契约变更创建记录后即可推进。
 > 关联：`architecture-blueprint.md`、`docs/architecture/adr/001-course-extension.md`、`docs/architecture/invariants.md`。
 
 ## 1. 文件清单（每个模块/函数需引用 ADR/INV）
@@ -32,13 +35,13 @@
 
 既有 `tradingagents/**`、`cli/**`、`tests/**`、`pyproject.toml`、`LICENSE` **默认受保护，不得整树替换基线**。新功能代码只进入 `tradingagents/course/**`（PROPOSED）。
 
-**窄范围集成编辑**（在既有模块中接入新契约）仅在同时满足以下条件时允许：
+**窄范围集成编辑**（在既有模块中接入新契约）需：
 
-1. 显式书面 scope（哪些文件、哪些函数）；
+1. 明确书面 scope（哪些文件、哪些函数）；
 2. 明确的接口契约；
-3. 人工实现计划与测试计划批准（安全相关再加 ADR）。
+3. 安全/接口变更创建 ADR/设计记录（**无实现前批准人**）。
 
-未满足即 STOP。这属于课程 agentic development 的正常集成方式，**不要求**人类手工重写既有代码。
+这属于课程 agentic development 的正常集成方式，**不要求**人类手工重写既有代码。
 
 **治理基础设施**（`.github/**`、`scripts/**`、`AGENTS.md`、`Prompt.md`、`opencode.json`）默认 deny 编辑；确需变更时由人工授权一次**窄范围配置/会话**，由 OpenCode 生成代码、经非作者评审后**恢复保护**。
 

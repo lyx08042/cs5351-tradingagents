@@ -1,5 +1,12 @@
 # TradingAgents — CS5351 课程团队仓库
 
+> ## ⚠️ 当前生效政策（CURRENT OVERRIDE）：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+>
+> - Owner `@lyx08042` 于 2026-11-07 当前对话中**显式决定取消所有成员的实现前批准**（在被告知这违反课程实现前测试/计划批准要求之后）。由 **Codex 编排 OpenCode** 记录，**非教师批准**。
+> - 这是**用户选择的课程偏离**，**不是 waiver、不是伪造批准**。缺失课程 **G-1** 与 **D9** 计划/停止要求；本仓库**不声称课程合规**。
+> - **工作流不再等待**：写计划+测试设计（工作文档）→ 在自己模块实现/测试/评审修复 → 最终 PR + 非作者评审 + CI + 合并授权。无需 `approval_refs`。
+> - 开始前对自己的 feature 分支执行 `git fetch origin` 与 `git merge origin/main`（不 reset、不 force）。下方旧表述为 **HISTORICAL（不执行）**。
+
 本仓库是基于上游 [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) 的 **Team fork**，用于 CityU **CS5351** 五人课程小组的协作、治理与扩展。上游原文保留在 [`README.upstream.md`](README.upstream.md)。
 
 - 团队仓库：<https://github.com/lyx08042/cs5351-tradingagents>（public）
@@ -23,7 +30,7 @@
    pip install -r requirements-course.txt
    ```
 3. **按顺序阅读**：`START-HERE.md` → `AGENTS.md` → `Prompt.md` → `architecture-blueprint.md` → 你被分配的 `tasks/<code>-*.md` → `docs/req/requirements.yaml` → `docs/code-governance/`。
-4. **在个人分支开发，向团队仓库提 PR**（不向上游提 PR）。实现前先提交 **测试计划** 并取得人工批准（见 `docs/approvals/README.md`）。
+4. **在个人分支开发，向团队仓库提 PR**（不向上游提 PR）。先 `git fetch origin` + `git merge origin/main` 取得当前政策；按 `DEVELOPMENT-POLICY.md` 先写计划+测试设计（工作文档）然后继续实现，无需 `approval_refs`。
 5. **API 凭证仅保存在本机**，绝不入库、不写进 transcript。离线测试与在线测试分开（见 `test/README.md`）。
 
 ## 关键事实（避免误解）
@@ -38,6 +45,7 @@
 | 文件 | 作用 | 状态 |
 |---|---|---|
 | `START-HERE.md` | 五人上手流程与分工 | 脚手架 |
+| `DEVELOPMENT-POLICY.md` | **ACTIVE owner-selected 工作流（最高优先级）** | 政策 |
 | `AGENTS.md` | 编码代理入口与硬性约束 | 脚手架 |
 | `Prompt.md` | 静态启动提示词与停止门 | 脚手架 |
 | `architecture-blueprint.md` | PROPOSED 架构基线 | 提案 |
@@ -49,7 +57,7 @@
 | `docs/course-requirements-checklist.md` | D1-D9 与六道 gate 的真实状态 | 事实台账 |
 | `docs/baseline.md` | 上游基线与一次运行的实际证据（脱敏） | 事实台账 |
 | `docs/ai-use-log.yaml` | 真实 AI 使用记录 | 事实台账 |
-| `docs/approvals/README.md` | 人工批准的格式（当前无批准记录） | 人类专属 |
+| `docs/approvals/README.md` | 人工批准格式（当前无批准记录；实现前批准已由 owner 取消——见 `DEVELOPMENT-POLICY.md`） | 人类专属 |
 | `docs/evaluation/` | 固定评估集（人工设计）与评估说明 | planned |
 | `.agent/rules.md` | 编码代理脚手架契约（AI 生成） | 脚手架 |
 | `.opencode/rules.md` | **未获人工批准的占位**（人类专属） | 占位 |

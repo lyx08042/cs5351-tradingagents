@@ -1,5 +1,8 @@
 # 提交清单
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**，不再阻断你自己任务的实现。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。
+
 > 状态：**清单**。仅列出要求与排除项；不表示已完成。
 
 ## 1. 提交 ZIP 内容
@@ -34,6 +37,7 @@
 
 - [ ] 无秘密（`git grep` 人工自查）
 - [ ] 真实状态如实标注（PROPOSED/未实现/PENDING）
+- [ ] 明确记录课程偏离：owner 于 2026-11-07 取消实现前批准；**G-1/D9 未满足**（见 `DEVELOPMENT-POLICY.md`）
 - [ ] 未修改 `tests/`/`pyproject.toml`/`LICENSE`
 - [ ] `python scripts/check_course.py --root .` 通过
 - [ ] `pytest -o testpaths=test/offline test/offline/test_course_scaffold.py` 通过

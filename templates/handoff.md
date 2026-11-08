@@ -1,5 +1,8 @@
 # 交接模板（Handoff）
 
+> ## ⚠️ CURRENT OVERRIDE：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
+> 下方所有旧的实现前计划/测试/安全批准、`PENDING`、STOP 要求均为 **HISTORICAL / NOT EXECUTED**。计划/测试设计为**工作文档**；`docs/approvals/` 引用为**可选/历史**。**最终 PR + 非作者评审 + CI + 合并授权保留**。课程 **G-1/D9 未满足**；**非教师 waiver、非伪造批准**。
+
 > 模板，不含历史记录。每次交接覆盖**七类信息**（与 `tasks/README.md` 第 4 节一致）。
 > 实际文件去向写在每类末尾的“→ 存放位置”。
 
@@ -18,12 +21,13 @@
 - 不变量与失效行为：<INV-00x，fail-closed/abstain/review>
   → 存放位置：docs/architecture/（ADR、invariants、trace-matrix）
 
-### 3) 代码 + 测试 + PR + 实现前批准链接
+### 3) 代码 + 测试 + PR + 计划记录（可选历史批准引用）
 - 变更文件：<tradingagents/course/... / test/offline/...>
 - 正向/负向测试：<...>
 - PR：#<n>
-- 实现前批准：测试计划 <docs/approvals/...>、实现计划 <docs/approvals/...>
-  → 存放位置：代码 PR；批准记录在 docs/approvals/（人工写入）
+- 计划/测试设计：<工作文档路径>
+- 批准引用（可选，历史）：测试计划 <docs/approvals/... 或 N/A>、实现计划 <docs/approvals/... 或 N/A>
+  → 存放位置：代码 PR；历史批准记录在 docs/approvals/（人类写入）
 
 ### 4) 实际评估 / 配置 / 结果
 - 固定评估集：docs/evaluation/cases.yaml@<commit>
