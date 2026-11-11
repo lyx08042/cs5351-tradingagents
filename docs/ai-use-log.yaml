@@ -87,6 +87,128 @@ entries:
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
       tasks/plans/<A-E>/ (not docs/approvals/).
+  - id: AI-USE-C-0001
+    date: "2026-11-07"
+    id_note: >
+      Renamed from AI-USE-0003 before publication because an independent
+      D-branch entry also used AI-USE-0003. No historical entry was modified.
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e49959e9effeVEnDsA1Cja2ZYI"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the verification commands"
+    member: "none (no student identity; no human approval or review claimed)"
+    scope: "F3 deterministic simulation safety (member C): implementation, offline tests, handoff"
+    summary: >
+      Implemented the C deterministic simulation-safety module under
+      tradingagents/course/safety/ (SimulationProposal, HoldingsSnapshot,
+      RuleSet, SafetyContext, SafetyVerdict, ReasonCode, validate_proposal)
+      and added test/offline/test_safety_simulation.py with positive, negative
+      and deterministic-replay coverage. Added ADR draft and handoff under
+      tasks/plans/C/. Fixed two Codex-reproduced defects: buy-cost arithmetic
+      now uses an explicit decimal.Context (fixed precision, range, rounding,
+      clamp and traps; no caller state inherited) and rejects out-of-range or
+      inexact amounts; an invalid SafetyContext.rule_set is now rejected with
+      the stable INVALID_RULE_SET reason instead of raising from the rejection
+      path. No shared CLI, graph node, CI, existing tests or other member code
+      was changed; no verified simulation proposal was published.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    human_review_performed: false
+    historical_approvals_modified: false
+    feature_implemented: true
+    course_deviation: true
+    course_deviation_detail: >
+      The team workflow proceeds under DEVELOPMENT-POLICY.md (ACTIVE,
+      owner-selected). Course G-1 pre-implementation test approval and D9 plan
+      stop were not executed. This is not a teacher waiver and not a fabricated
+      approval; the repository must not claim G-1/D9 compliance.
+    verification_results:
+      opencode_shell_commands_run: false
+      codex_independent:
+        - command: "python -m pytest -q -o testpaths=test/offline test/offline"
+          result: "76 passed (20 existing scaffold tests + 56 C tests)"
+        - command: "python scripts/check_course.py --root ."
+          result: "OK"
+      unverified:
+        - "full upstream pytest regression"
+        - "ruff lint"
+    later_verification_entry: "AI-USE-C-0002"
+    caveats: >
+      No fabricated results, approvals, identities or tests. Codex ran the
+      verification commands independently; that is not a human review. No real
+      broker connection, no runtime application live API calls, and no
+      credentials were read. Course G-1/D9 remain unsatisfied.
+  - id: AI-USE-C-0002
+    date: "2026-11-11"
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e49959e9effeVEnDsA1Cja2ZYI"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the verification commands"
+    member: "none (no student identity; no human approval or review claimed)"
+    scope: "F3 deterministic simulation safety (member C): UP037 annotation cleanup and pre-upload documentation"
+    summary: >
+      Fixed three Ruff UP037 findings in tradingagents/course/safety/models.py
+      by removing quotes around annotations that are unnecessary under
+      `from __future__ import annotations`: Action.parse return annotation,
+      HoldingsSnapshot.is_same_as `other` annotation, and
+      SimulationProposal.from_mapping return annotation. Behavior is unchanged.
+      Updated the C handoff, task record and ADR draft; added
+      docs/architecture/adr/002-simulation-safety.md (PROPOSED) and
+      transcripts/role-C/annotations.md. Renamed the unpublished C entry from
+      AI-USE-0003 to AI-USE-C-0001 to avoid an independent-branch ID collision;
+      no historical entry was modified. M2 is ready to upload; M3 integration
+      and M4 non-author review remain pending.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: false
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    human_review_performed: false
+    historical_approvals_modified: false
+    feature_implemented: false
+    documentation_changed: true
+    course_deviation: true
+    course_deviation_detail: >
+      The team workflow proceeds under DEVELOPMENT-POLICY.md (ACTIVE,
+      owner-selected). Course G-1 pre-implementation test approval and D9 plan
+      stop were not executed. This is not a teacher waiver and not a fabricated
+      approval; the repository must not claim G-1/D9 compliance.
+    verification_results:
+      opencode_shell_commands_run: false
+      codex_independent:
+        - command: "python -m pytest -q -o testpaths=test/offline test/offline"
+          result: "76 passed (20 existing scaffold tests + 56 C tests)"
+        - command: "python scripts/check_course.py --root ."
+          result: "OK"
+        - command: "ruff check ."
+          result: "passed"
+        - command: "upstream full pytest regression"
+          result: "1407 passed, 6 skipped, 1 deselected, 24 warnings, 100 subtests passed in 41.30s"
+      environment_note: >
+        The first restricted run failed on temporary-directory permissions and
+        loopback connection. After allowing loopback and using a workspace temp
+        directory, the upstream regression passed as reported.
+    caveats: >
+      No fabricated results, approvals, identities or tests. Codex ran the
+      verification commands independently; that is not a human review. No real
+      broker connection, no runtime application live API calls, and no
+      credentials were read. Course G-1/D9 remain unsatisfied. Upload status
+      must be taken from GitHub, not from this log.
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."
@@ -95,5 +217,7 @@ policy:
 transcript_status:
   full_student_transcripts_submitted: false
   note: >
-    No full student transcripts exist yet; transcripts/ contains only its
-    README. This bootstrap entry must not be presented as a student transcript.
+    No full raw transcript is yet committed. transcripts/role-C/annotations.md
+    is an annotation stub; raw.json is pending a verbatim export by Codex.
+    Annotations must not be presented as a raw transcript, and no student
+    identity or message index may be invented.

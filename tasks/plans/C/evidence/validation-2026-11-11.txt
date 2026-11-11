@@ -1,0 +1,12 @@
+Branch feat/C-safety, base 7dc46516935755d5a09ba3507ccd55dbadda066b
+python -m pytest -q -p no:cacheprovider --tb=short --basetemp <fresh workspace temp> -o testpaths=test/offline test/offline
+........................................................................ [ 94%]
+....                                                                     [100%]
+76 passed in 1.55s
+exit=0
+python scripts/check_course.py --root .
+course scaffold check: OK
+exit=0
+ruff check .
+All checks passed!
+exit=0
