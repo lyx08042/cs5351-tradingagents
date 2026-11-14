@@ -27,7 +27,7 @@ STATUS_INCONCLUSIVE = "inconclusive"
 
 
 class ReplayResult:
-    """Outcome of replaying one record (FR-005, NFR-003).
+    """Outcome of replaying one record (FR-005, NFR-003, INV-005 / ADR-003).
 
     ``reason`` names the cause (``ok``, ``gate_missing``, ``version_unknown``,
     ``missing_key``, ``rules_version_mismatch``, ``input_tampered``,
@@ -51,6 +51,7 @@ class ReplayResult:
         self.count = count
 
     def to_dict(self) -> dict:
+        """Return a plain dict for this single-record replay result (INV-005 / ADR-003)."""
         return {
             "record_id": self.record_id, "gate_id": self.gate_id,
             "rules_version": self.rules_version, "status": self.status,
@@ -62,7 +63,7 @@ class ReplayResult:
 
 
 class ReplayRunResult:
-    """Aggregate outcome of :func:`replay_run` (FR-005, NFR-003).
+    """Aggregate outcome of :func:`replay_run` (FR-005, NFR-003, INV-005 / ADR-003).
 
     ``gate_total`` counts only gate records; ``inconclusive`` is True when
     ``gate_total == 0``. ``status`` is ``pass`` only when there was at least one
@@ -94,6 +95,7 @@ class ReplayRunResult:
         return self
 
     def to_dict(self) -> dict:
+        """Return a plain dict for this run-level replay result (INV-005 / ADR-003)."""
         return {
             "run_id": self.run_id, "status": self.status, "gate_total": self.gate_total,
             "passed": self.passed, "reviewed": self.reviewed, "inconclusive": self.inconclusive,
@@ -116,7 +118,7 @@ def _review(record_id: str, reason: str, *, gate_id: str | None = None, rules_ve
 
 
 def replay_record(record: AuditRecord, registry: GateRegistry) -> ReplayResult:
-    """Replay a single record against ``registry`` (FR-005, NFR-003).
+    """Replay a single record against ``registry`` (FR-005, NFR-003, INV-005 / ADR-003).
 
     Verifies this record's own ``record_hash`` and ``payload_ref``, not whole-chain
     integrity (use :func:`replay_run`). The callback receives a deep copy of
@@ -256,7 +258,7 @@ def replay_run(
     registry: GateRegistry,
     trusted_head: dict | None = None,
 ) -> ReplayRunResult:
-    """Replay all gate records of ``run_id`` from one verified snapshot (FR-005, NFR-003).
+    """Replay all gate records of ``run_id`` from one verified snapshot (FR-005, NFR-003, INV-005 / ADR-003).
 
     Order: verify the whole chain, then (if given) compare the trusted head, then
     replay each gate record from the *same* verified snapshot. A broken chain or
