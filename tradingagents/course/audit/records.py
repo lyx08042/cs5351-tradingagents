@@ -181,7 +181,7 @@ class AuditRecord:
 
     @property
     def payload(self) -> Any:
-        """Fresh decoded payload value; mutating it cannot affect the record."""
+        """Fresh decoded payload value; mutating it cannot affect the record (INV-005 / ADR-003)."""
         return json.loads(self._payload_json)
 
     def to_dict(self) -> dict:
@@ -202,7 +202,7 @@ class AuditRecord:
         }
 
     def hash_fields(self) -> dict:
-        """Return exactly the fields that :func:`compute_record_hash` hashes."""
+        """Return exactly the fields that :func:`compute_record_hash` hashes (INV-005 / ADR-003)."""
         return {
             "record_id": self.record_id,
             "run_id": self.run_id,
