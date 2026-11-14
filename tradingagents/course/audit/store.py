@@ -93,6 +93,7 @@ class VerificationResult:
         self.position = position
 
     def to_dict(self) -> dict:
+        """Return a plain dict view of the verification result (INV-005 / ADR-003)."""
         return {"ok": self.ok, "reason": self.reason, "detail": self.detail, "position": self.position}
 
     def __repr__(self) -> str:  # pragma: no cover - debug aid
@@ -141,11 +142,11 @@ class AuditStore:
 
     @classmethod
     def open(cls, path: str, *, timeout: float = 30.0) -> AuditStore:
-        """Open (or create) an audit store; idempotent for reopen (FR-005)."""
+        """Open (or create) an audit store; idempotent for reopen (FR-005 / INV-005 / ADR-003)."""
         return cls(path, timeout=timeout)
 
     def close(self) -> None:
-        """Close the underlying connection (FR-005)."""
+        """Close the underlying connection (FR-005 / INV-005 / ADR-003)."""
         self._conn.close()
 
     def __enter__(self) -> AuditStore:
@@ -444,14 +445,14 @@ class AuditStore:
 
     # -- read API -----------------------------------------------------------
     def get(self, record_id: str) -> AuditRecord | None:
-        """Return the record with ``record_id`` or None (FR-005)."""
+        """Return the record with ``record_id`` or None (FR-005 / INV-005 / ADR-003)."""
         row = self._conn.execute(
             f"SELECT {', '.join(_COLUMNS)} FROM audit_records WHERE record_id = ?", (record_id,)
         ).fetchone()
         return _row_to_record(row) if row is not None else None
 
     def iter_run(self, run_id: str) -> list[AuditRecord]:
-        """Return records for ``run_id`` in global sequence order (FR-005, NFR-004)."""
+        """Return records for ``run_id`` in global sequence order (FR-005, NFR-004, INV-005 / ADR-003)."""
         rows = self._conn.execute(
             f"SELECT {', '.join(_COLUMNS)} FROM audit_records WHERE run_id = ? ORDER BY sequence", (run_id,)
         ).fetchall()
@@ -509,7 +510,7 @@ class AuditStore:
         raise AuditError("invariant_violation", "terminal decision not found")  # pragma: no cover
 
     def head(self) -> dict:
-        """Return ``{record_id, record_hash, count}`` from one snapshot (FR-005).
+        """Return ``{record_id, record_hash, count}`` from one snapshot (FR-005 / INV-005 / ADR-003).
 
         The last row and the count come from the same read, so concurrent appends
         cannot make them inconsistent.
