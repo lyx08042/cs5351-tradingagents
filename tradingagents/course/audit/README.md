@@ -47,6 +47,7 @@ with AuditStore.open("audit.sqlite") as store:
 - `store.append(*, record_id, run_id, timestamp, entry_type, payload, rules_version, supersedes=None) -> AuditRecord`：单事务 `BEGIN IMMEDIATE`；先校验既有链；`payload_ref`、前驱、哈希由 store 生成（调用方不能传）。失败整事务回滚。
 - `store.get(record_id) -> AuditRecord | None`
 - `store.iter_run(run_id) -> list[AuditRecord]`：按全局 sequence 顺序。
+- `store.verified_records(run_id=None) -> list[AuditRecord]`：先全链校验，返回同一次已验证快照中的记录（`project`/`final_decision`/`replay_run` 均基于它，避免校验与读取快照分裂）。
 - `store.project(run_id) -> dict`：先校验链；含每条的 `superseded_by`（由后继 revision 导出）与 `final_decision_id`。
 - `store.final_decision(run_id) -> AuditRecord`：先校验链；返回唯一叶子。
 - `store.head() -> {"record_id", "record_hash", "count"}`
