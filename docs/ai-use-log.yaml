@@ -87,6 +87,76 @@ entries:
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
       tasks/plans/<A-E>/ (not docs/approvals/).
+  - id: AI-USE-E-20261114
+    date: "2026-11-14"
+    model: "cityu/CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode 1.18.29"
+    session_id: "ses_e26a98708ffehPgZu8n5f9GKTo"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently executed validation commands"
+    member: "not authored or claimed by a student (student identity unknown)"
+    scope: "FR-005 / INV-005 / NFR-003/004/005 E leaf module (tradingagents/course/audit) + offline tests + docs"
+    source_commit_local: "fe5805ffc4c16bd8e69379a70a8b93ca94746ec4"
+    source_commit_note: >
+      The local tested source commit fe5805f was NOT published via git push (no
+      credentials at the time; files were committed one-by-one via the web UI, so
+      hashes differ). It is not a GitHub-resolvable review commit. The GitHub
+      same-content code snapshot is 94ba2e51d3117aad3b24027c378b74faa28c5815;
+      Codex verified via the GitHub tree API that the 12 published source/test/
+      approved-plan files have identical blob SHAs to local. The original approval
+      record's real local plan commit is left unchanged.
+    github_tree_snapshot: "94ba2e51d3117aad3b24027c378b74faa28c5815"
+    base_commit: "7dc46516935755d5a09ba3507ccd55dbadda066b"
+    approval_provenance: >
+      Real pre-implementation approval by the repo owner (this chat user), reply
+      "批准这三份方案，开始实现 E". Reviewed commit bebfe912185bb1c5f735d6dae7acc79acaff4fb9;
+      approval record commit 85d4fc7 in tasks/plans/E/FR-005-pre-code-approval.md.
+      Not a teacher approval, not a course waiver, not another student.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    existing_tests_changed: false
+    tests_added: true
+    upstream_code_changed: false
+    upstream_tests_changed: false
+    business_dependencies_changed: false
+    other_leaf_modules_modified: false
+    approvals_created: true
+    approval_record_kind: "owner_reply_recorded_in_tasks"
+    human_only_approval_paths_modified: false
+    independent_human_review: "pending D (not yet reviewed)"
+    summary: >
+      Implemented the E leaf module FR-005 verifiable audit at
+      tradingagents/course/audit/ (append-only SQLite global hash chain, decision
+      revisions, offline versioned gate replay, trusted-head check), plus 60
+      offline tests and a standard-library standalone demo. Real validation by
+      Codex: 80 offline passed, upstream 1412 passed/1 skipped/1 deselected/100
+      subtests, ruff passed, standalone demo exit 0. Local tested source commit
+      fe5805f was not pushed; published GitHub same-content snapshot 94ba2e5
+      matches local blob SHAs. No runtime LLM/trading calls; no upstream
+      code/tests/dependencies changed; other leaf modules untouched.
+    defects_fixed:
+      summary: >
+        Real defects observed during validation and fixed: (a) AuditRecord
+        returned object was mutable -> frozen dataclass(slots=True); (b) malformed
+        JSON payload leaked JSONDecodeError in replay -> review, no escape; (c)
+        malformed gate record missing gate_id was excluded from the agreement
+        denominator -> treated as gate intent -> review; (d) reading a row
+        recomputed payload_ref and masked tampering -> persisted fields preserved.
+        Plus reason-code ordering (payload_ref before record_hash) and
+        malformed_payload/sequence now surface as chain_broken on authoritative
+        reads. Details in docs/bug-diary.md.
+    results:
+      offline: "80 passed (E 60 + scaffold 20)"
+      upstream: "1412 passed, 1 skipped, 1 deselected, 100 subtests passed"
+      ruff: "passed"
+      cde_compatibility: "156 passed (temporary combined source+offline tests; only means each set still passes when combined, not a JSON-shape proof nor real interface integration)"
+      standalone_demo: "python -S -m audit --demo exit 0, all_expected=true"
+    evidence_dir: "tasks/plans/E/evidence/"
+    caveats: >
+      Not course-compliant overall; the six course gates are not thereby satisfied
+      and D non-author review is pending. Not signature/WORM; full-chain verify is
+      O(n) per call (total O(n^2) growth). Runtime app made no live LLM/trading calls.
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."
