@@ -1,0 +1,68 @@
+.....................................F.F................................ [ 98%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_n21b_malformed_json_payload_no_escape __________________
+
+tmp_path = PosixPath('/private/var/folders/qk/xkkhfnr5311bxkz5kn5880200000gn/T/pytest-of-lyx/pytest-10/test_n21b_malformed_json_paylo0')
+
+    @pytest.mark.unit
+    def test_n21b_malformed_json_payload_no_escape(tmp_path):
+        """INV-005/FR-005: a non-JSON payload does not escape as JSONDecodeError.
+    
+        verify_chain returns a false VerificationResult, replay_run reviews with no
+        callbacks, authoritative reads raise chain_broken, and append refuses.
+        """
+        with _open(tmp_path) as store:
+            _append(store, "d-001", payload={"v": 1})
+            store._conn.execute("DROP TRIGGER audit_no_update")
+            store._conn.execute(
+                "UPDATE audit_records SET payload = 'broken-json' WHERE record_id = 'd-001'"
+            )
+            result = store.verify_chain()
+            assert not result.ok
+            assert result.reason == "malformed_payload"
+    
+            calls = {"n": 0}
+    
+            def never(_inputs):
+                calls["n"] += 1
+                return {}
+    
+            run = replay_run(store, "r-1", {"market": {RULES: never}})
+            assert run.status == "review"
+            assert run.results == []
+            assert calls["n"] == 0
+    
+            with pytest.raises(AuditError) as exc:
+                store.final_decision("r-1")
+>           assert exc.value.code == "chain_broken"
+E           AssertionError: assert 'malformed_payload' == 'chain_broken'
+E             
+E             - chain_broken
+E             + malformed_payload
+
+test/offline/test_audit.py:722: AssertionError
+_____________________ test_n22_missing_middle_row_detected _____________________
+
+tmp_path = PosixPath('/private/var/folders/qk/xkkhfnr5311bxkz5kn5880200000gn/T/pytest-of-lyx/pytest-10/test_n22_missing_middle_row_de0')
+
+    @pytest.mark.unit
+    def test_n22_missing_middle_row_detected(tmp_path):
+        """INV-005: a controlled mid-chain deletion is detected by verify_chain (threat fixture)."""
+        with _open(tmp_path) as store:
+            _append(store, "a", payload={"v": 1})
+            _append(store, "b", entry_type="abstain", payload={"v": 2})
+            _append(store, "c", entry_type="abstain", payload={"v": 3})
+            store._conn.execute("DROP TRIGGER audit_no_delete")
+            store._conn.execute("DELETE FROM audit_records WHERE record_id = 'b'")
+            result = store.verify_chain()
+            assert not result.ok
+>           assert result.reason in ("chain_broken", "missing_record")
+E           AssertionError: assert 'sequence_broken' in ('chain_broken', 'missing_record')
+E            +  where 'sequence_broken' = VerificationResult(ok=False, reason='sequence_broken', position=3).reason
+
+test/offline/test_audit.py:757: AssertionError
+=========================== short test summary info ============================
+FAILED test/offline/test_audit.py::test_n21b_malformed_json_payload_no_escape
+FAILED test/offline/test_audit.py::test_n22_missing_middle_row_detected - Ass...
+2 failed, 71 passed in 0.57s

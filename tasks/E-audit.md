@@ -89,3 +89,12 @@ docs/architecture/invariants.md、evaluation-table.md 与 trace-matrix.md。
 ## 10. 交接（Handoff）
 
 使用模板 `templates/handoff.md`（七类信息），交给评审人 **D**（E 的产出由 D 评审）。
+
+## 11. 2026-11-14 状态
+
+- E 独立模块（FR-005 / INV-005 / NFR-003/004/005）已在 `tradingagents/course/audit/` 实现；本地受测源码提交 `fe5805ffc4c16bd8e69379a70a8b93ca94746ec4`（未 push），GitHub 同内容代码快照 `94ba2e51d3117aad3b24027c378b74faa28c5815`（tree API 核验 12 份文件 blob SHA 与本地相同）。
+- 实现前批准：受审 commit `bebfe912185bb1c5f735d6dae7acc79acaff4fb9`，记录 commit `85d4fc7`，见 `tasks/plans/E/FR-005-pre-code-approval.md`（本聊天用户真实决定，非教师批准）。
+- 实际验证：离线 80 passed（E 60 + 脚手架 20）、上游 1412 passed/1 skipped/1 deselected/100 subtests、ruff passed、独立 demo exit 0；证据在 `tasks/plans/E/evidence/`。
+- 文档链接：交接 `tasks/plans/E/FR-005-handoff.md`、验证 `tasks/plans/E/FR-005-validation.md`、报告素材 `FR-005-report-notes.md`、评审须知 `FR-005-review-notes.md`、ADR `docs/architecture/adr/003-append-only-audit.md`。
+- 未完成：M3 主流程真实接入（协调 PR）、M4 D 非作者评审（待 D）。PR 尚未创建，最终以 GitHub 为准。
+- 本节仅追加状态，不改变上方原任务要求与历史政策。

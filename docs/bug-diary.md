@@ -62,3 +62,82 @@
 
 - 不得虚构复现步骤或日志。
 - `evidence` 只引用脱敏后的仓库内文件。
+
+## E 模块真实缺陷（2026-11-14，FR-005）
+
+> 以下均为 Codex 独立实际验证中发现、已修复的真实缺陷；每条附症状、复现、根因、修复与对应测试。
+
+```yaml
+- id: BUG-E-001
+  title: 返回的 AuditRecord 属性可被赋值修改（并非不可变）
+  observed_at: "2026-11-14"
+  environment: "fe5805f 前的 E 早期实现；Codex 实际验证"
+  steps: "取出 append 返回的记录后执行 rec.record_id = 'changed'"
+  expected: "不可变记录应拒绝属性赋值/删除"
+  actual: "普通属性赋值成功，记录被改"
+  evidence: "test/offline/test_audit.py::test_p04b_record_is_immutable"
+  status: fixed
+  owner: E
+  root_cause: "记录类未冻结，属性可写"
+  fix: "改为 frozen dataclass(slots=True)，payload 内部保留规范 JSON 文本并返回新结构"
+  invariant: "INV-005"
+
+- id: BUG-E-002
+  title: 数据库行 payload 被改成非法 JSON 时回放抛 JSONDecodeError 而非 review
+  observed_at: "2026-11-14"
+  environment: "fe5805f 前；Codex 实际验证"
+  steps: "drop update 触发器后将某行 payload 改为 'broken-json'，再 replay_run"
+  expected: "损坏数据回放应为 review，不逃逸异常"
+  actual: "抛出 JSONDecodeError"
+  evidence: "test/offline/test_audit.py::test_n19c_replay_malformed_json_record_review、test_n21b_malformed_json_payload_no_escape"
+  status: fixed
+  owner: E
+  root_cause: "回放/读取路径未统一捕获 JSON 解析错误"
+  fix: "replay_record 捕获预期 JSON/编码异常返回 review；verify_chain 识别 malformed_payload"
+  invariant: "INV-005, NFR-003"
+
+- id: BUG-E-003
+  title: 缺 gate_id 的畸形 gate 记录被当成叙述记录排除出一致率分母
+  observed_at: "2026-11-14"
+  environment: "fe5805f 前；Codex 实际验证"
+  steps: "已有合法 gate 记录后再 append payload={inputs:{},observed:{}}（漏 gate_id），replay_run 竟然 pass 且 gate_total=1"
+  expected: "含回放字段但缺 gate_id 的记录应 review，且进入分母"
+  actual: "被排除，整体误判 pass"
+  evidence: "test/offline/test_audit.py::test_n15c_mixed_valid_and_missing_gateid_run_reviews"
+  status: fixed
+  owner: E
+  root_cause: "gate 意图仅看 gate_id，未识别 inputs/observed"
+  fix: "含 gate_id/inputs/observed 任一即视为 gate；缺必需字段 review"
+  invariant: "FR-005, NFR-003"
+
+- id: BUG-E-004
+  title: 读取行时重算 payload_ref 掩盖了被篡改的引用
+  observed_at: "2026-11-14"
+  environment: "fe5805f 前；Codex 实际验证"
+  steps: "SQL 篡改 payload_ref 后 get() 再 replay_record，竟 pass"
+  expected: "读取应保留数据库原始 payload_ref，回放应判 payload_ref_mismatch"
+  actual: "物化记录时用 payload 重算 ref，掩盖篡改"
+  evidence: "test/offline/test_audit.py::test_n15d_payload_ref_mismatch_review"
+  status: fixed
+  owner: E
+  root_cause: "读取路径复用追加时的 make_record 重算字段"
+  fix: "读取直接用 dataclass 一一赋值保留持久化字段；追加才由 make_record 生成"
+  invariant: "INV-005"
+
+- id: BUG-E-005
+  title: 测试损坏 fixture 被唯一索引提前拦住（测试构造问题，非业务漏洞）
+  observed_at: "2026-11-14"
+  environment: "首轮离线测试"
+  steps: "test_n32 直接插入与既有 supersedes 冲突的损坏行"
+  expected: "构造出用于验证语义的损坏态"
+  actual: "UNIQUE constraint failed: audit_records.supersedes"
+  evidence: "tasks/plans/E/evidence/first-offline-failure.txt"
+  status: fixed
+  owner: E
+  root_cause: "测试构造未先移除唯一索引，属测试问题，非正常约束缺陷"
+  fix: "测试显式 drop 该唯一索引后注入自洽哈希行以验证语义；真实运行唯一索引不变"
+  invariant: "INV-005"
+```
+
+## 说明（E）
+
