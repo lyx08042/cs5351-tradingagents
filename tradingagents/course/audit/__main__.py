@@ -62,10 +62,11 @@ def _registry() -> dict:
 
 
 def run_demo() -> int:
-    """Execute the demo and return process exit code (0 == all expectations met)."""
+    """Execute the demo and return process exit code (0 == all expectations met; INV-005 / ADR-003)."""
     checks: list[dict] = []
 
     def expect(name: str, ok: bool, detail: object) -> None:
+        """Record one demo check result (INV-005 / ADR-003)."""
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
     with tempfile.TemporaryDirectory(prefix="audit-demo-") as tmp:
