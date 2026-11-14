@@ -59,7 +59,9 @@ with AuditStore.open("audit.sqlite") as store:
 
 `replay`
 
-- `replay_record(record, registry) -> ReplayResult`：只验本条哈希与回放一致；非 gate 记录返回 `inconclusive`、`count=0`（不计入一致率分母）。
+- `replay_record(record, registry) -> ReplayResult`：验本条 `record_hash` 与 `payload_ref`，并比较回放一致；非 gate 记录返回 `inconclusive`、`count=0`（不计入一致率分母）。
+  - gate 意图判定：payload 含 `gate_id`/`inputs`/`observed` 任一字段即视为 gate；缺 `gate_id` 或任一必需字段判 `review`，不会被当成叙述记录排除出分母。
+  - 若 payload 三个回放字段全缺（例如只有 action/outcome/note 的纯叙述），无法自动推断为 gate，按 `inconclusive` 处理——这是有意的限制，gate 记录必须带这些字段。
 - `replay_run(store, run_id, registry, trusted_head=None) -> ReplayRunResult`：先 `verify_chain`、可选 trusted_head，再逐条实际回放；0 条 gate 记 `inconclusive`，不报 100%。
 - `verify_against_trusted_head(store, trusted_head) -> VerificationResult`
 - registry 形状：`{gate_id: {rules_version: callable(inputs) -> observed}}`。回调收到 inputs 的深拷贝；篡改输入、异常、不可 JSON 结果、未知版本、缺键、`rules_version` 不一致、结果不一致都判 `review`。
