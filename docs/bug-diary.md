@@ -58,6 +58,35 @@
   note: "可能是有意决策，未证明为 bug；不得在报告中断言为缺陷。"
 ```
 
+## 角色 B 实现过程中真实发现的缺陷
+
+```yaml
+- id: BUG-004
+  title: Budget policy degraded a run whose budget was above the baseline
+  observed_at: "2026-11-15"
+  environment: "commit e086478; deterministic replay of docs/baseline.md; cap 240,000 tokens"
+  steps: >
+    python -c "from tradingagents.course.budget.replay import compare; print(compare([240000]))"
+  expected: >
+    A cap above the recorded baseline (228,275 tokens) leaves the run untouched: level L0, 19 calls,
+    228,275 tokens.
+  actual: >
+    The policy raised L1 and cut the run to 177,519 tokens, because the global rule compared the
+    remaining budget with fixed fractions of the total (15% / 10%) and the stage rule compared stage
+    headroom without looking at the calls still ahead. Every healthy run dips below those fractions near
+    its end, so the controller degraded runs that comfortably fit.
+  evidence: >
+    Replay output before the fix; the regression is now pinned by
+    test/offline/test_budget_replay.py::test_a_generous_budget_changes_nothing.
+  fix: >
+    Level evaluation became projection-aware (remaining_calls, projected_remaining_tokens); the fixed
+    fractions remain only as the fallback for callers without a forecast. Fixed in aade521.
+  status: fixed
+  owner: B
+  note: "Found by replaying a real baseline trace, not by unit tests: each policy test exercised one stage in isolation."
+```
+
+
 ## 说明
 
 - 不得虚构复现步骤或日志。
