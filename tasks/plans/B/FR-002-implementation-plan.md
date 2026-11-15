@@ -237,7 +237,11 @@ the only mutator and it always emits.
 The four blocks are plain text with stable sentinel prefixes (`[SAFETY]`, `[IDENTITY]`, `[LEVEL]`,
 `[BUDGET]`) so the assertion is a substring check, not an LLM judgement.
 
-## 7. Integration point (M4, coordination PR — described here, not implemented now)
+## 7. Integration point (M4 — implemented on this branch)
+
+Status: `tradingagents/course/budget/integration.py` plus a five-line, opt-in change to
+`tradingagents/graph/trading_graph.py`. With no ledger passed, the graph behaves exactly as the upstream baseline;
+with a ledger, both tiers are wrapped and every call is metered.
 
 `tradingagents/graph/trading_graph.py` builds exactly two chat models:
 
@@ -258,6 +262,13 @@ Plan: a `BudgetedChatModel` proxy that wraps a model and:
   empty answer.
 
 This keeps the change to **one construction site** instead of editing every agent.
+
+Remaining gap (tracked, not hidden): `BudgetExhausted` currently propagates to the caller. Mapping it to an L5
+"degraded verdict" written by the portfolio manager needs the thin orchestrator, which is shared ownership and
+therefore a coordination PR; until then a run that exhausts its budget fails loudly rather than silently.
+
+The proxy also forwards `with_structured_output`, because the research manager, trader and portfolio manager use
+structured output and would otherwise bypass accounting.
 
 ## 8. Files and sizes (estimate)
 
