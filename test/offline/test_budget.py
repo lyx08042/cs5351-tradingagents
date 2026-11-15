@@ -474,3 +474,22 @@ def test_nt13_assembly_rejects_an_invalid_target() -> None:
             compact_threshold=100,
             compact_target=200,
         )
+
+
+# ----------------------------------------------------------------- structure
+
+
+def test_budget_module_does_not_import_sibling_leaf_modules() -> None:
+    """NFR-005: the budget leaf module must not depend on A, C, D or E."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2] / "tradingagents" / "course" / "budget"
+    sources = sorted(root.glob("*.py"))
+    assert sources, "budget package not found"
+
+    forbidden = ("evidence", "safety", "data_quality", "audit")
+    for path in sources:
+        text = path.read_text(encoding="utf-8")
+        for name in forbidden:
+            assert f"course.{name}" not in text, f"{path.name} imports course.{name}"
+            assert f"from ..{name}" not in text, f"{path.name} imports ..{name}"

@@ -1,0 +1,6 @@
+﻿# pytest: budget suite
+# command: python -m pytest test/offline/test_budget.py test/offline/test_budget_integration.py test/offline/test_budget_replay.py -q
+# date: 2026-11-15
+
+.................................................                        [100%]
+49 passed in 0.14s
