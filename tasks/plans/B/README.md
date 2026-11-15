@@ -1,45 +1,44 @@
-# 角色 B：运行预算（FR-002）— 计划工作区
+# Role B — Run Budget (FR-002): Planning Workspace
 
-> 状态：**DRAFT / 占位**。本文件只声明 B 的负责范围与文件落位，**不含**任何已完成的实现、测试结果或批准。
-> 本目录（`tasks/plans/B/`）是 B 的实现计划与测试设计的位置。按 `DEVELOPMENT-POLICY.md` 第 3 节，计划与测试设计是**工作文档**，不是批准门；不要往 `docs/approvals/` 写新计划。
+> Status: **DRAFT / placeholder**. This file states the scope and file locations for role B only. It claims no completed implementation, test result, or approval.
+> This directory (`tasks/plans/B/`) is where B's implementation plan and test design live. Under `DEVELOPMENT-POLICY.md` §3 these are working documents, not approval gates. Do not add new plans to `docs/approvals/`.
 
-## 1. 负责范围
+## 1. Scope
 
-| 项 | 内容 |
+| Item | Content |
 |---|---|
-| 主需求 | `FR-002` 运行预算：调用前预留、调用后结算、超预算 fail-closed |
-| 不变量 | `INV-002` 先预留后结算，超预算拒绝 |
-| 非功能 | `NFR-001` 成本下降 20%（临时目标）、`NFR-002` 质量不劣化 ≤3pp（临时目标） |
-| 代码路径（PROPOSED） | `tradingagents/course/budget/` |
-| 离线测试 | `test/offline/` |
-| 评审关系 | A 评审 B；B 评审 C；交接方向 B → A |
+| Primary requirement | `FR-002` run budget: reserve before a call, settle after it, fail closed when the budget is exceeded |
+| Invariant | `INV-002` reserve-then-settle ordering; deny calls beyond the budget |
+| Non-functional | `NFR-001` cost down 20% (provisional target), `NFR-002` quality regression at most 3pp (provisional target) |
+| Proposed code path | `tradingagents/course/budget/` |
+| Offline tests | `test/offline/` |
+| Review chain | A reviews B; B reviews C; handoff direction B → A |
 
-## 2. 本目录后续会包含
+## 2. Files this directory will hold
 
-- `FR-002-implementation-plan.md` —— 契约、状态机、集成点、里程碑
-- `FR-002-test-plan.md` —— 正向/负向用例、不变量覆盖、验证命令
+- `FR-002-scope.md` — scope definition: budget model, degradation ladder, acceptance criteria (present)
+- `FR-002-implementation-plan.md` — contracts, state machine, integration points, milestones
+- `FR-002-test-plan.md` — positive and negative cases, invariant coverage, verification commands
 
-在写这两份文件之前，先确认第 3 节的开放问题。
+## 3. Open questions to settle before planning
 
-## 3. 待确认的开放问题
+1. **Boundary of FR-002**: a global pool with a hard rejection (current wording), or allocation across agents plus graceful degradation (the three capabilities listed for role B in the team plan)? This decides whether the ledger contract carries `agent` / `stage` fields.
+2. **Budget unit**: tokens, call counts, or derived cost — which are the primary measures?
+3. **Concurrency semantics**: with four analysts calling in parallel, how does the shared pool avoid overselling (lock, compare-and-set, reserve-then-refund)?
+4. **Runtime semantics at exhaustion**: abort the run, emit a partial result, or continue with a `degraded` flag?
 
-1. **FR-002 的语义边界**：只做“全局池 + 超限拒绝”（现行 `requirements.yaml` 的写法），还是扩展到“跨 Agent 分配 + 不足时降级”（分工图里 B 的三个能力）？这决定账本契约是否要带 `agent` / `stage` 字段。
-2. **预算单位**：token、调用次数、成本，三者取哪些作为主计量？
-3. **并发语义**：四个分析师并行调用时，同一预算池如何保证不超卖（锁 / CAS / 预扣+回补）？
-4. **耗尽后的运行时语义**：中止整次运行、输出部分结论，还是标记 `degraded` 继续？
+## 4. Out of bounds
 
-## 4. 边界（明确不做）
+- Do not modify the upstream baseline: `tradingagents/` (except the new `course/`), `cli/`, `tests/`, `pyproject.toml`.
+- Do not write plans into `docs/approvals/` (human-only directory; agents must not edit it).
+- Do not claim approved, implemented, or evaluated status; `PROPOSED` never becomes `APPROVED` through a documentation edit alone.
+- No circular imports between leaf modules; the shared thin orchestrator changes only through a coordination PR.
+- Never read or commit API keys; offline by default, and live evaluation requires explicit human authorisation of provider, model, and cost cap.
 
-- 不改上游基线：`tradingagents/`（除新增 `course/`）、`cli/`、`tests/`、`pyproject.toml`。
-- 不把计划写进 `docs/approvals/`（该目录人类专属，代理不得编辑）。
-- 不声称已批准、已实现、已评估；`PROPOSED` 不因任何文档改动变成 `APPROVED`。
-- 不与其他叶子模块循环导入；共享编排器只能走协调 PR。
-- 不读取或提交任何 API key；默认离线，live 评估需人工显式授权 provider / model / 成本上限。
+## 5. References
 
-## 5. 参考
-
-- `tasks/B-budget.md` —— 任务书（交付物、契约、验收表）
-- `docs/req/requirements.yaml` —— FR-002 / INV-002 / NFR-001 / NFR-002
-- `docs/architecture/invariants.md`、`docs/architecture/trace-matrix.md`
-- `DEVELOPMENT-POLICY.md` —— 当前生效的工作流
-- `tasks/plans/D/` —— D 的实现计划与测试计划，可作格式参考
+- `tasks/B-budget.md` — task book (deliverables, contract, acceptance table)
+- `docs/req/requirements.yaml` — FR-002 / INV-002 / NFR-001 / NFR-002
+- `docs/architecture/invariants.md`, `docs/architecture/trace-matrix.md`
+- `DEVELOPMENT-POLICY.md` — the active workflow
+- `tasks/plans/D/` — D's implementation and test plans, a useful format reference
