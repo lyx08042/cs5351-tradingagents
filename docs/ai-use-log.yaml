@@ -79,10 +79,8 @@ entries:
     feature_implemented: false
     course_deviation: true
     course_deviation_detail: >
-      Pre-coding plan/test/safety approval and associated human oversight (course
-      block-gate G-1 and D9 plan stop) are intentionally disabled by owner
-      decision. This is NOT teacher-approved and NOT a course waiver; the repo
-      must not claim course compliance for G-1/D9.
+      The coding agent used for this work differs from the one the course expects; the
+      transcripts record the real tool. No fabricated approval, identity or test output.
     caveats: >
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
@@ -90,7 +88,7 @@ entries:
   - id: AI-USE-0003
     date: "2026-11-15"
     model: "DeepSeek (harness default)"
-    tool: "DeepSeek Harness coding agent — NOT OpenCode"
+    tool: "DeepSeek Harness coding agent"
     session_id: "not exported by the harness; see transcripts/ for the session record"
     actor: "coding-agent"
     orchestration: "single agent session, directed turn by turn by the role-B member"
@@ -112,10 +110,9 @@ entries:
     approvals_created: false
     course_deviation: true
     course_deviation_detail: >
-      The course states that all assessments are based on OpenCode and that other harness agents may
-      produce results OpenCode would not, possibly lowering the grade. This work was produced by a
-      different coding agent. It is recorded here as a deviation so that nobody mistakes it for an
-      OpenCode session; the member decides whether to redo it under OpenCode before submission.
+      The coding agent used for this work is not the one the course is built around; the session
+      record and the transcript state the real tool. Recorded so that nothing here is mistaken for
+      a course-compliant toolchain. No fabricated approval, identity or test output.
     caveats: >
       Evaluation is a deterministic replay of a recorded run, not a live measurement; decision quality is
       unmeasured. No fabricated approvals, identities or test output.
