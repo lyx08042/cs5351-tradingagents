@@ -1,4 +1,4 @@
-﻿"""Offline tests for the FR-002 budget ledger.
+"""Offline tests for the FR-002 budget ledger.
 
 No network, no model call, no API key: the clock, the id factory and the
 estimate table are injected, so every assertion is deterministic.
@@ -12,6 +12,18 @@ import threading
 
 import pytest
 
+from tradingagents.course.budget.context import (
+    REQUIRED_MARKERS,
+    SAFETY_BLOCK,
+    SECTIONS,
+    assemble_context,
+    assert_manifest,
+    budget_for_section,
+    compact,
+    count_tokens,
+    reinject,
+    should_compact,
+)
 from tradingagents.course.budget.contracts import (
     STAGES,
     BudgetDenied,
@@ -20,6 +32,7 @@ from tradingagents.course.budget.contracts import (
     LevelRegression,
 )
 from tradingagents.course.budget.ledger import BudgetLedger
+from tradingagents.course.budget.policy import DegradationPolicy
 
 ESTIMATE = 1_000
 
@@ -299,3 +312,165 @@ def test_nt10_events_are_json_serialisable() -> None:
 
     for event in ledger.events():
         json.dumps(event.to_dict())
+
+
+# ----------------------------------------------------------------- degradation
+
+
+def test_pt8_l1_when_the_stage_is_close_to_exhausted() -> None:
+    """FR-006: a stage with less than 1.5 calls left triggers L1."""
+    ledger = make_ledger(limit_tokens=100_000, quota={"analyst": 0.10, "debate": 0.90})
+    for index in range(9):
+        ledger.reserve("market_analyst", "analyst", "quick", f"c{index}")
+
+    policy = DegradationPolicy(ledger.config)
+    assert policy.evaluate(ledger, "analyst") == 1
+
+
+def test_pt9_l2_when_the_stage_cannot_fund_one_call() -> None:
+    """FR-006: a stage with less than one call left triggers L2."""
+    ledger = make_ledger(limit_tokens=10_500, quota={"analyst": 0.10, "debate": 0.90})
+    ledger.reserve("market_analyst", "analyst", "quick", "c1")
+
+    policy = DegradationPolicy(ledger.config)
+    assert policy.evaluate(ledger, "analyst") == 2
+
+
+def test_pt10_l3_when_the_global_pool_crosses_the_threshold() -> None:
+    """FR-006: the global pool below 15% forces the cheap model tier (L3)."""
+    ledger = make_ledger(limit_tokens=100_000, quota={"analyst": 1.0})
+    for index in range(86):
+        ledger.reserve("market_analyst", "analyst", "quick", f"c{index}")
+
+    policy = DegradationPolicy(ledger.config)
+    assert policy.evaluate(ledger, "analyst") == 3
+
+
+def test_pt11_l4_when_the_global_pool_crosses_the_lower_threshold() -> None:
+    """FR-006: the global pool below 10% drops optional agents (L4)."""
+    ledger = make_ledger(limit_tokens=100_000, quota={"analyst": 1.0})
+    for index in range(91):
+        ledger.reserve("market_analyst", "analyst", "quick", f"c{index}")
+
+    policy = DegradationPolicy(ledger.config)
+    assert policy.evaluate(ledger, "analyst") == 4
+
+
+def test_pt12_l5_when_the_global_pool_cannot_fund_one_call() -> None:
+    """FR-006: less than one call of headroom means a degraded verdict (L5)."""
+    ledger = make_ledger(limit_tokens=10_000, quota={"analyst": 1.0})
+    for index in range(10):
+        ledger.reserve("market_analyst", "analyst", "quick", f"c{index}")
+
+    policy = DegradationPolicy(ledger.config)
+    assert policy.evaluate(ledger, "analyst") == 5
+
+
+def test_pt13_policy_returns_none_when_the_level_already_applies() -> None:
+    """INV-006: the policy never proposes a level at or below the current one."""
+    ledger = make_ledger(limit_tokens=100_000, quota={"analyst": 1.0})
+    for index in range(86):
+        ledger.reserve("market_analyst", "analyst", "quick", f"c{index}")
+    policy = DegradationPolicy(ledger.config)
+    ledger.apply_level(3)
+
+    assert policy.evaluate(ledger, "analyst") is None
+
+
+def test_pt14_level_effects_are_derived_from_the_level() -> None:
+    """FR-006: each level maps to one concrete behaviour, not to a model judgement."""
+    ledger = make_ledger()
+    policy = DegradationPolicy(ledger.config)
+
+    assert policy.debate_rounds(1, 3) == 3
+    assert policy.debate_rounds(2, 3) == 2
+    assert policy.debate_rounds(5, 1) == 1
+    assert policy.forced_tier(2, "deep") == "deep"
+    assert policy.forced_tier(3, "deep") == "quick"
+    assert policy.skipped_agents(3) == ()
+    assert policy.skipped_agents(4) == ("sentiment", "news")
+    assert policy.pm_verdict(4) == "any"
+    assert policy.pm_verdict(5) == "hold_only"
+
+
+# -------------------------------------------------------------------- context
+
+
+def test_pt15_section_budgets_stay_within_the_available_total() -> None:
+    """FR-002 / D2.2: the section budget never exceeds the call's allowance."""
+    available = 10_000
+    total = sum(budget_for_section(section, available) for section in SECTIONS)
+
+    assert total <= available
+    assert all(budget_for_section(section, available) > 0 for section in SECTIONS)
+
+
+def test_pt16_compaction_triggers_above_the_threshold() -> None:
+    """AC-5: compaction is decided by the threshold, not by a model."""
+    assert should_compact(12_001, 12_000) is True
+    assert should_compact(12_000, 12_000) is False
+
+
+def test_pt17_compaction_keeps_the_newest_messages() -> None:
+    """AC-5: compaction bounds the context and preserves the current turn."""
+    messages = [f"message {index} " + "word " * 20 for index in range(40)]
+    result = compact(messages, 60)
+
+    assert sum(count_tokens(message) for message in result) <= 60
+    assert result[-1] == messages[-1]
+    assert result[0].startswith("[COMPACTED]")
+
+
+def test_nt11_compaction_requires_a_positive_target() -> None:
+    """AC-5: an invalid compaction target fails closed."""
+    with pytest.raises(ContractError):
+        compact(["a b c"], 0)
+
+
+def test_pt18_reinjection_carries_all_four_blocks() -> None:
+    """AC-5: the four constraint blocks are present after re-injection."""
+    result = reinject(["hello"], identity="NVDA 2026-09-01", level=3, remaining_fraction=0.12)
+    joined = "\n".join(result)
+
+    for marker in REQUIRED_MARKERS:
+        assert marker in joined
+    assert "NVDA 2026-09-01" in joined
+
+
+def test_nt12_missing_constraint_block_fails_closed() -> None:
+    """AC-5: an assembly missing a constraint block is rejected."""
+    with pytest.raises(ContractError):
+        assert_manifest([SAFETY_BLOCK, "[IDENTITY] NVDA"])
+
+
+def test_pt19_full_assembly_compacts_and_keeps_constraints() -> None:
+    """AC-5: the pipeline compacts a long context and still carries the blocks."""
+    messages = [f"turn {index} " + "word " * 30 for index in range(60)]
+    before = sum(count_tokens(message) for message in messages)
+
+    assembled = assemble_context(
+        messages,
+        identity="NVDA 2026-09-01",
+        level=2,
+        remaining_fraction=0.08,
+        compact_threshold=200,
+        compact_target=80,
+    )
+
+    after = sum(count_tokens(message) for message in assembled)
+    assert after < before
+    for marker in REQUIRED_MARKERS:
+        assert any(marker in message for message in assembled)
+
+
+def test_nt13_assembly_rejects_an_invalid_target() -> None:
+    """AC-5: a compaction target above the threshold is a configuration error."""
+    with pytest.raises(ContractError):
+        assemble_context(
+            ["hello"],
+            identity="NVDA",
+            level=0,
+            remaining_fraction=0.9,
+            compact_threshold=100,
+            compact_target=200,
+        )

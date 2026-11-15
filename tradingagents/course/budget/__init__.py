@@ -4,6 +4,14 @@ Public surface: the ledger, its configuration, the records it returns and the
 exceptions it raises. Nothing here performs I/O or calls a model.
 """
 
+from .context import (
+    assemble_context,
+    assert_manifest,
+    budget_for_section,
+    compact,
+    reinject,
+    should_compact,
+)
 from .contracts import (
     DEFAULT_STAGE_QUOTA,
     EVENT_TYPES,
@@ -21,6 +29,7 @@ from .contracts import (
     validate_config,
 )
 from .ledger import BudgetLedger
+from .policy import DegradationPolicy
 
 __all__ = [
     "DEFAULT_STAGE_QUOTA",
@@ -33,9 +42,16 @@ __all__ = [
     "BudgetEvent",
     "BudgetLedger",
     "ContractError",
+    "DegradationPolicy",
     "LedgerConfig",
     "LevelRegression",
     "Reservation",
     "Settlement",
+    "assemble_context",
+    "assert_manifest",
+    "budget_for_section",
+    "compact",
+    "reinject",
+    "should_compact",
     "validate_config",
 ]
