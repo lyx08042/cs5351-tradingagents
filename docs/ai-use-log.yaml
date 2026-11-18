@@ -87,6 +87,306 @@ entries:
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
       tasks/plans/<A-E>/ (not docs/approvals/).
+  - id: AI-USE-C-0001
+    date: "2026-11-07"
+    id_note: >
+      Renamed from AI-USE-0003 before publication because an independent
+      D-branch entry also used AI-USE-0003. No historical entry was modified.
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e49959e9effeVEnDsA1Cja2ZYI"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the verification commands"
+    member: "none (no student identity; no human approval or review claimed)"
+    scope: "F3 deterministic simulation safety (member C): implementation, offline tests, handoff"
+    summary: >
+      Implemented the C deterministic simulation-safety module under
+      tradingagents/course/safety/ (SimulationProposal, HoldingsSnapshot,
+      RuleSet, SafetyContext, SafetyVerdict, ReasonCode, validate_proposal)
+      and added test/offline/test_safety_simulation.py with positive, negative
+      and deterministic-replay coverage. Added ADR draft and handoff under
+      tasks/plans/C/. Fixed two Codex-reproduced defects: buy-cost arithmetic
+      now uses an explicit decimal.Context (fixed precision, range, rounding,
+      clamp and traps; no caller state inherited) and rejects out-of-range or
+      inexact amounts; an invalid SafetyContext.rule_set is now rejected with
+      the stable INVALID_RULE_SET reason instead of raising from the rejection
+      path. No shared CLI, graph node, CI, existing tests or other member code
+      was changed; no verified simulation proposal was published.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    human_review_performed: false
+    historical_approvals_modified: false
+    feature_implemented: true
+    course_deviation: true
+    course_deviation_detail: >
+      The team workflow proceeds under DEVELOPMENT-POLICY.md (ACTIVE,
+      owner-selected). Course G-1 pre-implementation test approval and D9 plan
+      stop were not executed. This is not a teacher waiver and not a fabricated
+      approval; the repository must not claim G-1/D9 compliance.
+    verification_results:
+      opencode_shell_commands_run: false
+      codex_independent:
+        - command: "python -m pytest -q -o testpaths=test/offline test/offline"
+          result: "76 passed (20 existing scaffold tests + 56 C tests)"
+        - command: "python scripts/check_course.py --root ."
+          result: "OK"
+      unverified:
+        - "full upstream pytest regression"
+        - "ruff lint"
+    later_verification_entry: "AI-USE-C-0002"
+    caveats: >
+      No fabricated results, approvals, identities or tests. Codex ran the
+      verification commands independently; that is not a human review. No real
+      broker connection, no runtime application live API calls, and no
+      credentials were read. Course G-1/D9 remain unsatisfied.
+  - id: AI-USE-C-0002
+    date: "2026-11-11"
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e49959e9effeVEnDsA1Cja2ZYI"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the verification commands"
+    member: "none (no student identity; no human approval or review claimed)"
+    scope: "F3 deterministic simulation safety (member C): UP037 annotation cleanup and pre-upload documentation"
+    summary: >
+      Fixed three Ruff UP037 findings in tradingagents/course/safety/models.py
+      by removing quotes around annotations that are unnecessary under
+      `from __future__ import annotations`: Action.parse return annotation,
+      HoldingsSnapshot.is_same_as `other` annotation, and
+      SimulationProposal.from_mapping return annotation. Behavior is unchanged.
+      Updated the C handoff, task record and ADR draft; added
+      docs/architecture/adr/002-simulation-safety.md (PROPOSED) and
+      transcripts/role-C/annotations.md. Renamed the unpublished C entry from
+      AI-USE-0003 to AI-USE-C-0001 to avoid an independent-branch ID collision;
+      no historical entry was modified. M2 is ready to upload; M3 integration
+      and M4 non-author review remain pending.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: false
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    human_review_performed: false
+    historical_approvals_modified: false
+    feature_implemented: false
+    documentation_changed: true
+    course_deviation: true
+    course_deviation_detail: >
+      The team workflow proceeds under DEVELOPMENT-POLICY.md (ACTIVE,
+      owner-selected). Course G-1 pre-implementation test approval and D9 plan
+      stop were not executed. This is not a teacher waiver and not a fabricated
+      approval; the repository must not claim G-1/D9 compliance.
+    verification_results:
+      opencode_shell_commands_run: false
+      codex_independent:
+        - command: "python -m pytest -q -o testpaths=test/offline test/offline"
+          result: "76 passed (20 existing scaffold tests + 56 C tests)"
+        - command: "python scripts/check_course.py --root ."
+          result: "OK"
+        - command: "ruff check ."
+          result: "passed"
+        - command: "upstream full pytest regression"
+          result: "1407 passed, 6 skipped, 1 deselected, 24 warnings, 100 subtests passed in 41.30s"
+      environment_note: >
+        The first restricted run failed on temporary-directory permissions and
+        loopback connection. After allowing loopback and using a workspace temp
+        directory, the upstream regression passed as reported.
+    caveats: >
+      No fabricated results, approvals, identities or tests. Codex ran the
+      verification commands independently; that is not a human review. No real
+      broker connection, no runtime application live API calls, and no
+      credentials were read. Course G-1/D9 remain unsatisfied. Upload status
+      must be taken from GitHub, not from this log.
+  - id: AI-USE-0003
+    date: "2026-11-08"
+    model: "CityU CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode"
+    session_id: "ses_e4614ef73ffe1ZIR7uulZGQ8jy"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Supervised OpenCode session operated by the human role-D member; scope checks and prompt drafting were done outside the agent session"
+    member: "60569580 Chaoqun ZHENG (role D)"
+    scope: "FR-004 / INV-004 / NFR-004 data sufficiency admission leaf module and offline tests"
+    summary: >
+      Implemented the D data-quality admission leaf under
+      tradingagents/course/data_quality: contracts, classifier, and admission
+      decision with five required domains, availability states, explicit-zero
+      versus missing distinction, fixed cutoff date, and JSON-serializable
+      decision events. Added offline tests in
+      test/offline/test_data_quality.py. Offline suite: 40 passed; course
+      checker OK; ruff passed. Upstream full regression could not start in the
+      minimal WSL venv because tests/conftest.py imports yfinance and pandas was
+      absent; this was an environment dependency blocker, not a D code failure.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    course_checker_dependencies_added: false
+    license_changed: false
+    approvals_created: false
+    historical_approvals_modified: false
+    feature_implemented: true
+    course_deviation: false
+    course_deviation_detail: >
+      No new course deviation was introduced by the D implementation. The work
+      still proceeds under the existing owner-selected deviation recorded in
+      AI-USE-0002; G-1/D9 pre-coding gates remain unsatisfied.
+    caveats: >
+      BASE-002 upstream regression is pending in a full-dependency environment
+      or CI. Pending non-author review by C, CI, and merge authorization. No
+      fabricated approval, teacher waiver, or compliance claim is recorded.
+  - id: AI-USE-E-20261114
+    date: "2026-11-14"
+    model: "cityu/CS5351/DeepSeek-V4-Flash"
+    tool: "OpenCode 1.18.29"
+    session_id: "ses_e26a98708ffehPgZu8n5f9GKTo"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently executed validation commands"
+    member: "not authored or claimed by a student (student identity unknown)"
+    scope: "FR-005 / INV-005 / NFR-003/004/005 E leaf module (tradingagents/course/audit) + offline tests + docs"
+    source_commit_local: "fe5805ffc4c16bd8e69379a70a8b93ca94746ec4"
+    source_commit_note: >
+      The local tested source commit fe5805f was NOT published via git push (no
+      credentials at the time; files were committed one-by-one via the web UI, so
+      hashes differ). It is not a GitHub-resolvable review commit. The GitHub
+      same-content code snapshot is 94ba2e51d3117aad3b24027c378b74faa28c5815;
+      Codex verified via the GitHub tree API that the 12 published source/test/
+      approved-plan files have identical blob SHAs to local. The original approval
+      record's real local plan commit is left unchanged.
+    github_tree_snapshot: "94ba2e51d3117aad3b24027c378b74faa28c5815"
+    base_commit: "7dc46516935755d5a09ba3507ccd55dbadda066b"
+    approval_provenance: >
+      Real pre-implementation approval by the repo owner (this chat user), reply
+      "批准这三份方案，开始实现 E". Reviewed commit bebfe912185bb1c5f735d6dae7acc79acaff4fb9;
+      approval record commit 85d4fc7 in tasks/plans/E/FR-005-pre-code-approval.md.
+      Not a teacher approval, not a course waiver, not another student.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    existing_tests_changed: false
+    tests_added: true
+    upstream_code_changed: false
+    upstream_tests_changed: false
+    business_dependencies_changed: false
+    other_leaf_modules_modified: false
+    approvals_created: true
+    approval_record_kind: "owner_reply_recorded_in_tasks"
+    human_only_approval_paths_modified: false
+    independent_human_review: "pending D (not yet reviewed)"
+    summary: >
+      Implemented the E leaf module FR-005 verifiable audit at
+      tradingagents/course/audit/ (append-only SQLite global hash chain, decision
+      revisions, offline versioned gate replay, trusted-head check), plus 60
+      offline tests and a standard-library standalone demo. Real validation by
+      Codex: 80 offline passed, upstream 1412 passed/1 skipped/1 deselected/100
+      subtests, ruff passed, standalone demo exit 0. Local tested source commit
+      fe5805f was not pushed; published GitHub same-content snapshot 94ba2e5
+      matches local blob SHAs. No runtime LLM/trading calls; no upstream
+      code/tests/dependencies changed; other leaf modules untouched.
+    defects_fixed:
+      summary: >
+        Real defects observed during validation and fixed: (a) AuditRecord
+        returned object was mutable -> frozen dataclass(slots=True); (b) malformed
+        JSON payload leaked JSONDecodeError in replay -> review, no escape; (c)
+        malformed gate record missing gate_id was excluded from the agreement
+        denominator -> treated as gate intent -> review; (d) reading a row
+        recomputed payload_ref and masked tampering -> persisted fields preserved.
+        Plus reason-code ordering (payload_ref before record_hash) and
+        malformed_payload/sequence now surface as chain_broken on authoritative
+        reads. Details in docs/bug-diary.md.
+    results:
+      offline: "80 passed (E 60 + scaffold 20)"
+      upstream: "1412 passed, 1 skipped, 1 deselected, 100 subtests passed"
+      ruff: "passed"
+      cde_compatibility: "156 passed (temporary combined source+offline tests; only means each set still passes when combined, not a JSON-shape proof nor real interface integration)"
+      standalone_demo: "python -S -m audit --demo exit 0, all_expected=true"
+    evidence_dir: "tasks/plans/E/evidence/"
+    caveats: >
+      Not course-compliant overall; the six course gates are not thereby satisfied
+      and D non-author review is pending. Not signature/WORM; full-chain verify is
+      O(n) per call (total O(n^2) growth). Runtime app made no live LLM/trading calls.
+  - id: AI-USE-CDE-20261118
+    date: "2026-11-18"
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e1306faacffebtHTt3iEtHc5kh"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the tests and validation commands"
+    member: "none (no student identity; no human review, approval or merge claimed)"
+    scope: "CDE integration: D data-quality + original AI graph + C safety + E audit; shared pipeline, graph/CLI entry points, offline and real-graph tests, docs"
+    summary: >
+      Integrated the already-merged C/D/E course leaves through
+      tradingagents/course/pipeline.py, optional TradingAgentsGraph.propagate
+      course_request support, optional PM SimulationCandidate, and the CLI
+      --course-inputs route. CDE merge conflicts were resolved without rewriting
+      historical ai-use entries. Initial integration tests were 17/18 passing;
+      real defects were then reproduced and fixed: ticker/date mismatch reached
+      the AI before rejection; a missing holdings_snapshot.positions with
+      flat_declared=true was defaulted to an empty account and could publish; a
+      model callback could mutate the caller's request snapshot; decimal
+      amounts were typed as floats; and real-execution extras could be erased
+      by candidate normalisation. The latest reproduced gap, audit_path
+      ':memory:' publishing a non-persistent record, is now rejected before the
+      model. No E leaf module was changed for that check. Final combined
+      validation passed: 1596 passed including 1407 upstream and 189 course
+      offline; business code and tests are frozen pending review.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    other_leaf_modules_modified: false
+    approvals_created: false
+    independent_human_review: "pending (none claimed)"
+    merge_approval: false
+    results:
+      combined_suite: "1596 passed, 6 skipped, 1 deselected, 24 warnings, 100 subtests passed in 44.19s; suite_exit=0"
+      course_offline: "189 passed (original CDE 156 + 33 new, including 3 real-graph end-to-end tests and the in-memory-audit regression)"
+      upstream: "1407 passed"
+      real_graph_end_to_end: "3 passed (accepted buy, over-cash REVIEW, CLI --course-inputs)"
+      ruff: "passed; ruff_exit=0"
+      course_checker: "OK; schema_exit=0"
+      runtime_live_api: "not evaluated; tests use scripted models and offline vendor stubs"
+      evidence: "tasks/plans/integration/evidence/final-validation-2026-11-18.txt"
+    defects_fixed:
+      summary: >
+        Real reproductions and fixes: (a) propagate now checks
+        course_request.instrument/analysis_cutoff before the model;
+        (b) missing positions are passed to C instead of being defaulted to a
+        flat account; (c) run_course deep-copies and revalidates the request
+        before the model, and RULE_CATALOG is read-only with fixed version
+        cde-long-only-v1; (d) SimulationCandidate amounts are decimal strings
+        and extra fields are forbidden; dangerous extras are preserved for C to
+        reject; (e) audit metadata (including timestamp) is validated before the
+        model; (f) in-memory SQLite audit paths are refused before the model.
+    evidence:
+      - "test/offline/test_cde_integration.py"
+      - "test/offline/test_cde_graph_flow.py"
+      - "tasks/plans/integration/evidence/final-validation-2026-11-18.txt"
+      - "tasks/plans/integration/CDE-handoff.md"
+      - "tasks/plans/integration/evidence/cde-input-sample.json"
+    caveats: >
+      Final combined validation completed on 2026-11-18 and business code/tests
+      are frozen; no human non-author review, CI result or merge approval is
+      claimed. The role-CDE raw transcript was not yet present at this update
+      and is to be exported verbatim by Codex; no identity is filled here. No
+      real broker or runtime live API evaluation was performed. Course G-1/D9
+      remain unsatisfied; this entry does not claim course compliance.
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."
@@ -95,5 +395,11 @@ policy:
 transcript_status:
   full_student_transcripts_submitted: false
   note: >
-    No full student transcripts exist yet; transcripts/ contains only its
-    README. This bootstrap entry must not be presented as a student transcript.
+    Raw transcripts are now present in this branch for role-C
+    (transcripts/role-C/raw.json), role-D (transcripts/60569580-ChaoqunZHENG/)
+    and role-E (transcripts/role-E/raw.json). The five required student
+    transcripts are not yet complete or submitted, so
+    full_student_transcripts_submitted remains false. A raw record is evidence of
+    the session only: it is not a human review or approval. No student identity
+    or message index may be invented, and the bootstrap entry must not be
+    presented as a student transcript.

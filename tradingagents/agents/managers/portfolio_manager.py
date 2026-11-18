@@ -26,6 +26,19 @@ def create_portfolio_manager(llm):
     def portfolio_manager_node(state) -> dict:
         instrument_context = get_instrument_context_from_state(state)
         portfolio_context = get_portfolio_context_from_state(state)
+        raw_course_context = state.get("course_context")
+        course_context = (
+            raw_course_context.strip()
+            if isinstance(raw_course_context, str) and raw_course_context.strip()
+            else ""
+        )
+        course_block = (
+            f"\n\n{course_context}\n\n"
+            "Fill simulation_proposal with action, units, price and currency only. "
+            "Units and price are absolute decimal strings; use units \"0\" for hold.\n"
+            if course_context
+            else ""
+        )
 
         history = state["risk_debate_state"]["history"]
         risk_debate_state = state["risk_debate_state"]
@@ -72,15 +85,18 @@ Write these sections, in this order, starting with the rating on its own line:
 - **Rating**: exactly one of Buy / Overweight / Hold / Underweight / Sell
 - **Executive Summary**: the call and how to act on it
 - **Investment Thesis**: the evidence that decided it, and what would change it
-
+{course_block}
 {NO_EXTERNAL_TOOLS}{get_language_instruction()}"""
 
         # The typed rating is the decision; the rendered text only carries it.
         # Read back from text, a rating the thesis quotes could replace it.
         decision = invoke_structured(structured_llm, prompt, "Portfolio Manager")
+        simulation_proposal = None
         if decision is not None:
             final_trade_decision = render_pm_decision(decision)
             final_rating = decision.rating.value
+            if course_context and decision.simulation_proposal is not None:
+                simulation_proposal = decision.simulation_proposal.model_dump()
         else:
             final_trade_decision = llm.invoke(prompt).content
             final_rating = parse_rating(final_trade_decision)
@@ -97,10 +113,13 @@ Write these sections, in this order, starting with the rating on its own line:
             "count": risk_debate_state["count"],
         }
 
-        return {
+        result = {
             "risk_debate_state": new_risk_debate_state,
             "final_trade_decision": final_trade_decision,
             "final_rating": final_rating,
         }
+        if course_context:
+            result["simulation_proposal"] = simulation_proposal
+        return result
 
     return portfolio_manager_node

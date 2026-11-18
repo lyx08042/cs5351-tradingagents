@@ -21,7 +21,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # LLMs sometimes write a placeholder string ("None", "N/A", ...) into an optional
 # numeric field instead of omitting it. Coerce those to None so the structured
@@ -218,6 +218,44 @@ def render_trader_proposal(proposal: TraderProposal) -> str:
 # ---------------------------------------------------------------------------
 
 
+class SimulationCandidate(BaseModel):
+    """Optional simulation candidate fields returned with the PM decision.
+
+    Anchors: FR-003, INV-003, ADR-004. Course mode only: the CDE pipeline binds
+    the trusted ``snapshot_id`` and ``rule_version`` itself, so this schema
+    deliberately has no balance, holdings or approval fields. Amounts are exact
+    decimal strings so no float rounding happens before C validates them.
+    Unknown fields are rejected: a response carrying execution intent (for
+    example ``execution_mode: "live"``) must not be silently truncated into a
+    publishable candidate.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    action: str | None = Field(
+        default=None,
+        description="Simulated action: buy, sell or hold. Course mode only.",
+    )
+    units: str | None = Field(
+        default=None,
+        description=(
+            "Absolute positive quantity for a buy/sell as a decimal string, or "
+            "\"0\" for hold. Course mode only; never a percentage or a range."
+        ),
+    )
+    price: str | None = Field(
+        default=None,
+        description=(
+            "Absolute price per unit in the instrument's quote currency as a "
+            "decimal string. Course mode only; never a percentage or a range."
+        ),
+    )
+    currency: str | None = Field(
+        default=None,
+        description="Quote currency of the simulation candidate. Course mode only.",
+    )
+
+
 class PortfolioDecision(BaseModel):
     """Structured output produced by the Portfolio Manager.
 
@@ -257,6 +295,14 @@ class PortfolioDecision(BaseModel):
     time_horizon: str | None = Field(
         default=None,
         description="Optional recommended holding period, e.g. '3-6 months'.",
+    )
+    simulation_proposal: SimulationCandidate | None = Field(
+        default=None,
+        description=(
+            "Optional simulated trade candidate. Fill this only when the prompt "
+            "explicitly enables course simulation mode; otherwise omit it. The "
+            "orchestrator, not the model, supplies balances and rule versions."
+        ),
     )
 
     @field_validator("price_target", mode="before")

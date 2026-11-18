@@ -91,3 +91,26 @@ docs/architecture/invariants.md、permission-model.md 与 trace-matrix.md。
 ## 10. 交接（Handoff）
 
 使用模板 `templates/handoff.md`（七类信息），交给评审人 **B**（C 的产出由 B 评审）。
+
+## 11. 实现记录（2026-11-07 起，2026-11-11 更新，如实记录）
+
+- **M2 状态：** 独立模块已完成，准备上传到 `feat/C-safety`；实际上传状态以 GitHub 分支为准，本节不声称已推送。
+- **已写入：**
+  - `tradingagents/course/safety/models.py`：`SimulationProposal`、`HoldingsSnapshot`、`RuleSet`、`SafetyContext`、`SafetyVerdict`、`ReasonCode`。
+  - `tradingagents/course/safety/validator.py`：纯函数 `validate_proposal`。
+  - `tradingagents/course/safety/__init__.py`、`tradingagents/course/__init__.py`。
+  - `test/offline/test_safety_simulation.py`：固定账户/行情/规则版本的离线正负向测试与确定性回放测试。
+  - `docs/architecture/adr/002-simulation-safety.md`：正式安全 ADR（**PROPOSED**，非人工批准）。
+  - `tasks/plans/C/FR-003-safety-adr-draft.md`：指向正式 ADR 的草稿入口。
+  - `tasks/plans/C/FR-003-handoff.md`：交接、实际验证结果、M3/M4 待办与非作者评审清单。
+- **验证口径：** OpenCode 本会话未运行 shell；Codex 调度并独立运行验证。
+- **实际结果（2026-11-11，Codex 独立验证）：**
+  - 课程离线：`python -m pytest -q -o testpaths=test/offline test/offline` -> **76 passed**（原有脚手架 20，C 新增 56）。
+  - 脚手架校验：`python scripts/check_course.py --root .` -> **OK**。
+  - 全仓库 `ruff check .` -> **通过**（三处 UP037 已由本 OpenCode 会话修复：仅移除 future-annotations 下多余的注解引号，行为不变）。
+  - 上游完整回归（允许本机回环连接并使用工作区临时目录）-> **1407 passed, 6 skipped, 1 deselected, 24 warnings, 100 subtests passed in 41.30s**；第一次受限环境因临时目录权限与回环连接失败，修正环境后通过。
+- **历史修复：** `_exact_product` 改为从显式 `Context` 构建（固定 precision/范围/舍入/clamp/traps，不继承调用者状态）；非法 `SafetyContext.rule_set` 返回 `invalid_rule_set`，拒绝路径不二次抛异常。
+- **M3 待办：** 共享 CLI、图节点、CI、成员 A/B/D/E 代码、`tests/`、`pyproject.toml` 均未改动；未接入 `record_decision()`，未发布“已验证模拟提案”；集成需协调 PR。
+- **M4 待办：** 非作者（B）评审尚未发生；不得声称已评审。
+- **课程差异：** 按 `DEVELOPMENT-POLICY.md` 推进，G-1/D9 未满足；非教师 waiver、非伪造批准。
+- **待确认：** 结构化候选来源、可信报价/币种口径、`PortfolioContext` → `HoldingsSnapshot` 映射、规则目录 owner、Hold 的价格语义、与 D/E 的交接字段。详见正式 ADR 第 6 节。
