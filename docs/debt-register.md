@@ -73,3 +73,68 @@
 ## 说明
 
 - 新条目只能如实记录已观察到的债务；不得预填虚假条目。
+
+## E 模块剩余项（2026-11-14，FR-005）
+
+```yaml
+- id: DEBT-E-001
+  category: evaluation
+  title: 全链验证每次 O(n)，连续追加总成本 O(n^2)
+  description: verify_chain 每次全量扫描；适合小规模审计，未做增量/缓存优化。
+  impact: 大规模或高频写入场景性能受限。
+  related: [FR-005, tradingagents/course/audit/store.py]
+  status: accepted
+  owner: E
+  discovered_at: "2026-11-14"
+
+- id: DEBT-E-002
+  category: guardrail
+  title: 定位为小规模审计使用
+  description: 当前实现面向课程规模审计，不是高吞吐生产审计服务。
+  impact: 超出规模需另行设计。
+  related: [FR-005]
+  status: accepted
+  owner: E
+  discovered_at: "2026-11-14"
+
+- id: DEBT-E-003
+  category: guardrail
+  title: 可信头必须外存；实现非签名、非 WORM
+  description: 内部链无法察觉整段尾截断或整体重算哈希，需可信方在库外保存 trusted_head；记录不是密码学签名。
+  impact: 无外部 checkpoint 时无法证明未被尾部截断。
+  related: [INV-005, docs/architecture/adr/003-append-only-audit.md]
+  status: accepted
+  owner: E
+  discovered_at: "2026-11-14"
+
+- id: DEBT-E-004
+  category: hidden-deps
+  title: 生产主流程真实入口尚未接入（M3）
+  description: E 已作为独立叶子模块完成，回放核心已实现；与主流程的真实接入属协调 PR。
+  impact: E 能力尚未在主运行路径生效。
+  related: [FR-005]
+  status: open
+  owner: E (coordination PR)
+  discovered_at: "2026-11-14"
+
+- id: DEBT-E-005
+  category: human-cognitive
+  title: 真实 D 非作者评审待做（M4）
+  description: 作者侧已列评审清单，独立评审人/日期/结论待 D 真实填写。
+  impact: 尚无独立人评审结论。
+  related: [FR-005, tasks/plans/E/FR-005-review-notes.md]
+  status: open
+  owner: D
+  discovered_at: "2026-11-14"
+
+- id: DEBT-E-006
+  category: guardrail
+  title: 课程共享 CI 尚未自动运行 E 测试
+  description: 本轮由 Codex 本地实际运行 E 测试与 ruff；共享 CI 是否纳入 E 测试属全组治理，不是 E 功能未实现。
+  impact: 合并前依赖人工/本地执行。
+  related: [FR-005, .github/]
+  status: open
+  owner: shared (course CI)
+  discovered_at: "2026-11-14"
+```
+

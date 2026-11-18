@@ -1,0 +1,48 @@
+.............................................F                           [100%]
+=================================== FAILURES ===================================
+_____________ test_n32_final_decision_multiple_leaves_fail_closed ______________
+
+tmp_path = PosixPath('/private/var/folders/qk/xkkhfnr5311bxkz5kn5880200000gn/T/pytest-of-lyx/pytest-9/test_n32_final_decision_multip0')
+
+    @pytest.mark.unit
+    def test_n32_final_decision_multiple_leaves_fail_closed(tmp_path):
+        """INV-005: two terminal leaves for one run raise rather than picking one.
+    
+        The second leaf is injected directly to force the invariant break; this is a
+        controlled threat fixture, not a normal runtime operation.
+        """
+        from tradingagents.course.audit.records import compute_record_hash
+    
+        with _open(tmp_path) as store:
+            _append(store, "d-001")
+            _append(store, "rev-a", entry_type="revision", payload={"x": 1}, supersedes="d-001")
+            _append(store, "rev-b", entry_type="revision", payload={"x": 2}, supersedes="rev-a")
+            last = store.get("rev-b")
+            rogue_payload = {"x": 3}
+            fields = {
+                "record_id": "rogue-rev",
+                "run_id": "r-1",
+                "timestamp": TS,
+                "entry_type": "revision",
+                "payload_ref": payload_ref(rogue_payload),
+                "rules_version": RULES,
+                "previous_record_id": last.record_id,
+                "previous_hash": last.record_hash,
+                "supersedes": "rev-a",
+                "payload": rogue_payload,
+            }
+>           store._conn.execute(
+                "INSERT INTO audit_records "
+                "(record_id, run_id, timestamp, entry_type, payload_ref, rules_version, "
+                "previous_record_id, previous_hash, record_hash, supersedes, payload) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                ("rogue-rev", "r-1", TS, "revision", fields["payload_ref"], RULES,
+                 last.record_id, last.record_hash, compute_record_hash(fields), "rev-a",
+                 canonical_json(rogue_payload).decode()),
+            )
+E           sqlite3.IntegrityError: UNIQUE constraint failed: audit_records.supersedes
+
+test/offline/test_audit.py:842: IntegrityError
+=========================== short test summary info ============================
+FAILED test/offline/test_audit.py::test_n32_final_decision_multiple_leaves_fail_closed
+1 failed, 45 passed in 0.22s
