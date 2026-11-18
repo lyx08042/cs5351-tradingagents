@@ -318,6 +318,75 @@ entries:
       Not course-compliant overall; the six course gates are not thereby satisfied
       and D non-author review is pending. Not signature/WORM; full-chain verify is
       O(n) per call (total O(n^2) growth). Runtime app made no live LLM/trading calls.
+  - id: AI-USE-CDE-20261118
+    date: "2026-11-18"
+    tool: "OpenCode 1.19.5"
+    model: "opencode/deepseek-v4.1-flash-free"
+    session_id: "ses_e1306faacffebtHTt3iEtHc5kh"
+    session_id_status: "RECORDED"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode; Codex independently ran the tests and validation commands"
+    member: "none (no student identity; no human review, approval or merge claimed)"
+    scope: "CDE integration: D data-quality + original AI graph + C safety + E audit; shared pipeline, graph/CLI entry points, offline and real-graph tests, docs"
+    summary: >
+      Integrated the already-merged C/D/E course leaves through
+      tradingagents/course/pipeline.py, optional TradingAgentsGraph.propagate
+      course_request support, optional PM SimulationCandidate, and the CLI
+      --course-inputs route. CDE merge conflicts were resolved without rewriting
+      historical ai-use entries. Initial integration tests were 17/18 passing;
+      real defects were then reproduced and fixed: ticker/date mismatch reached
+      the AI before rejection; a missing holdings_snapshot.positions with
+      flat_declared=true was defaulted to an empty account and could publish; a
+      model callback could mutate the caller's request snapshot; decimal
+      amounts were typed as floats; and real-execution extras could be erased
+      by candidate normalisation. The latest reproduced gap, audit_path
+      ':memory:' publishing a non-persistent record, is now rejected before the
+      model. No E leaf module was changed for that check. Final combined
+      validation passed: 1596 passed including 1407 upstream and 189 course
+      offline; business code and tests are frozen pending review.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    new_offline_tests_added: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    other_leaf_modules_modified: false
+    approvals_created: false
+    independent_human_review: "pending (none claimed)"
+    merge_approval: false
+    results:
+      combined_suite: "1596 passed, 6 skipped, 1 deselected, 24 warnings, 100 subtests passed in 44.19s; suite_exit=0"
+      course_offline: "189 passed (original CDE 156 + 33 new, including 3 real-graph end-to-end tests and the in-memory-audit regression)"
+      upstream: "1407 passed"
+      real_graph_end_to_end: "3 passed (accepted buy, over-cash REVIEW, CLI --course-inputs)"
+      ruff: "passed; ruff_exit=0"
+      course_checker: "OK; schema_exit=0"
+      runtime_live_api: "not evaluated; tests use scripted models and offline vendor stubs"
+      evidence: "tasks/plans/integration/evidence/final-validation-2026-11-18.txt"
+    defects_fixed:
+      summary: >
+        Real reproductions and fixes: (a) propagate now checks
+        course_request.instrument/analysis_cutoff before the model;
+        (b) missing positions are passed to C instead of being defaulted to a
+        flat account; (c) run_course deep-copies and revalidates the request
+        before the model, and RULE_CATALOG is read-only with fixed version
+        cde-long-only-v1; (d) SimulationCandidate amounts are decimal strings
+        and extra fields are forbidden; dangerous extras are preserved for C to
+        reject; (e) audit metadata (including timestamp) is validated before the
+        model; (f) in-memory SQLite audit paths are refused before the model.
+    evidence:
+      - "test/offline/test_cde_integration.py"
+      - "test/offline/test_cde_graph_flow.py"
+      - "tasks/plans/integration/evidence/final-validation-2026-11-18.txt"
+      - "tasks/plans/integration/CDE-handoff.md"
+      - "tasks/plans/integration/evidence/cde-input-sample.json"
+    caveats: >
+      Final combined validation completed on 2026-11-18 and business code/tests
+      are frozen; no human non-author review, CI result or merge approval is
+      claimed. The role-CDE raw transcript was not yet present at this update
+      and is to be exported verbatim by Codex; no identity is filled here. No
+      real broker or runtime live API evaluation was performed. Course G-1/D9
+      remain unsatisfied; this entry does not claim course compliance.
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."

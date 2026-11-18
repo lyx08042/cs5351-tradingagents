@@ -1,16 +1,24 @@
+import json
 import sys
 from enum import StrEnum
+from pathlib import Path
 from typing import Annotated
 
 import typer
 from rich.markup import escape
 
-from cli.display import console
+from cli.display import console, display_complete_report
 from cli.models import AnalystType, AssetType
 from cli.prompts import filter_analysts_for_asset_type, parse_analysts
 from cli.run import run_analysis
 from tradingagents.backtest import iter_grid, run_backtest, summarize
+from tradingagents.course.pipeline import (
+    CourseIntegrationError,
+    CourseRequest,
+    CourseRequestError,
+)
 from tradingagents.default_config import DEFAULT_CONFIG
+from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.llm_clients.openai_client import SIGNED_IN_PROVIDERS
 from tradingagents.portfolio import load_portfolio
 
@@ -33,6 +41,70 @@ app = typer.Typer(
 )
 
 
+def _load_course_request(path: str, ticker: str | None, date: str | None) -> CourseRequest:
+    """Read a course input file and reject contradictory CLI ticker/date flags."""
+    with Path(path).open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    request = CourseRequest.from_mapping(payload)
+    if ticker and ticker.strip() and ticker.strip() != request.instrument:
+        raise CourseRequestError(
+            f"--ticker {ticker!r} does not match course inputs instrument {request.instrument!r}"
+        )
+    if date and date.strip() and date.strip() != request.analysis_cutoff:
+        raise CourseRequestError(
+            f"--date {date!r} does not match course inputs analysis_cutoff {request.analysis_cutoff!r}"
+        )
+    return request
+
+
+def _run_course_analysis(request, checkpoint, portfolio_context, analysts, save, show, html):
+    """Run the CDE course path through the same propagate entry point (ADR-004)."""
+    kind = AssetType.STOCK
+    chosen = (
+        parse_analysts(analysts, kind)
+        if analysts
+        else filter_analysts_for_asset_type(list(AnalystType), kind)
+    )
+    config = DEFAULT_CONFIG.copy()
+    if checkpoint is not None:
+        config["checkpoint_enabled"] = checkpoint
+    graph = TradingAgentsGraph(
+        [analyst.value for analyst in chosen], config=config, debug=False
+    )
+    final_state, signal = graph.propagate(
+        request.instrument,
+        request.analysis_cutoff,
+        asset_type=kind.value,
+        portfolio=portfolio_context,
+        course_request=request,
+    )
+    course_result = final_state.get("course_result") or {}
+    console.print(
+        f"[bold]Course outcome:[/bold] {course_result.get('outcome')} "
+        f"(signal: {signal}, published: {course_result.get('published')})"
+    )
+    safety = course_result.get("safety") or {}
+    if safety:
+        console.print(
+            f"[dim]Safety: {safety.get('reason_code')} "
+            f"(snapshot {safety.get('snapshot_id')}, rule {safety.get('rule_version')})[/dim]"
+        )
+    proposal = course_result.get("proposal")
+    if proposal:
+        console.print(
+            f"[green]Verified simulation proposal:[/green] {proposal.get('action')} "
+            f"{proposal.get('units')} @ {proposal.get('price')} {proposal.get('currency')}"
+        )
+    if save:
+        save_path = graph.default_report_path(request.instrument)
+        report_file = graph.save_reports(
+            final_state, request.instrument, save_path, html=True if html is None else html
+        )
+        console.print(f"[green]Report saved to:[/green] {save_path} ({report_file.name})")
+    if show:
+        display_complete_report(final_state)
+
+
 @app.callback(invoke_without_command=True)
 def analyze(
     ctx: typer.Context,
@@ -52,6 +124,14 @@ def analyze(
         "--portfolio",
         help="JSON file with current holdings and cash, so the trader, risk and "
         "portfolio agents size against your actual position.",
+    ),
+    course_inputs: str = typer.Option(
+        None,
+        "--course-inputs",
+        help="JSON file with explicit CDE course inputs (trusted snapshot, data "
+        "observations, instrument/date, rule version, audit path). Enables the "
+        "course pipeline through TradingAgentsGraph.propagate; the normal CLI "
+        "path is unchanged when omitted.",
     ),
     ticker: str = typer.Option(None, "--ticker", help="Ticker to analyze, e.g. NVDA or 0700.HK; skips the prompt"),
     date: str = typer.Option(None, "--date", help="Analysis date, YYYY-MM-DD; skips the prompt"),
@@ -87,6 +167,21 @@ def analyze(
         except ValueError as exc:
             console.print(f"[red]{exc}[/red]")
             raise typer.Exit(code=1) from None
+
+    if course_inputs:
+        try:
+            course_request = _load_course_request(course_inputs, ticker, date)
+        except (OSError, json.JSONDecodeError, CourseRequestError) as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=1) from None
+        try:
+            _run_course_analysis(
+                course_request, checkpoint, portfolio_context, analysts, save, show, html
+            )
+        except CourseIntegrationError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=1) from None
+        return
 
     try:
         flags = {"ticker": ticker, "date": date, "analysts": analysts, "save": save, "show": show, "html": html}

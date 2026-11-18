@@ -164,7 +164,8 @@ class TradingAgentsGraph:
             f"settings={digest}",
         ])
 
-    def propagate(self, company_name, trade_date, asset_type: str = "stock", portfolio=None):
+    def propagate(self, company_name, trade_date, asset_type: str = "stock", portfolio=None,
+                  course_request=None):
         """Run the trading agents graph for a company on a specific date.
 
         ``asset_type`` selects between the stock pipeline (default) and the
@@ -174,13 +175,40 @@ class TradingAgentsGraph:
         a per-ticker SqliteSaver so a crashed run can resume from the last
         successful node on a subsequent invocation with the same ticker+date.
 
+        ``course_request`` enables the CDE course path (ADR-004): D runs before
+        the model, the original graph produces an optional structured candidate,
+        C validates it, E records the aggregate gate, and the returned signal is
+        derived from the safety outcome. When it is None the original behaviour
+        and return value are unchanged. Course mode rejects checkpoint resume.
+
         Returns ``(final_state, signal)`` where ``signal`` is one of the 5-tier
         ratings (Buy / Overweight / Hold / Underweight / Sell) or ``"REVIEW"``
         when the decision had no parseable rating (#1170); guard with
         ``tradingagents.agents.rating.is_review`` before mapping it to the
-        PortfolioRating enum.
+        PortfolioRating enum. Course mode returns Buy/Sell/Hold only for a C
+        acceptance and REVIEW otherwise.
         """
         trade_date = _validate_trade_date(trade_date)
+
+        if course_request is not None:
+            from tradingagents.course.pipeline import CourseRequest, CourseRequestError
+
+            if not isinstance(course_request, CourseRequest):
+                course_request = CourseRequest.from_mapping(course_request)
+            if course_request.instrument.strip() != str(company_name).strip():
+                raise CourseRequestError(
+                    f"course request instrument {course_request.instrument!r} does not "
+                    f"match propagate instrument {company_name!r}"
+                )
+            if course_request.analysis_cutoff.strip() != str(trade_date).strip():
+                raise CourseRequestError(
+                    f"course request analysis_cutoff {course_request.analysis_cutoff!r} "
+                    f"does not match propagate trade_date {trade_date!r}"
+                )
+            return self._propagate_course(
+                company_name, trade_date, asset_type=asset_type,
+                portfolio=portfolio, course_request=course_request,
+            )
 
         with run_config(self.config), \
                 self.checkpoint_scope(company_name, trade_date, asset_type, portfolio) as thread_id_value:
@@ -188,6 +216,50 @@ class TradingAgentsGraph:
                 company_name, trade_date, asset_type=asset_type,
                 checkpoint_thread_id=thread_id_value, portfolio=portfolio,
             )
+
+    def _propagate_course(self, company_name, trade_date, asset_type: str = "stock",
+                          portfolio=None, course_request=None):
+        """Run one CDE course request through the shared pipeline (ADR-004).
+
+        Anchors: FR-003, FR-004, FR-005, INV-003, INV-004, INV-005. The original
+        graph produces the candidate; pipeline D/C/E decide the outcome. A stale
+        checkpoint cannot carry course context, so enabling checkpoint for a
+        course run is refused instead of silently reusing old state.
+        """
+        from tradingagents.course.pipeline import CourseCheckpointUnsupported, run_course
+
+        if self.config.get("checkpoint_enabled"):
+            raise CourseCheckpointUnsupported(
+                "course mode cannot resume from a checkpoint built without course context"
+            )
+
+        state_holder: dict[str, Any] = {}
+
+        def invoke_ai(context: str):
+            final_state, _signal = self._run_graph(
+                company_name, trade_date, asset_type=asset_type,
+                portfolio=portfolio, course_context=context, record=False,
+            )
+            state_holder["final_state"] = final_state
+            return final_state
+
+        with run_config(self.config):
+            result = run_course(course_request, invoke_ai)
+
+        final_state = state_holder.get("final_state")
+        if final_state is None:
+            final_state = {
+                "company_of_interest": company_name,
+                "trade_date": str(trade_date),
+                "final_trade_decision": "",
+                "final_rating": "REVIEW",
+                "simulation_proposal": None,
+            }
+        else:
+            final_state = dict(final_state)
+        final_state["course_result"] = result.to_dict()
+        final_state["course_signal"] = result.signal
+        return final_state, result.signal
 
     def begin_checkpoint(self, company_name, trade_date, asset_type: str = "stock", portfolio=None) -> str | None:
         """Recompile the graph with a per-ticker checkpointer and return the
@@ -290,21 +362,26 @@ class TradingAgentsGraph:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return Path(self.config["results_dir"]) / "reports" / f"{safe_ticker_component(ticker)}_{stamp}"
 
-    def create_run_state(self, company_name, trade_date, asset_type: str = "stock", portfolio=None):
+    def create_run_state(self, company_name, trade_date, asset_type: str = "stock", portfolio=None,
+                         course_context: str | None = None):
         """Build a run's initial state; propagate() and the CLI both start here.
 
         Injects the resolved instrument identity for every agent (#814). The
         memory log's lessons are not here: the graph's Memory Log step settles
-        and loads them alongside the analysts (see ``_memory_step``).
+        and loads them alongside the analysts (see ``_memory_step``). A course
+        run also carries the pipeline's prompt context (ADR-004).
         """
         trade_date = _validate_trade_date(trade_date)
-        return self.propagator.create_initial_state(
+        state = self.propagator.create_initial_state(
             company_name,
             trade_date,
             asset_type=asset_type,
             instrument_context=self.resolve_instrument_context(company_name, asset_type, trade_date),
             portfolio_context=portfolio.render(company_name) if portfolio is not None else "",
         )
+        if course_context is not None:
+            state["course_context"] = course_context
+        return state
 
     def _memory_step(self, state):
         """The graph's Memory Log step, alongside the analysts (#1428): settle every
@@ -371,9 +448,12 @@ class TradingAgentsGraph:
         )
 
     def _run_graph(self, company_name, trade_date, asset_type: str = "stock",
-                   checkpoint_thread_id: str | None = None, portfolio=None):
+                   checkpoint_thread_id: str | None = None, portfolio=None,
+                   course_context: str | None = None, record: bool = True):
         """Execute the graph and write the resulting state to disk and memory log."""
-        init_agent_state = self.create_run_state(company_name, trade_date, asset_type, portfolio)
+        init_agent_state = self.create_run_state(
+            company_name, trade_date, asset_type, portfolio, course_context=course_context
+        )
         args = self.propagator.get_graph_args()
 
         # Inject the checkpoint thread_id (from checkpoint_scope) so the same
@@ -397,7 +477,8 @@ class TradingAgentsGraph:
         else:
             final_state = self.graph.invoke(graph_input, **args)
 
-        self.record_decision(company_name, trade_date, final_state)
+        if record:
+            self.record_decision(company_name, trade_date, final_state)
 
         # Clear checkpoint on successful completion to avoid stale state.
         self.clear_checkpoint_on_success(company_name, trade_date, asset_type, portfolio)
