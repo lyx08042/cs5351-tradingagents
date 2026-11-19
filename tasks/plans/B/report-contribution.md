@@ -1,4 +1,4 @@
-﻿# Report Contribution 鈥?Role B (FR-002 / FR-006)
+# Report Contribution 鈥?Role B (FR-002 / FR-006)
 
 > Draft for the team report. The leader merges the relevant parts into `Report.md`.
 > Language: English (course language). Member name, student id and the personal reflection are

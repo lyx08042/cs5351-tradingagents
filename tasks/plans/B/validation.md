@@ -1,4 +1,4 @@
-﻿# Validation report 鈥?role B (FR-002 / FR-006 / INV-002 / INV-006)
+# Validation report 鈥?role B (FR-002 / FR-006 / INV-002 / INV-006)
 
 > Every claim points at a file in `tasks/plans/B/evidence/` or at a repository path.
 > Language: English (course language).

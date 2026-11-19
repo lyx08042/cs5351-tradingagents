@@ -1,4 +1,4 @@
-﻿"""Live evaluation driver for the FR-002 budget (run where the deps and a key exist).
+"""Live evaluation driver for the FR-002 budget (run where the deps and a key exist).
 
 It runs the same ticker and date twice: once on the untouched baseline and once
 with the budget ledger attached, then prints and saves a comparison.

@@ -1,4 +1,4 @@
-﻿# Handoff: B 鈫?A
+# Handoff: B 鈫?A
 
 > Seven-category handoff per `tasks/README.md` 搂4 and `templates/handoff.md`.
 > Status: DRAFT 鈥?member name and student id are intentionally left blank; the member fills them.

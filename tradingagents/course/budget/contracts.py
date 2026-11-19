@@ -1,4 +1,4 @@
-﻿"""Contracts for the FR-002 run-budget ledger.
+"""Contracts for the FR-002 run-budget ledger.
 
 Anchors: FR-002, FR-006, INV-002, INV-006. Every structure here is
 JSON-serialisable and carries no behaviour beyond validation, so the ledger

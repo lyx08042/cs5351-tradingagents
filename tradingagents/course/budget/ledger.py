@@ -1,4 +1,4 @@
-﻿"""Metered budget ledger for one analysis run (FR-002 / FR-006).
+"""Metered budget ledger for one analysis run (FR-002 / FR-006).
 
 Every mutation happens under a single lock, so "check the balance" and "charge
 the reservation" are one atomic step; that is what prevents oversell when the
