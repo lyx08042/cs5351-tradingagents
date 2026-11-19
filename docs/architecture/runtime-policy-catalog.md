@@ -39,3 +39,37 @@
 ## 4. 当前状态
 
 - 无任何策略代码；全部为设计。
+  （例外：F2 预算的 POL-BUD 策略已实现并有测试，见第 5 节。）
+
+## 5. F2 budget runtime policies (role B, implemented)
+
+Status: **implemented** in `tradingagents/course/budget/policy.py` and covered by
+`test/offline/test_budget*.py`. This section supersedes the "not implemented" status for F2 only; the other
+modules remain design.
+
+| Policy ID | Trigger | Action | Requirement |
+|---|---|---|---|
+| POL-BUD-01 | a reservation does not fit the stage quota after borrowing | refuse the call (`BudgetDenied`) | FR-002, INV-002 |
+| POL-BUD-02 | settlement exceeds the reservation and the pool | emit `over_budget`, close the ledger, refuse further calls | FR-002, INV-002 |
+| POL-BUD-03 | L1: remaining global budget below the projected remaining spend | compress injected content (news 20 → 8 items, evidence summarised) | FR-006 |
+| POL-BUD-04 | L2: projection shortfall deeper than 0.85 | reduce debate rounds by one, minimum one | FR-006 |
+| POL-BUD-05 | L3: projection shortfall deeper than 0.70 | force the cheap model tier (`deep` → `quick`) | FR-006 |
+| POL-BUD-06 | L4: projection shortfall deeper than 0.55 | skip optional agents (sentiment, then news) | FR-006 |
+| POL-BUD-07 | L5: remaining budget below one call estimate | emit an explicitly degraded verdict instead of aborting | FR-006, INV-006 |
+| POL-BUD-08 | assembled context above 12,000 tokens | compact to 8,000 and re-inject the four constraint blocks | FR-002, D2.2 |
+| POL-BUD-09 | a constraint block is missing after assembly | reject the assembly (fail-closed) | FR-002, D2.2 |
+
+Semantics specific to F2:
+
+- **Monotonic.** The level only rises within a run. `apply_level` is the single mutator and it always emits a
+  `degraded` event; a caller that tries to lower the level raises `LevelRegression` (INV-006).
+- **Projection, not fraction.** The trigger compares the remaining budget with the *projected* remaining
+  spend when a forecast is available. Fixed fractions remain only as the fallback for callers without one;
+  the fixed-fraction form degraded a run whose cap was above the baseline (BUG-004).
+- **L3 changes price, not volume.** Downgrading the model tier does not reduce token count, so the catalogue
+  does not claim a token saving from L3.
+- **L5 is a verdict, not a failure.** The current implementation raises `BudgetExhausted`; mapping it to a
+  portfolio-manager verdict needs the shared orchestrator.
+
+Thresholds are configuration (`LedgerConfig`), not constants, and are marked provisional pending the
+evaluation in `docs/architecture/evaluation-logbook.md`.
