@@ -1,0 +1,3 @@
+Projection after mutating returned copy: 999.0
+The stock rises tomorrow: accept_factual
+股价明天涨: accept_factual

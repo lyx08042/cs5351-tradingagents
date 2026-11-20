@@ -1,0 +1,56 @@
+[
+  {
+    "command": ".venv/bin/python -m pytest -o testpaths=test/offline test/offline/test_evidence.py -q",
+    "exit_code": 0,
+    "output": "m2-run2-01-feature.txt",
+    "elapsed_seconds": 0.62
+  },
+  {
+    "command": ".venv/bin/python -m pytest -o testpaths=test/offline test/offline -q",
+    "exit_code": 0,
+    "output": "m2-run2-02-offline.txt",
+    "elapsed_seconds": 0.87
+  },
+  {
+    "command": ".venv/bin/python -m pytest -q",
+    "exit_code": 0,
+    "output": "m2-run2-03-upstream.txt",
+    "elapsed_seconds": 10.02
+  },
+  {
+    "command": ".venv/bin/python -m ruff check .",
+    "exit_code": 0,
+    "output": "m2-run2-04-ruff.txt",
+    "elapsed_seconds": 0.05
+  },
+  {
+    "command": ".venv/bin/python scripts/check_course.py --root .",
+    "exit_code": 0,
+    "output": "m2-run2-05-course-checker.txt",
+    "elapsed_seconds": 0.07
+  },
+  {
+    "command": "git diff --check",
+    "exit_code": 0,
+    "output": "m2-run2-06a-diff-check.txt",
+    "elapsed_seconds": 0.01
+  },
+  {
+    "command": "git status --short",
+    "exit_code": 0,
+    "output": "m2-run2-06b-status.txt",
+    "elapsed_seconds": 0.01
+  },
+  {
+    "command": "git status --short --untracked-files=all",
+    "exit_code": 0,
+    "output": "m2-run2-07-changed-paths.txt",
+    "elapsed_seconds": 0.01
+  },
+  {
+    "command": ".venv/bin/python -m tradingagents.course.evidence --demo",
+    "exit_code": 0,
+    "output": "m2-run2-08-offline-demo.txt",
+    "elapsed_seconds": 0.03
+  }
+]

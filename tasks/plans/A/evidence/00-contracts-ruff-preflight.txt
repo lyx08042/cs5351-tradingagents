@@ -1,0 +1,14 @@
+SIM102 Use a single `if` statement instead of nested `if` statements
+   --> tradingagents/course/evidence/contracts.py:233:9
+    |
+231 |           unit = None if self.unit is None else _clean_token(self.unit)
+232 |           period = self.period
+233 | /         if period is not None:
+234 | |             if not isinstance(period, str) or _parse_canonical_date(period) is None:
+    | |____________________________________________________________________________________^
+235 |                   raise ValueError(INVALID_DATE)
+236 |           if (self.value is None) == (relation is None):
+    |
+help: Combine `if` statements using `and`
+
+Found 1 error.
