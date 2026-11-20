@@ -1,0 +1,3 @@
+EVAL-008 {"claim_id": "EVAL-008", "evidence_refs": ["ev-1"], "projection": [{"metric": "macd_cross", "period": "2026-08-30", "relation": "golden_cross", "subject": "NVDA", "unit": null, "value": null}], "reasons": ["evidence_supports_factual_claim"], "rejected_refs": [], "verdict": "accept_factual"}
+EVAL-009 {"evidence_id": "ev-future", "reasons": ["future_leakage"], "status": "reject"}
+EVAL-006 {"claim_id": "EVAL-006", "evidence_refs": [], "projection": [], "reasons": ["forecast_requires_hypothesis_label"], "rejected_refs": [], "verdict": "hypothesis"}

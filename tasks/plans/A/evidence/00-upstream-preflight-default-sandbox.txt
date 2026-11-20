@@ -1,0 +1,860 @@
+........................................................................ [  5%]
+.................................s...................................... [ 10%]
+............FFFF.........FF....F........................................ [ 15%]
+........................................................................ [ 20%]
+........................................................................ [ 25%]
+........................................................................ [ 30%]
+............................................................. [ 34%]
+........................................................................ [ 39%]
+........................................................................ [ 45%]
+............................................................................................................................... [ 54%]
+........................................................................ [ 59%]
+........................................................................ [ 64%]
+........................................................................ [ 69%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 84%]
+........................................................................ [ 89%]
+........................................................................ [ 94%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_signing_in_by_pasting_the_redirect_saves_a_private_sign_in ________
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x160194ad0>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x1601942f0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_signing_in_by_pasting_the0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x16018ebe0>
+
+    @pytest.mark.unit
+    def test_signing_in_by_pasting_the_redirect_saves_a_private_sign_in(home, openai):
+        printed = []
+    
+        def token(data):
+            assert data["grant_type"] == "authorization_code" and data["client_id"] == CLIENT
+            assert data["code"] == "c1" and data["code_verifier"]
+            return {"access_token": "a1", "refresh_token": "r1", "expires_in": 3600,
+                    "id_token": _id_token(nonce=_nonce_of(printed)), "scope": auth.SCOPE}
+    
+        openai.token_body = token
+>       email = auth.sign_in(say=printed.append, read_line=_paster(printed), timeout=10, port=0)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_chatgpt_auth.py:245: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127f7b4d0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+____________ test_an_answer_for_another_sign_in_attempt_is_ignored _____________
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x127f7b890>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127f7bb10>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_an_answer_for_another_sig0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127ce8f50>
+
+    @pytest.mark.unit
+    def test_an_answer_for_another_sign_in_attempt_is_ignored(home, openai):
+        printed = []
+        with pytest.raises(auth.ChatGPTAuthError, match="timed out"):
+>           auth.sign_in(say=printed.append, read_line=_paster(printed, lambda q: {**q, "state": "forged"}),
+                         timeout=1, port=0)
+
+tests/test_chatgpt_auth.py:261: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x160105a70>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+_____ test_the_browser_answer_reaches_the_loopback_and_strays_are_ignored ______
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x127f7b9d0>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x160105480>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_the_browser_answer_reache0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127ce9350>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x160412430>
+
+    @pytest.mark.unit
+    def test_the_browser_answer_reaches_the_loopback_and_strays_are_ignored(home, openai, monkeypatch):
+        refused_connect, refused_lookup = socket.socket.connect, socket.getaddrinfo
+        monkeypatch.setattr(socket.socket, "connect", lambda sock, address: (
+            _CONNECT if address[0] == "127.0.0.1" else refused_connect)(sock, address))
+        monkeypatch.setattr(socket, "getaddrinfo", lambda host, *a, **k: (
+            _GETADDRINFO if host == "127.0.0.1" else refused_lookup)(host, *a, **k))
+        printed = []
+        openai.token_body = lambda data: {"access_token": "a1", "refresh_token": "r1", "expires_in": 3600,
+                                          "id_token": _id_token(nonce=_nonce_of(printed)), "scope": auth.SCOPE}
+    
+        def browser():
+            while not any(line.startswith(auth.AUTHORIZE_URL) for line in printed):
+                time.sleep(0.01)
+            asked = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(printed[1]).query))
+            results.append(_status(f"{asked['redirect_uri']}?error=access_denied"))
+            results.append(_status(f"{asked['redirect_uri']}?code=c1&state={asked['state']}&client_id={CLIENT}"))
+    
+        results = []
+        threading.Thread(target=browser, daemon=True).start()
+>       email = auth.sign_in(say=printed.append, read_line=threading.Event().wait, timeout=10, port=0)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_chatgpt_auth.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127fd68d0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+_________________ test_a_sign_in_without_plan_usage_is_refused _________________
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x1601062c0>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x16018f460>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_a_sign_in_without_plan_us0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127c76210>
+
+    @pytest.mark.unit
+    def test_a_sign_in_without_plan_usage_is_refused(home, openai):
+        printed = []
+        openai.token_body = lambda data: {"access_token": "a1", "refresh_token": "r1", "expires_in": 3600,
+                                          "id_token": _id_token(nonce=_nonce_of(printed)),
+                                          "scope": "openid email offline_access"}
+        with pytest.raises(auth.ChatGPTAuthError, match="approve plan usage"):
+>           auth.sign_in(say=printed.append, read_line=_paster(printed), timeout=10, port=0)
+
+tests/test_chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x16018f680>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+______________ test_signing_in_again_revokes_the_replaced_sign_in ______________
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x160106060>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127ce9b50>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_signing_in_again_revokes_0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127b63570>
+
+    @pytest.mark.unit
+    def test_signing_in_again_revokes_the_replaced_sign_in(home, openai):
+        _signed_in(expires_at=time.time() + 3000, refresh_token="old")
+        printed = []
+        openai.token_body = lambda data: {"access_token": "a2", "refresh_token": "r2", "expires_in": 3600,
+                                          "id_token": _id_token(nonce=_nonce_of(printed)), "scope": auth.SCOPE}
+>       auth.sign_in(say=printed.append, read_line=_paster(printed), timeout=10, port=0)
+
+tests/test_chatgpt_auth.py:366: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127ce9c50>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+____________ test_another_account_cannot_replace_the_signed_in_one _____________
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x127fd5910>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127c773e0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_another_account_cannot_re0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127bf5250>
+
+    @pytest.mark.unit
+    def test_another_account_cannot_replace_the_signed_in_one(home, openai):
+        _signed_in(expires_at=time.time() + 3000)
+        printed = []
+        openai.token_body = lambda data: {"access_token": "a2", "refresh_token": "r2", "expires_in": 3600,
+                                          "id_token": _id_token(nonce=_nonce_of(printed), sub="someone-else"),
+                                          "scope": auth.SCOPE}
+        with pytest.raises(auth.ChatGPTAuthError, match="logout chatgpt"):
+>           auth.sign_in(say=printed.append, read_line=_paster(printed), timeout=10, port=0)
+
+tests/test_chatgpt_auth.py:379: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127c76d50>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+______ test_a_network_failure_while_signing_in_is_reported_not_raised_raw ______
+
+callback = <tradingagents.llm_clients.chatgpt_auth._Callback object at 0x16018ee00>
+port = 0
+
+    def _listen(callback: _Callback, port: int) -> http.server.HTTPServer:
+        class Handler(http.server.BaseHTTPRequestHandler):
+            timeout = 5   # a connection that sends nothing cannot hold up the real answer
+    
+            def do_GET(self):  # noqa: N802 (http.server's name)
+                ok = callback.accept(self.path)
+                self.send_response(200 if ok else 400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                if ok:
+                    self.wfile.write(b"Return to the terminal to finish signing in to TradingAgents.\n")
+    
+            def log_message(self, *args):  # the URL carries the sign-in code
+                pass
+    
+        try:
+>           server = http.server.HTTPServer(("127.0.0.1", port), Handler)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tradingagents/llm_clients/chatgpt_auth.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127c53a10>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+home = PosixPath('/private/var/folders/_g/74j1dg7n0kdg3xkq_dshfms00000gn/T/pytest-of-yipmanho/pytest-0/test_a_network_failure_while_s0')
+openai = <tests.test_chatgpt_auth.FakeOpenAI object at 0x127aec250>
+
+    @pytest.mark.unit
+    def test_a_network_failure_while_signing_in_is_reported_not_raised_raw(home, openai):
+        printed = []
+        openai.post_error = auth.requests.ConnectionError("reset")
+        with pytest.raises(auth.ChatGPTUnreachable, match="sign you in to ChatGPT.*try again"):
+>           auth.sign_in(say=printed.append, read_line=_paster(printed), timeout=10, port=0)
+
+tests/test_chatgpt_auth.py:426: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tradingagents/llm_clients/chatgpt_auth.py:339: in sign_in
+    server = _listen(callback, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/llm_clients/chatgpt_auth.py:307: in _listen
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/http/server.py:140: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.HTTPServer object at 0x127bcd1d0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.13/socketserver.py:478: PermissionError
+=============================== warnings summary ===============================
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-haiku-5-0]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-haiku-5-0' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-haiku-4-7-preview]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-haiku-4-7-preview' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-sonnet-4-5]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-4-5' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-sonnet-4-0]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-4-0' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-sonnet-4-20250514]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-4-20250514' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-opus-4-20250514]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-opus-4-20250514' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unsupported_models_do_not_receive_effort[claude-sonnet-4-5-20250929]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-4-5-20250929' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_current_opus_and_sonnet_receive_effort[claude-opus-4-5]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-opus-4-5' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_current_opus_and_sonnet_receive_effort[claude-opus-4-6]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-opus-4-6' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_current_opus_and_sonnet_receive_effort[claude-sonnet-4-6]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-4-6' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_current_opus_and_sonnet_receive_effort[claude-opus-4-5-20251101]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-opus-4-5-20251101' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_future_opus_sonnet_inherit_effort_via_pattern[claude-opus-5-0]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-opus-5-0' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_future_opus_sonnet_inherit_effort_via_pattern[claude-sonnet-5-0]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-sonnet-5-0' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_claude_5_family_receives_effort[claude-mythos-5]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-mythos-5' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_mythos_preview_receives_effort
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-mythos-preview' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_anthropic_effort.py::TestEffortGate::test_unknown_anthropic_model_does_not_receive_effort
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/anthropic_client.py:62: RuntimeWarning: Model 'claude-experimental-x' is not in the known model list for provider 'anthropic'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_google_thinking_level.py::test_latest_alias_remaps_minimal_to_low[gemini-flash-latest]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/google_client.py:46: RuntimeWarning: Model 'gemini-flash-latest' is not in the known model list for provider 'google'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_google_thinking_level.py::test_latest_alias_remaps_minimal_to_low[gemini-pro-latest]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/google_client.py:46: RuntimeWarning: Model 'gemini-pro-latest' is not in the known model list for provider 'google'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_ollama_base_url.py::test_resolver_does_not_affect_other_providers
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/openai_client.py:346: RuntimeWarning: Model 'm' is not in the known model list for provider 'xai'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_ollama_base_url.py::test_resolver_does_not_affect_other_providers
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/openai_client.py:346: RuntimeWarning: Model 'm' is not in the known model list for provider 'deepseek'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_openai_reasoning_effort.py::test_non_reasoning_model_drops_effort
+tests/test_temperature_config.py::TestTemperatureForwarding::test_temperature_reaches_client_when_set[openai-gpt-4.1]
+tests/test_temperature_config.py::TestTemperatureForwarding::test_temperature_omitted_leaves_provider_default
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/openai_client.py:346: RuntimeWarning: Model 'gpt-4.1' is not in the known model list for provider 'openai'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+tests/test_temperature_config.py::TestTemperatureForwarding::test_temperature_reaches_client_when_set[deepseek-deepseek-chat]
+  /Users/yipmanho/projects/cs5351/cs5351-tradingagents/tradingagents/llm_clients/openai_client.py:346: RuntimeWarning: Model 'deepseek-chat' is not in the known model list for provider 'deepseek'. Continuing anyway.
+    self.warn_if_unknown_model()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_bedrock_provider.py:74: could not import 'langchain_aws': No module named 'langchain_aws'
+FAILED tests/test_chatgpt_auth.py::test_signing_in_by_pasting_the_redirect_saves_a_private_sign_in
+FAILED tests/test_chatgpt_auth.py::test_an_answer_for_another_sign_in_attempt_is_ignored
+FAILED tests/test_chatgpt_auth.py::test_the_browser_answer_reaches_the_loopback_and_strays_are_ignored
+FAILED tests/test_chatgpt_auth.py::test_a_sign_in_without_plan_usage_is_refused
+FAILED tests/test_chatgpt_auth.py::test_signing_in_again_revokes_the_replaced_sign_in
+FAILED tests/test_chatgpt_auth.py::test_another_account_cannot_replace_the_signed_in_one
+FAILED tests/test_chatgpt_auth.py::test_a_network_failure_while_signing_in_is_reported_not_raised_raw
+7 failed, 1405 passed, 1 skipped, 1 deselected, 24 warnings, 100 subtests passed in 8.86s

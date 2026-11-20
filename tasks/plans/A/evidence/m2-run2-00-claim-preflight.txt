@@ -1,0 +1,52 @@
+................F........................                                [100%]
+=================================== FAILURES ===================================
+_________ test_factual_declaration_without_fact_distinguishes_outcomes _________
+
+    def test_factual_declaration_without_fact_distinguishes_outcomes():
+        reg = registry([unit()])
+        declared = EV.verify_claim(
+            claim(["ev-1"], fact=None, text="MACD golden cross", classification="factual", claim_id="declared"),
+            registry=reg,
+            policy=POLICY,
+        )
+        assert declared.verdict == "abstain"
+        assert declared.reasons == (EV.NO_STRUCTURED_FACT,)
+        assert declared.rejected_refs == ()
+        undeclared = EV.verify_claim(
+            claim(["ev-1"], fact=None, text="MACD golden cross", classification=None, claim_id="undeclared"),
+            registry=reg,
+            policy=POLICY,
+        )
+        assert undeclared.verdict == "abstain"
+        assert undeclared.reasons == (EV.UNCLASSIFIED,)
+        unknown = EV.verify_claim(
+>           claim(["ev-1"], fact=None, text="MACD golden cross", classification="unknown", claim_id="unknown"),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            registry=reg,
+            policy=POLICY,
+        )
+
+test/offline/test_evidence.py:490: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test/offline/test_evidence.py:116: in claim
+    return EV.Claim.from_record(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tradingagents/course/evidence/claims.py:181: in from_record
+    _clean_identifier(claim_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'unknown'
+
+    def _clean_identifier(value: object) -> str:
+        """Return a stripped identifier, or raise a stable reason for untrusted input."""
+        if not isinstance(value, str):
+            raise ValueError(MALFORMED)
+        token = value.strip()
+        if not token or token.lower() in _UNTRUSTED_TOKENS or "{{" in token or "}}" in token:
+>           raise ValueError(UNTRUSTED)
+E           ValueError: untrusted
+
+tradingagents/course/evidence/claims.py:99: ValueError
+=========================== short test summary info ============================
+FAILED test/offline/test_evidence.py::test_factual_declaration_without_fact_distinguishes_outcomes
+1 failed, 40 passed in 0.18s

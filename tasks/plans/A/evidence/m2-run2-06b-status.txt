@@ -1,0 +1,6 @@
+ M docs/ai-use-log.yaml
+?? docs/architecture/adr/005-evidence-grounded-debate.md
+?? tasks/plans/
+?? test/offline/test_evidence.py
+?? tradingagents/course/
+?? transcripts/role-A/
