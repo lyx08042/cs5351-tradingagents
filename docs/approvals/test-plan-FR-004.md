@@ -1,5 +1,9 @@
 # Test Plan: FR-004
 
+> **Historical record (D branch).** Test plan for D's module, carried into `main` with the D branch
+> merge. It is a **plan, not an approval**, and it does not apply to the CDE integration.
+> See `DEVELOPMENT-POLICY.md`.
+> 
 - 作者：Chaoqun ZHENG ID: 60569580
 - 评审人（非作者）：Jingbin ZHANG
 - 批准状态：PENDING
