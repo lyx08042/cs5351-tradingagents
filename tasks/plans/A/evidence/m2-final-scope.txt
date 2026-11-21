@@ -1,0 +1,108 @@
+Final scope audit for M2 run 2 (2026-11-20T18:28:21+08:00)
+Branch: feat/A-evidence, HEAD: 7dc4651; tracked changes limited to the role-A AI-log summary.
+Changed paths match M1-M2 allowlist; no M3 or protected path changes.
+AI-USE-0001/0002 bytes preserved. m2-run1-* verified unchanged (SHA-256).
+OpenCode: ses_e07c64cd8ffejosyU60JfsMFsC; 86 messages; native raw SHA-256 6633301aaeab78cfa95c508627f9fadb56fefda5e2508e662399aa2faf311042.
+Original OpenCode message IDs preserved; completed repair writes match exactly the five authorized files.
+The ordered acceptance run started after code/test/docs writes, native archiving and role-A summary update.
+Nine command exits 0; all three fixed demo cases and all 19 independent boundary probes verified.
+Evidence links, Git whitespace check and common credential pattern scan clear.
+
+SHA-256 for all current worktree deliverables (this self-referential report excluded):
+db0f72bd26be619401f7e0fb05f504ab004d71ab66d174c91f99616c4493b88e  docs/ai-use-log.yaml
+4cacc8c26135282f5bcff2940bcc4f3061effde75e40969bbb24186e3b961261  docs/architecture/adr/005-evidence-grounded-debate.md
+8f496e7dbc47a1b3e00ba87c3034d30fdf0663c5d077b439ecdf5009c0a5a6f9  tasks/plans/A/FR-001-implementation-plan.md
+f23d035c2d1486dbfb232d860b321025740b1401bb29fbd3e3309245d95d8dd6  tasks/plans/A/FR-001-test-plan.md
+2952a8fbefdaafefdf95ce01c247140235006087a1b67f2ae8c89b31f9d46b5d  tasks/plans/A/evidence/00-constructor-bypass-repro.txt
+747a5be884ea6dc290ee47313a936b25052b86b20a7631201bc8cd462953663b  tasks/plans/A/evidence/00-contracts-ruff-preflight.txt
+68b2dba07267775201beaf8e2fb41f813368a5110b8371df5d33875e49312436  tasks/plans/A/evidence/00-demo-preflight.txt
+dfc5d7b8004b6c084857ed00cec669edd654154d0900924ad37d0461201cac92  tasks/plans/A/evidence/00-feature-preflight.txt
+747a5be884ea6dc290ee47313a936b25052b86b20a7631201bc8cd462953663b  tasks/plans/A/evidence/00-feature-ruff-preflight.txt
+747a5be884ea6dc290ee47313a936b25052b86b20a7631201bc8cd462953663b  tasks/plans/A/evidence/00-module-ruff-preflight.txt
+b2bd83f777b1799045e68c83056f56f823911b2e38a1b33fe5e1f0ef32a29ea2  tasks/plans/A/evidence/00-projection-and-forecast-repro.txt
+dc976681115c9fdc804acb476c41acca91f6b456fcc483d00c1e3de0e30f4eb2  tasks/plans/A/evidence/00-projection-and-forecast-review.txt
+278a040b444b91f0f3eb882c65a0e405571324cad786071d05331ec95fb1e8ff  tasks/plans/A/evidence/00-upstream-preflight-default-sandbox.txt
+40915d827d9fdd2792cf73cb1fc0466cf18163d32d329b9b7e6fd5123ff3c4d6  tasks/plans/A/evidence/00-upstream-preflight-loopback.txt
+5bb9f80e2d0cea6ea1630f68ef999fffe822245036ec22d7d05809ec4958e1d5  tasks/plans/A/evidence/README.md
+8997ac89df070375799259770ad04703997262aabca711a217ca9fb22e595cba  tasks/plans/A/evidence/m2-run1-01-feature.txt
+fe57aa42861152230d8a71e4175cf5a11f9a2188b64271a86f5497f9d8ea045b  tasks/plans/A/evidence/m2-run1-02-offline.txt
+5153115f1535a6cb79e386285ba3dfad38498a87c50ee009629d04e6552a67a5  tasks/plans/A/evidence/m2-run1-03-upstream.txt
+82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18  tasks/plans/A/evidence/m2-run1-04-ruff.txt
+128d63153c54a3bf047361b994bb586ca7bfe5e7b43bd9a03633af2ccb8f288b  tasks/plans/A/evidence/m2-run1-05-course-checker.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  tasks/plans/A/evidence/m2-run1-06a-diff-check.txt
+398179301a7843ab6547fffc2799d8fb242097301b4b0943522d705018adf0db  tasks/plans/A/evidence/m2-run1-06b-status.txt
+b6bd41c1ed6c0f14a44a8b30e38637fde6d1be9490c9f88e8768f7b090f2a529  tasks/plans/A/evidence/m2-run1-07-changed-paths.txt
+68b2dba07267775201beaf8e2fb41f813368a5110b8371df5d33875e49312436  tasks/plans/A/evidence/m2-run1-08-offline-demo.txt
+e1d9af76921dabea7c5461c27f6cff5d9542cbef245a1de788ba21addbf1d7e7  tasks/plans/A/evidence/m2-run1-results.json
+c3615c7e56b352801bb215ed58c738c94e49b0ad955fb787e9d20649f9e6e7ba  tasks/plans/A/evidence/m2-run2-00-before-fix.txt
+417563d521fce5ef7b4318be35acf965cc8ad2541b5ae8868bc79a32ad867a00  tasks/plans/A/evidence/m2-run2-00-claim-preflight.txt
+e5a21d551753f631760fdf11a4cd934ff66551af6ef3cbd6136c489f95835574  tasks/plans/A/evidence/m2-run2-01-feature.txt
+560cffd0c9f392793ecbdef37cc92635037d6c851165fe2fdfb2acf3a71056fb  tasks/plans/A/evidence/m2-run2-02-offline.txt
+d0fc488532e86436ef092dcaa7f6ba8faa8682eb2543ae9e3828296578c49561  tasks/plans/A/evidence/m2-run2-03-upstream.txt
+82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18  tasks/plans/A/evidence/m2-run2-04-ruff.txt
+128d63153c54a3bf047361b994bb586ca7bfe5e7b43bd9a03633af2ccb8f288b  tasks/plans/A/evidence/m2-run2-05-course-checker.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  tasks/plans/A/evidence/m2-run2-06a-diff-check.txt
+9084b20473da751228ea83e9b0ab3a6e0be0135d3f0407b18f86ff0bbb421f6c  tasks/plans/A/evidence/m2-run2-06b-status.txt
+fdc5ab369ffd8a364b64c102480021074f721f65a1bb7bffa12ceaee22d0a4e2  tasks/plans/A/evidence/m2-run2-07-changed-paths.txt
+e4db00782278d193c2e0c8dc32f5c9f32abfeb2a736effbf863f5b9c027ce8c3  tasks/plans/A/evidence/m2-run2-08-offline-demo.txt
+3d048e7e940fcf199e7a20035026df236658223a12fe1c5b521cb0b475959b2a  tasks/plans/A/evidence/m2-run2-09-boundary-probe.txt
+3772ee0810792e1b0c5ef3a338f676293225caf8db04f01baebb810f840f0421  tasks/plans/A/evidence/m2-run2-results.json
+fd5e97284028b974a917ef2cd47a2113a5f1a3a491e3e47fd615b39bd3508696  test/offline/test_evidence.py
+15695aaa6fda61eecbfaa0f3f72cd102b14b7ef7da43c54f2c73b60c3feb8940  tradingagents/course/__init__.py
+6735a5501dcb5fd9390d5f8942582a4796f114d30ae2ba0c7d2f1e5d16ae4372  tradingagents/course/evidence/README.md
+01eff9f6a7b5b6b17500ee793b12ec26cedd16450f9a300d16b48aba075015bd  tradingagents/course/evidence/__init__.py
+4f799774a59ab6b63a2b9a0fa83463c4356f34f3cd6a6e5713e421e45489a87f  tradingagents/course/evidence/__main__.py
+156c41a1881e7b5a0fdcba29fe169d65900c5f48f5aae8ad729f58099247eef9  tradingagents/course/evidence/claims.py
+307b5793c9975f713643cfab9ac78f296b4e4c30b51d42d3b1e55caa146077f1  tradingagents/course/evidence/contracts.py
+3397b4e9713c6d216cc10b56cd34c413aa2438d8ec486c53018b4abee3f1321b  transcripts/role-A/annotations.md
+6633301aaeab78cfa95c508627f9fadb56fefda5e2508e662399aa2faf311042  transcripts/role-A/raw.json
+
+Final git status --short --untracked-files=all:
+ M docs/ai-use-log.yaml
+?? docs/architecture/adr/005-evidence-grounded-debate.md
+?? tasks/plans/A/FR-001-implementation-plan.md
+?? tasks/plans/A/FR-001-test-plan.md
+?? tasks/plans/A/evidence/00-constructor-bypass-repro.txt
+?? tasks/plans/A/evidence/00-contracts-ruff-preflight.txt
+?? tasks/plans/A/evidence/00-demo-preflight.txt
+?? tasks/plans/A/evidence/00-feature-preflight.txt
+?? tasks/plans/A/evidence/00-feature-ruff-preflight.txt
+?? tasks/plans/A/evidence/00-module-ruff-preflight.txt
+?? tasks/plans/A/evidence/00-projection-and-forecast-repro.txt
+?? tasks/plans/A/evidence/00-projection-and-forecast-review.txt
+?? tasks/plans/A/evidence/00-upstream-preflight-default-sandbox.txt
+?? tasks/plans/A/evidence/00-upstream-preflight-loopback.txt
+?? tasks/plans/A/evidence/README.md
+?? tasks/plans/A/evidence/m2-final-scope.txt
+?? tasks/plans/A/evidence/m2-run1-01-feature.txt
+?? tasks/plans/A/evidence/m2-run1-02-offline.txt
+?? tasks/plans/A/evidence/m2-run1-03-upstream.txt
+?? tasks/plans/A/evidence/m2-run1-04-ruff.txt
+?? tasks/plans/A/evidence/m2-run1-05-course-checker.txt
+?? tasks/plans/A/evidence/m2-run1-06a-diff-check.txt
+?? tasks/plans/A/evidence/m2-run1-06b-status.txt
+?? tasks/plans/A/evidence/m2-run1-07-changed-paths.txt
+?? tasks/plans/A/evidence/m2-run1-08-offline-demo.txt
+?? tasks/plans/A/evidence/m2-run1-results.json
+?? tasks/plans/A/evidence/m2-run2-00-before-fix.txt
+?? tasks/plans/A/evidence/m2-run2-00-claim-preflight.txt
+?? tasks/plans/A/evidence/m2-run2-01-feature.txt
+?? tasks/plans/A/evidence/m2-run2-02-offline.txt
+?? tasks/plans/A/evidence/m2-run2-03-upstream.txt
+?? tasks/plans/A/evidence/m2-run2-04-ruff.txt
+?? tasks/plans/A/evidence/m2-run2-05-course-checker.txt
+?? tasks/plans/A/evidence/m2-run2-06a-diff-check.txt
+?? tasks/plans/A/evidence/m2-run2-06b-status.txt
+?? tasks/plans/A/evidence/m2-run2-07-changed-paths.txt
+?? tasks/plans/A/evidence/m2-run2-08-offline-demo.txt
+?? tasks/plans/A/evidence/m2-run2-09-boundary-probe.txt
+?? tasks/plans/A/evidence/m2-run2-results.json
+?? test/offline/test_evidence.py
+?? tradingagents/course/__init__.py
+?? tradingagents/course/evidence/README.md
+?? tradingagents/course/evidence/__init__.py
+?? tradingagents/course/evidence/__main__.py
+?? tradingagents/course/evidence/claims.py
+?? tradingagents/course/evidence/contracts.py
+?? transcripts/role-A/annotations.md
+?? transcripts/role-A/raw.json
