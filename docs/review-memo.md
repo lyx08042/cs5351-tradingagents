@@ -117,3 +117,19 @@ F4 and F5 were accepted by the author, who will state the offline-test caveat an
 description. F1 remains open: the three plan documents arrived with D's branch and are textually identical to
 D's copies, so the decision whether they belong in `docs/approvals/` sits with D and the leader. Re-review is
 pending that decision; no approval is claimed.
+
+#### F1 mitigation (2026-11-21)
+
+The leader accepted the reviewer's proposal: the three plan documents carried in from the D branch stay in
+`docs/approvals/` **only with a status line** at the top of each file:
+
+> Historical record (D branch). Carried into `main` with the D branch merge. It records a stage approval for
+> D's independent module only. It supersedes nothing and is not an approval for the CDE integration. See
+> `DEVELOPMENT-POLICY.md`.
+
+Author D agreed to the change. The files sit on a human-only path, so the reviewer did **not** edit them; the
+change is made by a member through the GitHub web editor and proposed as a small PR against
+`feat/CDE-integration`. This memo records the decision and the owner of the fix, not the fix itself.
+
+Reviewer's approval of PR #3 is conditional on that line landing before `main` first contains those files.
+If it does not land, this note is the record that the condition was known and accepted.
