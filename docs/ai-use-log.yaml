@@ -87,7 +87,7 @@ entries:
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
       tasks/plans/<A-E>/ (not docs/approvals/).
-  - id: AI-USE-0003
+  - id: AI-USE-B-0001
     date: "2026-11-15"
     model: "DeepSeek (harness default)"
     tool: "DeepSeek Harness coding agent"

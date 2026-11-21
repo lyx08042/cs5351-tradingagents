@@ -55,7 +55,7 @@ Four items were raised against `cba1277`; all four were accepted and fixed in `b
 
 | # | Finding | Resolution |
 |---|---|---|
-| 1 | `AI-USE-0002`, the owner's historical G-1/D9 entry, had been rewritten | Restored verbatim from `origin/main`; only the new AI-USE-0003 entry is added (`git diff origin/main -- docs/ai-use-log.yaml` now shows an addition only) |
+| 1 | `AI-USE-0002`, the owner's historical G-1/D9 entry, had been rewritten | Restored verbatim from `origin/main`; only the new AI-USE-B-0001 entry is added (`git diff origin/main -- docs/ai-use-log.yaml` now shows an addition only) |
 | 2 | `reserve()` borrowed quota before validating the call id, and never checked settled ids | Identity is validated before any borrow or charge; settled ids are rejected; two regression tests added |
 | 3 | Stage attribution fell back to `analyst` when a caller passes no config (the researchers call `llm.invoke(prompt)`); `include_raw` usage was ignored; a provider returning negative usage leaked the reservation; a single-call overrun was returned downstream | Added `budget_stage()` / `with_stage()` / `stage_resolver`; usage is read from the `raw` member; a failed settlement releases the reservation; an overrun that exhausts the pool raises `BudgetOverrun` carrying the response |
 | 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 58 tests, integration described as fourteen lines, ADR-002 and the catalogue recorded as written, `INV-006` added |
@@ -64,8 +64,8 @@ Deferred by agreement with the reviewer:
 
 - Protecting A's `as_of` / `evidence_ref` blocks during compaction, and wiring `DegradationPolicy` into the
   runtime — both belong to the shared orchestrator and will be handled in the group integration PR.
-- `ADR-002` collides with C's ADR numbering and `tradingagents/course/__init__.py` conflicts with the
-  A/CDE branches; both are to be resolved at integration.
+- ADR numbering was resolved on this branch: the B ADR became `005`, so C's `002` stays unique.
+  `tradingagents/course/__init__.py` still conflicts with the A/CDE branches and is left to integration.
 
 #### Checklist (round 2, at `b23f541`)
 
@@ -73,17 +73,39 @@ Deferred by agreement with the reviewer:
 |---|---|---|
 | Test plan approved (`docs/approvals/`) | n/a | pre-coding approval disabled by `DEVELOPMENT-POLICY.md`; recorded as a course deviation |
 | Implementation plan approved | n/a | same policy; plans are working documents under `tasks/plans/B/` |
-| Safety-change ADR | n/a | the module changes no safety boundary; ADR-002 covers the integration point |
+| Safety-change ADR | n/a | the module changes no safety boundary; ADR-005 covers the integration point |
 | At least one negative test | pass | 58 offline tests; new ones cover duplicate ids, settled-id reuse, negative usage, single-call overrun |
 | Existing tests not weakened | pass | `tests/` untouched |
 | `tests/` not modified | pass | `git diff origin/main -- tests/` is empty |
 | Leaf modules free of cycles | pass | `test_budget_module_does_not_import_sibling_leaf_modules` |
 | Missing-data semantics (unavailable vs neutral) | n/a | owned by module D |
 | fail-closed behaviour verified | pass | invalid config raises; a denied call never reaches the provider; an overrun raises |
-| ai-use-log updated | pass | AI-USE-0003 (history restored) |
+| ai-use-log updated | pass | AI-USE-B-0001 (history restored) |
 | Documentation status truthful | pass | `tasks/plans/B/validation.md` §5 lists what was not verified |
 
 #### Verdict
 
 Round 1: **CHANGES REQUIRED**. Round 2: awaiting the reviewer's re-check; **no approval is claimed here**.
 When the reviewer approves on GitHub, record their handle and the date in this table.
+
+### PR #3 — feat/CDE-integration (reviewed by role B)
+
+- PR / commit: #3 / `afe1215` (48 commits, 72 files, +71,429 / −14)
+- 作者: role C (C + D + E integration)
+- 评审人（非作者）: 60399223 SONG Yixin (role B)
+- 评审日期: 2026-11-21
+- 关联需求 ID: FR-003, FR-004, FR-005, INV-003/004/005
+
+Method: static review of the diff and of repository metadata. Nothing was executed locally (no runtime
+dependencies, no provider key), so behavioural claims are read, not measured.
+
+| # | Finding | Blocking |
+|---|---|---|
+| F1 | Three D plans added under `docs/approvals/**`, a human-only path; they belong under `tasks/plans/D/` | yes |
+| F2 | C's `adr/002-simulation-safety.md` collided with the B branch's ADR-002 | yes — **resolved**: B renumbered its ADR to `005` |
+| F3 | `AI-USE-0003` is duplicated across the B and D branches; this PR already carries D's entry | yes — **resolved**: B renamed its entry to `AI-USE-B-0001` |
+| F4 | The five new `test/offline/*.py` files are not collected by any workflow (`testpaths=["tests"]`); CI green does not cover them | no, needs a caveat |
+| F5 | `cli/main.py` is a protected baseline file; the scope must be recorded | no, needs a record |
+
+Verdict: **CHANGES REQUIRED** for F1–F3; F4 and F5 need a sentence rather than a code change. Full record:
+`tasks/plans/B/review-of-PR3.md`. No approval is claimed.
