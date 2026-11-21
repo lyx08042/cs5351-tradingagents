@@ -80,3 +80,64 @@
 - 类型: decision / contract
 - 内容: Implemented D behavior separates availability from sentiment. Five required domains are `news`, `social`, `macro`, `price`, `fundamentals`. An explicit valid zero with `value_present=True` is `available`; an absent/None/missing field is not coerced to 0 or neutral. `status=neutral` is forbidden. The fixed `CUTOFF="2026-11-05"` fixture is used; the code does not read the system clock or reach the network. The decision output retains domain, status, evidence/source date, reason, insufficient domains, and a JSON-serializable event payload. Persistence is owned by E, not D.
 - 关联: INV-004; NFR-004; contracts `tradingagents/course/data_quality/`.
+
+---
+
+## Session 2 — C→D review fix, 2026-11-21
+
+- Student ID: 60569580
+- Name: Chaoqun ZHENG
+- Role: D — F4 global data sufficiency / admission
+- Session ID: ses_e0280512bffe80eIRbaEhoEt75
+- Raw record: `raw.md` (complete OpenCode TUI export; read-only, do not edit)
+- Model: CS5351/DeepSeek-V4-Flash (CityU Foundry)
+- Branch: `feat/D-data-quality`
+- Scope: Reproduce and fix the two boundary defects raised by non-author reviewer C; add regression and positive tests; sync the test plan; a later turn renamed test/plan IDs without touching business source.
+
+## Annotation 10
+
+- 时间: 2026-11-21 17:46:05 (session start)
+- 位置: `raw.md` line 9 (`User`)
+- 类型: prompt
+- 内容: The operator asked the agent to confirm the working directory and list the D module files (`pwd && ls tradingagents/course/data_quality/`) before any edit.
+- 关联: FR-004; baseline `bd3a853`.
+
+## Annotation 11
+
+- 时间: 2026-11-21
+- 位置: `raw.md` line 47 (`User`); review background line 62
+- 类型: prompt / review
+- 内容: The agent was instructed to act as the role-D coding agent, reproduce each reported scenario before fixing it, and report real command output; no fabricated test results, approvals, session metadata, or identities. Editable scope: `contracts.py`, `classifier.py`, `admission.py` (narrow change only), `test/offline/test_data_quality.py`, `tasks/plans/D/FR-004-test-plan.md`. Frozen: `docs/approvals/**`, `.opencode/**`, `.github/**`, `scripts/**`, other leaf modules, governance files, dependency manifests. Reviewer C re-ran the D test file at commit `bd3a853` (20 passed) and found two defects: (1) `value_present` relies on Python truthiness, so the string `"false"` is truthy and flips review to proceed; (2) a direct `DomainLabel` with `status="available"`, `source=None`, `sentiment=0`, other four domains valid, wrongly yields proceed.
+- 关联: C→D review; FR-004 / INV-004 / NFR-004; baseline `bd3a853`.
+
+## Annotation 12
+
+- 时间: 2026-11-21
+- 位置: `raw.md` Assistant lines 98 and 1085 (implementation edits)
+- 类型: decision / correction
+- 内容: The direct-label public entry was kept. In `classifier.py`, a non-boolean `value_present` (e.g. the string `"false"`) is classified `unknown` (fail-closed) instead of being coerced by truthiness; no exception is raised for that input; the existing true/absent logic is unchanged. In `contracts.py`, `validate_label` rejects an `available` label whose source is `None` or blank/whitespace, recording violation `available_without_source`, and the decision becomes review; `unavailable`/`unknown` labels are not required to carry a source. Added: positive PT-direct (direct available label with valid non-empty source, sentiment=0, other four domains sourced → proceed), NT-13 (`value_present="false"` → unknown/review, domain in `insufficient_domains`), NT-14 (`source=None` and `source=""` → review / `available_without_source`).
+- 关联: `classifier.py`; `contracts.py`; `test/offline/test_data_quality.py`; `tasks/plans/D/FR-004-test-plan.md`.
+
+## Annotation 13
+
+- 时间: 2026-11-21
+- 位置: `raw.md` lines 1217–1253; summary lines 1332–1334
+- 类型: test
+- 内容: Real command output reported by the agent: `pytest test/offline/test_data_quality.py -q` → 23 passed in 0.32s; `pytest test/offline/ -q` → 43 passed in 2.51s; `ruff check` → All checks passed!. The upstream `tests/` full regression was not run in this session (yfinance/pandas dependency blocker carried over from session 1) and was not claimed as passed.
+- 关联: evidence lines 1231, 1251, 1253, 1332–1334; BASE-002 upstream regression pending.
+
+## Annotation 14
+
+- 时间: 2026-11-21
+- 位置: `raw.md` line 1340 (`User`); result lines 1414, 1424
+- 类型: correction
+- 内容: A later turn renaming only: test/plan IDs were renamed, with no business-source edit (`classifier.py`, `contracts.py`, `admission.py` untouched). Old nt13 (available-without-source) → nt14 first, then nt0 (value_present non-bool) → nt13; test-plan rows synced to NT-14 and NT-13 in that order to avoid ID collision. Re-ran the D file → 23 passed in 0.34s.
+- 关联: `test/offline/test_data_quality.py`; `tasks/plans/D/FR-004-test-plan.md`.
+
+## Annotation 15
+
+- 时间: 2026-11-21 (session end 18:40:15)
+- 位置: `raw.md` line 1420 (`Assistant` final summary)
+- 类型: stop / review
+- 内容: The session ended after the rename re-run. No `git add`/`commit`/`push`/`fetch`/`merge` was executed inside the OpenCode session (verified: no such command appears in `raw.md`). Commit `fdc4da5`, the draft PR #1, and the `docs/ai-use-log.yaml` entry were recorded by the human member after the session, outside this transcript. The upstream full regression still has to be re-run in a full-dependency or CI environment.
+- 关联: PR #1 draft; `docs/ai-use-log.yaml`; BASE-002 upstream regression pending; FR-004 / INV-004 / NFR-004.
