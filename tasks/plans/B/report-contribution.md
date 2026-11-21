@@ -10,8 +10,8 @@
 |---|---|
 | Pull request | [#4](https://github.com/lyx08042/cs5351-tradingagents/pull/4) |
 | Branch | `feat/B-budget` |
-| Commits | 17 |
-| Files | 32 (+8,769 / −11 at the point of the first review) |
+| Commits | 19 |
+| Files | 36 (+9,204 / −7; 32 files at the first review) |
 | Requirements | FR-002, FR-006, INV-002, INV-006 (touches NFR-001, NFR-002) |
 | CI | 8/8 checks green on `4b994e9` (tests on py3.11–3.14, clean-install, ruff, scaffold) |
 

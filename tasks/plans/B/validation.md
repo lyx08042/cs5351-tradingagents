@@ -36,9 +36,11 @@
 
 | Requirement | Fit criterion | Tests |
 |---|---|---|
-| FR-002 | calls executed after exhaustion = 0 | `nt1`, `nt4`, `nt15` |
+| FR-002 | calls executed after exhaustion = 0 | `nt1`, `nt4`, `nt17` |
 | FR-002 | concurrent oversell = 0 | `nt5` (16 threads, 10 admitted) |
-| FR-002 | reservation released when the provider fails | `nt14` |
+| FR-002 | reservation released when the provider fails | `nt14`, `nt16` |
+| FR-002 | duplicate or reused call ids rejected without side effects | `nt14`, `nt15` |
+| FR-002 | canonical stage names attributed correctly | `pt30`, `pt31` |
 | FR-006 | degradations without a recorded reason = 0 | `nt6`, `nt7`, `pt14` |
 | INV-002 | reserve-before-settle, no double charge | `pt2`, `pt3`, `nt3`, `nt9` |
 | INV-006 | level never regresses | `nt6` |
@@ -49,7 +51,8 @@
 1. **Live model comparison** 鈥?no provider key was available; `test/live/eval_budget.py` is written and
    syntax-checked but never executed. `NFR-001` and `NFR-002` therefore remain `inconclusive`.
 2. **Upstream regression suite (1412 tests)** 鈥?not runnable on the authoring machine; deferred to CI.
-3. **Independent review** 鈥?A has not reviewed this work yet; `tasks/plans/B/handoff.md` is the request.
+3. **Independent review** - reviewer A completed two rounds (four findings, then one); the
+   record is in docs/review-memo.md. A formal GitHub approval was still pending when this was written.
 4. **Per-call token split** 鈥?synthetic inside `replay.py`, calibrated to the recorded totals; the original
    run did not record per-call usage.
 5. **L5 degraded verdict** 鈥?the proxy raises `BudgetExhausted`; mapping it to a portfolio-manager verdict

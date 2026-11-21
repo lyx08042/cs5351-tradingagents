@@ -1,44 +1,54 @@
 # Role B — Run Budget (FR-002): Planning Workspace
 
-> Status: **DRAFT / placeholder**. This file states the scope and file locations for role B only. It claims no completed implementation, test result, or approval.
-> This directory (`tasks/plans/B/`) is where B's implementation plan and test design live. Under `DEVELOPMENT-POLICY.md` §3 these are working documents, not approval gates. Do not add new plans to `docs/approvals/`.
+> Status: **DRAFT / working notes**. This file records the scope and file locations for role B. It claims no
+> approval and no completed review.
+> This directory (`tasks/plans/B/`) holds B's plans and evidence. Under `DEVELOPMENT-POLICY.md` §3 these are
+> working documents, not approval gates. Do not add new plans to `docs/approvals/`.
 
 ## 1. Scope
 
 | Item | Content |
 |---|---|
-| Primary requirement | `FR-002` run budget: reserve before a call, settle after it, fail closed when the budget is exceeded |
-| Invariant | `INV-002` reserve-then-settle ordering; deny calls beyond the budget |
-| Non-functional | `NFR-001` cost down 20% (provisional target), `NFR-002` quality regression at most 3pp (provisional target) |
-| Proposed code path | `tradingagents/course/budget/` |
-| Offline tests | `test/offline/` |
+| Primary requirement | `FR-002` run budget: allocation, reserve before a call, settle after it, fail closed past the cap |
+| Degradation | `FR-006` ladder L0–L5, monotonic, every change emits an event |
+| Invariants | `INV-002` (reserve-then-settle), `INV-006` (monotonic level, no silent degradation) |
+| Non-functional | `NFR-001` cost (provisional), `NFR-002` quality (provisional) |
+| Code path | `tradingagents/course/budget/` |
+| Offline tests | `test/offline/test_budget*.py` (58 tests) |
 | Review chain | A reviews B; B reviews C; handoff direction B → A |
 
-## 2. Files this directory will hold
+## 2. Files in this directory
 
-- `FR-002-scope.md` — scope definition: budget model, degradation ladder, acceptance criteria (present)
-- `FR-002-implementation-plan.md` — contracts, state machine, integration points, milestones
-- `FR-002-test-plan.md` — positive and negative cases, invariant coverage, verification commands
+- `FR-002-scope.md` — scope, budget model, ladder, acceptance criteria
+- `FR-002-implementation-plan.md` — contracts, state machine, integration point
+- `FR-002-test-plan.md` — positive and negative cases, verification commands
+- `handoff.md` — seven-category handoff to the reviewer
+- `validation.md` — what was verified, and what was not
+- `report-contribution.md` — consolidated material for `Report.md`
+- `evidence/` — archived test, lint and replay output, plus the BUG-004 note
 
-## 3. Open questions to settle before planning
+## 3. Decisions taken (formerly open questions)
 
-1. **Boundary of FR-002**: a global pool with a hard rejection (current wording), or allocation across agents plus graceful degradation (the three capabilities listed for role B in the team plan)? This decides whether the ledger contract carries `agent` / `stage` fields.
-2. **Budget unit**: tokens, call counts, or derived cost — which are the primary measures?
-3. **Concurrency semantics**: with four analysts calling in parallel, how does the shared pool avoid overselling (lock, compare-and-set, reserve-then-refund)?
-4. **Runtime semantics at exhaustion**: abort the run, emit a partial result, or continue with a `degraded` flag?
+1. **Boundary of FR-002** — allocation across stages plus graceful degradation, not a bare global cap. FR-002
+   was rewritten and FR-006/INV-006 added; the ledger therefore carries `agent` and `stage`.
+2. **Budget unit** — tokens are the primary measure; call count is a secondary hard cap; cost is derived and
+   used for reporting only.
+3. **Concurrency** — one lock per ledger, and the balance check plus the charge are a single atomic step.
+   Pinned by a 16-thread test that admits exactly ten calls.
+4. **Semantics at exhaustion** — degrade along the ladder; the final level emits an explicitly degraded
+   verdict. A single call that alone exhausts the pool raises `BudgetOverrun` instead of returning silently.
 
 ## 4. Out of bounds
 
 - Do not modify the upstream baseline: `tradingagents/` (except the new `course/`), `cli/`, `tests/`, `pyproject.toml`.
-- Do not write plans into `docs/approvals/` (human-only directory; agents must not edit it).
-- Do not claim approved, implemented, or evaluated status; `PROPOSED` never becomes `APPROVED` through a documentation edit alone.
-- No circular imports between leaf modules; the shared thin orchestrator changes only through a coordination PR.
-- Never read or commit API keys; offline by default, and live evaluation requires explicit human authorisation of provider, model, and cost cap.
+- Do not write plans into `docs/approvals/` (human-only).
+- Do not claim approved, implemented or evaluated status that is not true.
+- No circular imports between leaf modules; the thin orchestrator changes only via a coordination PR.
 
 ## 5. References
 
-- `tasks/B-budget.md` — task book (deliverables, contract, acceptance table)
-- `docs/req/requirements.yaml` — FR-002 / INV-002 / NFR-001 / NFR-002
+- `tasks/B-budget.md` — task book
+- `docs/req/requirements.yaml` — FR-002 / FR-006 / INV-002 / INV-006
+- `docs/architecture/adr/002-budget-at-the-model-client-boundary.md`
 - `docs/architecture/invariants.md`, `docs/architecture/trace-matrix.md`
 - `DEVELOPMENT-POLICY.md` — the active workflow
-- `tasks/plans/D/` — D's implementation and test plans, a useful format reference
