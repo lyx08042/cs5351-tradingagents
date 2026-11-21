@@ -109,3 +109,11 @@ dependencies, no provider key), so behavioural claims are read, not measured.
 
 Verdict: **CHANGES REQUIRED** for F1–F3; F4 and F5 need a sentence rather than a code change. Full record:
 `tasks/plans/B/review-of-PR3.md`. No approval is claimed.
+
+#### Author response (2026-11-21)
+
+F2 and F3 are resolved on the B side (ADR renumbered to `005`, AI-use entry renamed to `AI-USE-B-0001`).
+F4 and F5 were accepted by the author, who will state the offline-test caveat and the CLI scope in the PR
+description. F1 remains open: the three plan documents arrived with D's branch and are textually identical to
+D's copies, so the decision whether they belong in `docs/approvals/` sits with D and the leader. Re-review is
+pending that decision; no approval is claimed.

@@ -119,3 +119,17 @@ Once F1–F3 are addressed, the scope, the tests and the protected paths are acc
 - The 71k added lines are mostly transcripts (`role-E`, `role-CDE`, `role-C`, D's session), which were
   sampled but not read line by line.
 - Semantic quality of the safety rules was not assessed; that is C's own verification concern.
+
+## 7. Author's response (2026-11-21)
+
+Reviewed author's reply, item by item:
+
+| Finding | Author's position | Reviewer's position |
+|---|---|---|
+| F1 approvals directory | The three files came in with the D branch merge and are identical to D's copies. He will confirm with D and the leader whether to keep them and where, then report back. | Kept open. The question is not whether the text was altered but whether plan documents belong in `docs/approvals/` in `main` at all. The decision belongs to D and the leader; whatever they decide should be recorded next to the file, so that a filename containing "approved" is not read as a current approval. |
+| F2 ADR numbering | Accepts the split; C keeps 002. | Resolved on the B side: B renumbered its ADR to `005`. |
+| F3 AI-use duplication | Accepts; B handles its own entry. | Resolved on the B side: B's entry is now `AI-USE-B-0001`. |
+| F4 offline tests | Agrees that `1596 passed` is a local figure; will state it in the PR description. | Accepted. No code change needed. |
+| F5 CLI scope | Explains `--course-inputs PATH`: reads a JSON course request, checks instrument and date, hands it to `propagate`; without the flag the old flow is unchanged. Will add this to the description. | Accepted. The explanation is the interface contract the governance file asks for. |
+
+Re-review is pending the author's update. No approval is claimed in this record.
