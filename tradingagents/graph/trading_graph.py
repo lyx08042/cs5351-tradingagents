@@ -57,6 +57,7 @@ class TradingAgentsGraph:
         debug=False,
         config: dict[str, Any] = None,
         callbacks: list | None = None,
+        budget: Any = None,
     ):
         """Initialize the trading agents graph and components.
 
@@ -65,6 +66,8 @@ class TradingAgentsGraph:
             debug: Whether to run in debug mode
             config: Configuration dictionary. If None, uses default config
             callbacks: Optional list of callback handlers (e.g., for tracking LLM/tool stats)
+            budget: Optional course budget ledger (FR-002). When provided, both
+                model tiers are wrapped so every call reserves and settles.
         """
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
@@ -78,6 +81,17 @@ class TradingAgentsGraph:
         extra = {"callbacks": self.callbacks} if self.callbacks else {}
         self.deep_thinking_llm = create_tier_client(self.config, "deep", **extra).get_llm()
         self.quick_thinking_llm = create_tier_client(self.config, "quick", **extra).get_llm()
+
+        # Course extension (FR-002 / FR-006): an injected ledger meters every
+        # model call at the client boundary. With no ledger the behaviour of
+        # the graph is exactly the upstream baseline.
+        self.budget = budget
+        if budget is not None:
+            from tradingagents.course.budget.integration import wrap_models
+
+            self.quick_thinking_llm, self.deep_thinking_llm = wrap_models(
+                self.quick_thinking_llm, self.deep_thinking_llm, budget
+            )
 
         self.memory_log = TradingMemoryLog(self.config)
 

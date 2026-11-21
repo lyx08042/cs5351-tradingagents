@@ -68,6 +68,22 @@
   related: [GOV-001, G-1, D9]
   status: accepted
   discovered_at: "2026-11-07"
+
+- id: DEBT-006
+  category: evaluation
+  title: Hand-written statistics drift after every change (documentation rot)
+  description: >
+    A final audit of the role-B branch found five stale figures at once: the test count
+    (49 -> 56 -> 58), the file and commit counts in the report material (32 -> 36 files,
+    17 -> 19 commits), a "open questions" section in tasks/plans/B/README.md whose questions
+    had all been answered, and a validation line still saying the reviewer had not looked at
+    the work. Code was correct in every case; only the prose lagged behind.
+  impact: >
+    A reviewer reads outdated numbers, and a report that copies them states something untrue.
+    It also slows review, because every figure has to be re-derived before it can be trusted.
+  related: [FR-002, FR-006, D4, D6]
+  status: mitigated
+  discovered_at: "2026-11-21"
 ```
 
 ## 说明
