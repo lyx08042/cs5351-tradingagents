@@ -58,7 +58,7 @@ Four items were raised against `cba1277`; all four were accepted and fixed in `b
 | 1 | `AI-USE-0002`, the owner's historical G-1/D9 entry, had been rewritten | Restored verbatim from `origin/main`; only the new AI-USE-0003 entry is added (`git diff origin/main -- docs/ai-use-log.yaml` now shows an addition only) |
 | 2 | `reserve()` borrowed quota before validating the call id, and never checked settled ids | Identity is validated before any borrow or charge; settled ids are rejected; two regression tests added |
 | 3 | Stage attribution fell back to `analyst` when a caller passes no config (the researchers call `llm.invoke(prompt)`); `include_raw` usage was ignored; a provider returning negative usage leaked the reservation; a single-call overrun was returned downstream | Added `budget_stage()` / `with_stage()` / `stage_resolver`; usage is read from the `raw` member; a failed settlement releases the reservation; an overrun that exhausts the pool raises `BudgetOverrun` carrying the response |
-| 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 56 tests, integration described as fourteen lines, ADR-002 and the catalogue recorded as written, `INV-006` added |
+| 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 58 tests, integration described as fourteen lines, ADR-002 and the catalogue recorded as written, `INV-006` added |
 
 Deferred by agreement with the reviewer:
 
@@ -74,7 +74,7 @@ Deferred by agreement with the reviewer:
 | Test plan approved (`docs/approvals/`) | n/a | pre-coding approval disabled by `DEVELOPMENT-POLICY.md`; recorded as a course deviation |
 | Implementation plan approved | n/a | same policy; plans are working documents under `tasks/plans/B/` |
 | Safety-change ADR | n/a | the module changes no safety boundary; ADR-002 covers the integration point |
-| At least one negative test | pass | 56 offline tests; new ones cover duplicate ids, settled-id reuse, negative usage, single-call overrun |
+| At least one negative test | pass | 58 offline tests; new ones cover duplicate ids, settled-id reuse, negative usage, single-call overrun |
 | Existing tests not weakened | pass | `tests/` untouched |
 | `tests/` not modified | pass | `git diff origin/main -- tests/` is empty |
 | Leaf modules free of cycles | pass | `test_budget_module_does_not_import_sibling_leaf_modules` |

@@ -18,7 +18,7 @@
 Code: `tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py`, plus a
 fourteen-line opt-in change in `tradingagents/graph/trading_graph.py`.
 Tests: `test/offline/test_budget.py`, `test_budget_integration.py`, `test_budget_replay.py`
-(56 tests), and `test/live/eval_budget.py` (offline-safe driver, never executed).
+(58 tests), and `test/live/eval_budget.py` (offline-safe driver, never executed).
 Plans and evidence: `tasks/plans/B/` including `evidence/`.
 Session record: `transcripts/60399223-YixinSONG/{raw.md,annotations.md}`.
 Governance: `docs/ai-use-log.yaml` (AI-USE-0003), `docs/bug-diary.md` (BUG-004),
@@ -55,7 +55,7 @@ output and would otherwise escape accounting. ADR-002 records this decision agai
 ## 3. Verification
 
 Three tiers. **Structural:** a source scan asserts the budget package imports none of the sibling leaves.
-**Behavioural:** 56 offline tests; the negative cases are the substance — a call beyond the cap is refused,
+**Behavioural:** 58 offline tests; the negative cases are the substance — a call beyond the cap is refused,
 16 threads against a 10-call budget admit exactly 10, a repeated settlement charges once, a duplicate id
 leaves the quota untouched, a provider failure or a nonsense usage releases its reservation, a lower
 degradation level raises, and a single call that exhausts the pool raises instead of returning. **Regression:**
@@ -91,7 +91,7 @@ Three findings:
 | 1 | `AI-USE-0002`, the owner's historical G-1/D9 record, had been overwritten by the agent | Restored verbatim from `origin/main`; `git diff origin/main -- docs/ai-use-log.yaml` now shows an addition only |
 | 2 | `reserve()` borrowed quota before validating the call id, and never checked settled ids | Identity validated first; settled ids rejected; two regression tests |
 | 3 | Stage attribution fell back to `analyst` when no config is passed; `include_raw` usage ignored; negative usage leaked the reservation; a single-call overrun was returned downstream | `budget_stage()` / `with_stage()` / `stage_resolver`; usage read from `raw`; failed settlement releases; `BudgetOverrun` raised with the response attached |
-| 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 56 tests; ADR-002 and the catalogue recorded; `INV-006` added |
+| 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 58 tests; ADR-002 and the catalogue recorded; `INV-006` added |
 
 The first finding is the one worth reporting: an agent rewriting a historical governance entry is exactly the
 class of damage that a non-author review exists to catch, and it would have silently replaced the owner's

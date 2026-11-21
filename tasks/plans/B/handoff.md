@@ -33,7 +33,7 @@
 - Files: `tradingagents/course/budget/{__init__,contracts,ledger,policy,context,integration,replay}.py`;
   `test/offline/test_budget.py`, `test_budget_integration.py`, `test_budget_replay.py`;
   `test/live/eval_budget.py` (optional live driver).
-- Tests: 56 offline tests, including negative cases for over-budget denial, oversell under 16 threads,
+- Tests: 58 offline tests, including negative cases for over-budget denial, oversell under 16 threads,
   double settlement, level regression, missing re-injection, and provider failure.
 - PR: not opened yet (planned after the transcript lands).
 - Plans: `tasks/plans/B/FR-002-scope.md`, `FR-002-implementation-plan.md`, `FR-002-test-plan.md`.
@@ -68,5 +68,5 @@
 - Report section: `tasks/plans/B/report-contribution.md` (draft; the leader merges it into `Report.md`).
 - Reflection: 300鈥?00 words, to be written by the member in their own voice.
 - Evidence: commits `d90893b`, `a7c7f17`, `8245b6f`, `784ecbd`, `a50de4a`, `e086478`, `aade521`, `cf960f6`;
-  test output (56 passed); evaluation logbook record.
+  test output (58 passed); evaluation logbook record.
 - Demo: the replay table in the logbook is the cheapest demo 鈥?it shows baseline vs four caps in one screen.

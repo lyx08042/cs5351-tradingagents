@@ -18,7 +18,7 @@ from collections.abc import Callable
 from contextlib import contextmanager, suppress
 from typing import Any
 
-from .contracts import BudgetDenied, ContractError
+from .contracts import STAGES, BudgetDenied, ContractError
 from .ledger import BudgetLedger
 
 # Ordered: the first matching fragment wins, so "portfolio" is checked before
@@ -86,6 +86,10 @@ def stage_for_node(node: str | None) -> str:
     if not node:
         return DEFAULT_STAGE
     lowered = node.lower()
+    # A caller may pass a canonical stage name (budget_stage("debate")) or a
+    # LangGraph node name ("Bull Researcher"); accept both.
+    if lowered in STAGES:
+        return lowered
     for needle, stage in NODE_STAGE_RULES:
         if needle in lowered:
             return stage

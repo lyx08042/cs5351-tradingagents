@@ -140,6 +140,27 @@ def test_pt25_stage_mapping_covers_the_graph_nodes() -> None:
     assert stage_for_node(None) == "analyst"
 
 
+def test_pt30_canonical_stage_names_resolve_to_themselves() -> None:
+    """FR-002: a canonical stage name must not be mistaken for an unknown node."""
+    for stage in STAGES:
+        assert stage_for_node(stage) == stage
+        assert stage_for_node(stage.upper()) == stage
+
+
+def test_pt31_budget_stage_accepts_a_canonical_stage_name() -> None:
+    """FR-002: budget_stage("debate") must charge debate, not the default stage."""
+    ledger = make_ledger()
+    proxy = BudgetedChatModel(FakeModel(), ledger, model_tier="quick")
+    debate_before = ledger.remaining("debate")
+    analyst_before = ledger.remaining("analyst")
+
+    with budget_stage("debate"):
+        proxy.invoke("hello")
+
+    assert ledger.remaining("debate") < debate_before
+    assert ledger.remaining("analyst") == analyst_before
+
+
 def test_pt26_wrap_models_returns_both_tiers() -> None:
     """FR-002: both model tiers are wrapped by one call."""
     ledger = make_ledger()

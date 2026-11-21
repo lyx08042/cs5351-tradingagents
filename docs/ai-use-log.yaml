@@ -98,7 +98,7 @@ entries:
     scope: "role-B implementation: FR-002 / FR-006 / INV-002 / INV-006"
     summary: >
       Defined the scope and rewrote FR-002, added FR-006 and INV-006 with trace-matrix rows; implemented
-      tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py with 56 offline
+      tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py with 58 offline
       tests; added a fourteen-line opt-in integration in graph/trading_graph.py; produced a deterministic
       replay evaluation and recorded it in docs/architecture/evaluation-logbook.md; detected and fixed
       BUG-004. No live provider call was made and no API key was read.
