@@ -1,0 +1,203 @@
+{
+  "all_expected": true,
+  "checks": [
+    {
+      "check": "append initial decision",
+      "detail": {
+        "entry_type": "decision",
+        "payload": {
+          "action": "hold",
+          "note": "initial",
+          "units": 0
+        },
+        "payload_ref": "sha256:670f6e09b3cd653a73a1180dd389e76b04bda99f1bcafa75784f47b6991f9e7d",
+        "previous_hash": null,
+        "previous_record_id": null,
+        "record_hash": "3113a5c03950b87124d5d73d3a334a5e5196284432b4dd58405844788e9a247d",
+        "record_id": "dec-1",
+        "rules_version": "v1",
+        "run_id": "run-demo",
+        "sequence": 1,
+        "supersedes": null,
+        "timestamp": "2026-11-14T17:00:00+08:00"
+      },
+      "ok": true
+    },
+    {
+      "check": "rejection(review) recorded",
+      "detail": {
+        "entry_type": "rejection",
+        "payload": {
+          "outcome": "review",
+          "reason": "ambiguous_evidence"
+        },
+        "payload_ref": "sha256:d1d0b45bb09cfb32c30a8fdb1fd75c8afff542f334809dbbe7f967ac20fea9f3",
+        "previous_hash": "3113a5c03950b87124d5d73d3a334a5e5196284432b4dd58405844788e9a247d",
+        "previous_record_id": "dec-1",
+        "record_hash": "5198fadf0a6e1a25d21d3380d150baffd2c3857416779c73abd2417b376458cf",
+        "record_id": "rej-1",
+        "rules_version": "v1",
+        "run_id": "run-demo",
+        "sequence": 2,
+        "supersedes": null,
+        "timestamp": "2026-11-14T17:00:00+08:00"
+      },
+      "ok": true
+    },
+    {
+      "check": "old decision still queryable",
+      "detail": {
+        "dec-1": true,
+        "rev-1": true
+      },
+      "ok": true
+    },
+    {
+      "check": "unique final decision is rev-2",
+      "detail": {
+        "entry_type": "revision",
+        "payload": {
+          "action": "buy",
+          "units": 5
+        },
+        "payload_ref": "sha256:b85940822e4fa28728373e081a3e2c2a59a443673102d4c0dd2f2ececd71a310",
+        "previous_hash": "a74e87562a9ec3c6b09497a06976dde78275fb9a8c163cf21a237b775f0f5403",
+        "previous_record_id": "rev-1",
+        "record_hash": "cc184cb7705879bd656f89b2851212e4fb486711387e52587fa773ee4ec1cd95",
+        "record_id": "rev-2",
+        "rules_version": "v1",
+        "run_id": "run-demo",
+        "sequence": 4,
+        "supersedes": "rev-1",
+        "timestamp": "2026-11-14T17:00:00+08:00"
+      },
+      "ok": true
+    },
+    {
+      "check": "replay_record pass",
+      "detail": {
+        "count": 1,
+        "detail": "",
+        "gate_id": "market_status",
+        "reason": "ok",
+        "record_id": "gate-mkt-1",
+        "rules_version": "v1",
+        "status": "pass"
+      },
+      "ok": true
+    },
+    {
+      "check": "replay_run pass over gate records",
+      "detail": {
+        "detail": "",
+        "gate_total": 2,
+        "inconclusive": false,
+        "passed": 2,
+        "results": [
+          {
+            "count": 0,
+            "detail": "",
+            "gate_id": null,
+            "reason": "not_a_gate_record",
+            "record_id": "dec-1",
+            "rules_version": null,
+            "status": "inconclusive"
+          },
+          {
+            "count": 0,
+            "detail": "",
+            "gate_id": null,
+            "reason": "not_a_gate_record",
+            "record_id": "rej-1",
+            "rules_version": null,
+            "status": "inconclusive"
+          },
+          {
+            "count": 0,
+            "detail": "",
+            "gate_id": null,
+            "reason": "not_a_gate_record",
+            "record_id": "rev-1",
+            "rules_version": null,
+            "status": "inconclusive"
+          },
+          {
+            "count": 0,
+            "detail": "",
+            "gate_id": null,
+            "reason": "not_a_gate_record",
+            "record_id": "rev-2",
+            "rules_version": null,
+            "status": "inconclusive"
+          },
+          {
+            "count": 1,
+            "detail": "",
+            "gate_id": "market_status",
+            "reason": "ok",
+            "record_id": "gate-mkt-1",
+            "rules_version": "v1",
+            "status": "pass"
+          },
+          {
+            "count": 1,
+            "detail": "",
+            "gate_id": "safety",
+            "reason": "ok",
+            "record_id": "gate-safe-1",
+            "rules_version": "v1",
+            "status": "pass"
+          }
+        ],
+        "reviewed": 0,
+        "run_id": "run-demo",
+        "status": "pass"
+      },
+      "ok": true
+    },
+    {
+      "check": "replay mismatch -> review",
+      "detail": {
+        "count": 1,
+        "detail": "re-executed gate result differs from recorded observed",
+        "gate_id": "market_status",
+        "reason": "observed_mismatch",
+        "record_id": "gate-bad-1",
+        "rules_version": "v1",
+        "status": "review"
+      },
+      "ok": true
+    },
+    {
+      "check": "trusted head match",
+      "detail": {
+        "detail": "head matches trusted snapshot",
+        "ok": true,
+        "position": null,
+        "reason": "ok"
+      },
+      "ok": true
+    },
+    {
+      "check": "trusted head mismatch -> review",
+      "detail": {
+        "detail": "current head {'record_id': 'post-head', 'record_hash': '50ebe51745898e36a050eba87e6e6ea2de2eee038aac82f4c4486d5fa6ea657b', 'count': 8} != trusted head {'record_id': 'gate-bad-1', 'record_hash': '4b0116a8f9556ddfef879a8a452032fccdba6ea2c0704bca053bfdf19c3a6f49', 'count': 7}",
+        "ok": false,
+        "position": null,
+        "reason": "head_mismatch"
+      },
+      "ok": true
+    },
+    {
+      "check": "chain verifies",
+      "detail": {
+        "detail": "",
+        "ok": true,
+        "position": null,
+        "reason": "ok"
+      },
+      "ok": true
+    }
+  ],
+  "demo": "audit"
+}
