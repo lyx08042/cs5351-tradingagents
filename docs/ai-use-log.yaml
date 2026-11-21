@@ -115,6 +115,30 @@ entries:
     main_graph_integration: false
     evidence_path: "tasks/plans/A/evidence/"
     transcript_path: "transcripts/role-A/"
+  - id: AI-USE-A-FR001-M3
+    date: "2026-11-21"
+    model: "se-profile/deepseek-flash"
+    tool: "OpenCode"
+    session_id: "ses_e060c9e76ffe5BtikniUnxsMku"
+    actor: "coding-agent"
+    orchestration: "Codex orchestrated OpenCode"
+    member: "role A, student identity to be filled by the member"
+    scope: "FR-001 / INV-001 M3 opt-in evidence debate integration"
+    summary: >
+      OpenCode wrote ADR-006 before the integration and authored the evidence
+      adapter, graph entry point, researcher hooks, and scripted integration
+      tests. Codex reproduced input and runtime boundaries, coordinated fixes,
+      ran independent offline checks, and archived the original coding session.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
+    existing_tests_changed: false
+    business_dependencies_changed: false
+    approvals_created: false
+    main_graph_integration: true
+    integration_mode: "opt-in; shared B/C/D/E integration pending"
+    evidence_path: "tasks/plans/A/evidence/"
+    transcript_path: "transcripts/role-A/m3-raw.json"
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."

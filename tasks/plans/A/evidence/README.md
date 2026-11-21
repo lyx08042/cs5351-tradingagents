@@ -63,3 +63,25 @@
 EVAL-008 接纳可溯源的历史事实，EVAL-009 拒绝未来证据，EVAL-006 将预测标为假设。46 项离线测试含上述 26 项新测试和原有 20 项脚手架测试。结构测试检查依赖、系统时钟和随机数、Python 3.11 语法、包标记与公开 docstring。上游跳过项来自可选的 `langchain_aws`，与预检一致。
 
 OpenCode 原始会话、SHA 和独立注释见[会话注释](../../../../transcripts/role-A/annotations.md)。最终工作区和保护路径检查见 [m2-final-scope.txt](m2-final-scope.txt)。本轮验收覆盖独立模块。主流程 M3、B 的评审、E 的非作者评审、在线语义评估和学生个人材料留在范围之外。
+
+## M3 辩论集成验收
+
+分支为 `feat/A-M3-debate-integration`，起点为 `faf4065`。OpenCode 在隔离副本中先写 ADR-006，再写适配器、图集成和测试。Codex 核查写入记录，将最终文件按原字节同步到分支。编码使用线上 `se-profile/deepseek-flash`。下列 TradingAgents 测试使用脚本化响应，在 macOS 仅允许本机回环的沙箱中运行，清空继承环境，禁用 dotenv 自动加载和 LangSmith tracing。环境为 Python 3.13.13。没有调用真实运行时模型或行情接口。[M3 会话与 SHA-256](../../../../transcripts/role-A/m3-annotations.md)
+
+| 命令 | 退出码 | 原始结果 |
+|---|---:|---|
+| `.venv/bin/python -m pytest -o testpaths=test/offline test/offline/test_evidence_integration.py -q` | 0 | [5 通过](m3-run1-01-integration.txt) |
+| `.venv/bin/python -m pytest -o testpaths=test/offline test/offline/test_evidence.py -q` | 0 | [43 通过](m3-run1-02-m2.txt) |
+| `.venv/bin/python -m pytest -o testpaths=test/offline test/offline -q` | 0 | [68 通过](m3-run1-03-offline.txt) |
+| `.venv/bin/python -m pytest -q` | 0 | [1412 通过、1 跳过、1 未选中，100 个子测试通过](m3-run1-04-upstream.txt) |
+| `.venv/bin/python -m ruff check .` | 0 | [通过](m3-run1-05-ruff.txt) |
+| `.venv/bin/python scripts/check_course.py --root .` | 0 | [通过](m3-run1-06-course-checker.txt) |
+| `git diff --check` | 0 | [无输出](m3-run1-07a-diff-check.txt) |
+| `git status --short` | 0 | [工作区状态](m3-run1-07b-status.txt) |
+| `git status --short --untracked-files=all` | 0 | [完整文件清单](m3-run1-07c-status-all.txt) |
+
+[命令顺序和退出码](m3-run1-results.json)记录在 OpenCode 最后一次写入后的正式验收。上游通过数、跳过数、未选中数及子测试通过数与 M2 run2 相同。A10–A13 涵盖两轮正反辩论、实际 Research Manager 提示词、拒绝原文隔离、D 准入拒绝及节点兜底、严格 JSON 记录和默认路径兼容。隔离副本的[首次专项预检](m3-preflight-integration1.txt)有 4 项失败，暴露了末轮响应、假设标签、严格 JSON 和证据夹具 run ID 问题。修正后另用[独立边界探针](m3-boundary.txt)验证无模型的拒绝路径。
+
+[范围与哈希清单](m3-final-scope.txt)记录白名单核对，以及用本地 B/CDE 引用执行的只读三方预览。两次 `trading_graph.py` 预览均无文本冲突。CDE 与 M3 都在 `AgentState` 末尾追加字段，这一处预览报文本冲突，留待共用基线协调。本轮保留了 M1–M2 历史和原 A 分支。既有 B 评审草稿不计入 M3 变更。
+
+**A14 PENDING**。本地结果覆盖与 D 准入、E JSON 的契约形状。待 #3/#4/#5 和 M3 落在同一基线后执行全员联调。E 非作者评审与在线语义评估仍待进行。
