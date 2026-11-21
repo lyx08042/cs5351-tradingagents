@@ -1,99 +1,123 @@
-schema_version: "1.0"
+schema_version: '1.0'
 status: bootstrap
 entries:
-  - id: AI-USE-0001
-    date: "2026-11-06"
-    model: "CityU CS5351/DeepSeek-V4-Flash"
-    tool: "OpenCode"
-    session_id: "ses_e50a80ed0ffeBfILAm15AS6IVA"
-    actor: "coding-agent"
-    orchestration: "OpenCode assisted via Codex orchestration"
-    member: "not authored or claimed by a student (student identity unknown)"
-    scope: "initial-scaffold"
-    summary: >
-      Initial course scaffold: preserved upstream README as README.upstream.md,
-      prepended Chinese onboarding to README.md, and added START-HERE.md,
-      AGENTS.md, Prompt.md, architecture-blueprint.md, docs/req/,
-      docs/architecture/, docs/code-governance/, tasks/, templates/, prompts/,
-      docs/evaluation/, course docs, requirements-course.txt,
-      scripts/check_course.py, test/offline/test_course_scaffold.py,
-      course-bootstrap CI and PR template.
-    coding_model_live_requests: true
-    runtime_application_live_requests: false
-    business_source_changed: false
-    existing_tests_changed: false
-    business_dependencies_changed: false
-    course_checker_dependencies_added: true
-    license_changed: false
-    approvals_created: false
-    review_corrections:
-      summary: true
-      details: >
-        Supervisor review rounds corrected bootstrap-only files. Real negative
-        course-test failures observed and fixed: (a) fit.threshold used an
-        overlapping oneOf[number, integer] so integer thresholds failed schema
-        validation; replaced with type ["number","string"]. (b) trace-matrix.md
-        omitted exact requirement IDs (NFR-001/002/003/005, GOV-001/002), so
-        trace coverage failed; rewrote matrix with every registry ID. (c)
-        run_checks skipped trace coverage and required-file checks when an
-        alternate --requirements YAML was supplied, allowing coverage bypass;
-        made both checks unconditional against --root. Also fixed Ruff UP032
-        (use f-strings) and B904 (raise ... from exc) in the checker. No human
-        approval was granted or claimed for these corrections.
-    caveats: >
-      The scaffold is not course compliance; F1-F5 are unimplemented;
-      architecture and requirements are PROPOSED.
-  - id: AI-USE-0002
-    date: "2026-11-07"
-    model: "CityU CS5351/DeepSeek-V4-Flash"
-    tool: "OpenCode"
-    session_id: "ses_e49c6f123ffe8jHe5ZCaTshi78"
-    session_id_status: "RECORDED"
-    actor: "coding-agent"
-    orchestration: "Codex orchestrated OpenCode"
-    member: "none (owner-explicit governance decision; not student authorship)"
-    scope: "documentation-config-policy-change"
-    summary: >
-      Owner @lyx08042 explicitly decided on 2026-11-07, in the current chat,
-      to CANCEL ALL PRE-CODING APPROVAL for all team members, after being told
-      this violates the course pre-implementation test/plan approval
-      requirements. Added DEVELOPMENT-POLICY.md (ACTIVE owner-selected workflow)
-      and compact consistent policy banners/edits across AGENTS.md, Prompt.md,
-      START-HERE.md, README.md, .agent/rules.md, tasks/*.md,
-      architecture-blueprint.md, docs/code-governance/*, docs/architecture/
-      permission-model.md and adr/001-course-extension.md, docs/approvals/README.md,
-      templates/*, course docs, Report.md, docs/req/requirements.yaml (GOV-001
-      marked course_deviation), and opencode.json/.opencode/permissions.jsonc.
-      Recorded as a user-chosen course deviation (misses G-1/D9), not a teacher
-      waiver and not fake approvals. No business source and no tests were written
-      or changed.
-    coding_model_live_requests: true
-    runtime_application_live_requests: false
-    business_source_changed: false
-    existing_tests_changed: false
-    business_dependencies_changed: false
-    course_checker_dependencies_added: false
-    license_changed: false
-    approvals_created: false
-    historical_approvals_modified: false
-    feature_implemented: false
-    course_deviation: true
-    course_deviation_detail: >
-      Pre-coding plan/test/safety approval and associated human oversight (course
-      block-gate G-1 and D9 plan stop) are intentionally disabled by owner
-      decision. This is NOT teacher-approved and NOT a course waiver; the repo
-      must not claim course compliance for G-1/D9.
-    caveats: >
-      No fabricated results, approvals, identities, or tests. Real earlier
-      approvals (if any) remain historical. Working plans for future work go in
-      tasks/plans/<A-E>/ (not docs/approvals/).
+- id: AI-USE-0001
+  date: '2026-11-06'
+  model: CityU CS5351/DeepSeek-V4-Flash
+  tool: OpenCode
+  session_id: ses_e50a80ed0ffeBfILAm15AS6IVA
+  actor: coding-agent
+  orchestration: OpenCode assisted via Codex orchestration
+  member: not authored or claimed by a student (student identity unknown)
+  scope: initial-scaffold
+  summary: 'Initial course scaffold: preserved upstream README as README.upstream.md, prepended Chinese onboarding to README.md, and added START-HERE.md, AGENTS.md, Prompt.md, architecture-blueprint.md, docs/req/, docs/architecture/, docs/code-governance/, tasks/, templates/, prompts/, docs/evaluation/, course docs, requirements-course.txt, scripts/check_course.py, test/offline/test_course_scaffold.py, course-bootstrap CI and PR template.
+
+    '
+  coding_model_live_requests: true
+  runtime_application_live_requests: false
+  business_source_changed: false
+  existing_tests_changed: false
+  business_dependencies_changed: false
+  course_checker_dependencies_added: true
+  license_changed: false
+  approvals_created: false
+  review_corrections:
+    summary: true
+    details: 'Supervisor review rounds corrected bootstrap-only files. Real negative course-test failures observed and fixed: (a) fit.threshold used an overlapping oneOf[number, integer] so integer thresholds failed schema validation; replaced with type ["number","string"]. (b) trace-matrix.md omitted exact requirement IDs (NFR-001/002/003/005, GOV-001/002), so trace coverage failed; rewrote matrix with every registry ID. (c) run_checks skipped trace coverage and required-file checks when an alternate --requirements YAML was supplied, allowing coverage bypass; made both checks unconditional against --root. Also fixed Ruff UP032 (use f-strings) and B904 (raise ... from exc) in the checker. No human approval was granted or claimed for these corrections.
+
+      '
+  caveats: 'The scaffold is not course compliance; F1-F5 are unimplemented; architecture and requirements are PROPOSED.
+
+    '
+- id: AI-USE-0002
+  date: '2026-11-07'
+  model: CityU CS5351/DeepSeek-V4-Flash
+  tool: OpenCode
+  session_id: ses_e49c6f123ffe8jHe5ZCaTshi78
+  session_id_status: RECORDED
+  actor: coding-agent
+  orchestration: Codex orchestrated OpenCode
+  member: none (owner-explicit governance decision; not student authorship)
+  scope: documentation-config-policy-change
+  summary: 'Owner @lyx08042 explicitly decided on 2026-11-07, in the current chat, to CANCEL ALL PRE-CODING APPROVAL for all team members, after being told this violates the course pre-implementation test/plan approval requirements. Added DEVELOPMENT-POLICY.md (ACTIVE owner-selected workflow) and compact consistent policy banners/edits across AGENTS.md, Prompt.md, START-HERE.md, README.md, .agent/rules.md, tasks/*.md, architecture-blueprint.md, docs/code-governance/*, docs/architecture/ permission-model.md and adr/001-course-extension.md, docs/approvals/README.md, templates/*, course docs, Report.md, docs/req/requirements.yaml (GOV-001 marked course_deviation), and opencode.json/.opencode/permissions.jsonc. Recorded as a user-chosen course deviation (misses G-1/D9), not a teacher waiver and not fake approvals. No business source and no tests were written or changed.
+
+    '
+  coding_model_live_requests: true
+  runtime_application_live_requests: false
+  business_source_changed: false
+  existing_tests_changed: false
+  business_dependencies_changed: false
+  course_checker_dependencies_added: false
+  license_changed: false
+  approvals_created: false
+  historical_approvals_modified: false
+  feature_implemented: false
+  course_deviation: true
+  course_deviation_detail: 'Pre-coding plan/test/safety approval and associated human oversight (course block-gate G-1 and D9 plan stop) are intentionally disabled by owner decision. This is NOT teacher-approved and NOT a course waiver; the repo must not claim course compliance for G-1/D9.
+
+    '
+  caveats: 'No fabricated results, approvals, identities, or tests. Real earlier approvals (if any) remain historical. Working plans for future work go in tasks/plans/<A-E>/ (not docs/approvals/).
+
+    '
+- id: AI-USE-0003
+  date: '2026-11-08'
+  model: CityU CS5351/DeepSeek-V4-Flash
+  tool: OpenCode
+  session_id: ses_e4614ef73ffe1ZIR7uulZGQ8jy
+  session_id_status: RECORDED
+  actor: coding-agent
+  orchestration: Supervised OpenCode session operated by the human role-D member; scope checks and prompt drafting were done outside the agent session
+  member: 60569580 Chaoqun ZHENG (role D)
+  scope: FR-004 / INV-004 / NFR-004 data sufficiency admission leaf module and offline tests
+  summary: 'Implemented the D data-quality admission leaf under tradingagents/course/data_quality: contracts, classifier, and admission decision with five required domains, availability states, explicit-zero versus missing distinction, fixed cutoff date, and JSON-serializable decision events. Added offline tests in test/offline/test_data_quality.py. Offline suite: 40 passed; course checker OK; ruff passed. Upstream full regression could not start in the minimal WSL venv because tests/conftest.py imports yfinance and pandas was absent; this was an environment dependency blocker, not a D code failure.
+
+    '
+  coding_model_live_requests: true
+  runtime_application_live_requests: false
+  business_source_changed: true
+  existing_tests_changed: false
+  business_dependencies_changed: false
+  course_checker_dependencies_added: false
+  license_changed: false
+  approvals_created: false
+  historical_approvals_modified: false
+  feature_implemented: true
+  course_deviation: false
+  course_deviation_detail: 'No new course deviation was introduced by the D implementation. The work still proceeds under the existing owner-selected deviation recorded in AI-USE-0002; G-1/D9 pre-coding gates remain unsatisfied.
+
+    '
+  caveats: 'BASE-002 upstream regression is pending in a full-dependency environment or CI. Pending non-author review by C, CI, and merge authorization. No fabricated approval, teacher waiver, or compliance claim is recorded.
+
+    '
+- id: AI-USE-0004
+  date: '2026-11-21'
+  model: CityU CS5351/DeepSeek-V4-Flash
+  tool: OpenCode
+  session_id: ses_e0280512bffe80eIRbaEhoEt75
+  session_id_status: RECORDED
+  actor: coding-agent
+  orchestration: Supervised OpenCode session operated by the human role-D member; scope checks and prompt drafting were done outside the agent session
+  member: 60569580 Chaoqun ZHENG (role D)
+  scope: 'FR-004 / INV-004 / NFR-004 review fix: two boundary defects raised by non-author reviewer C'
+  summary: 'Reproduced and fixed the two C-raised boundary defects in the D data sufficiency admission leaf. classifier.py: a non-boolean value_present (e.g. the string false) is classified unknown (fail-closed) instead of truthiness coercion; no exception is raised for that input. contracts.py: validate_label rejects an available label with None or blank source, violation available_without_source, decision review; unavailable/unknown still need no source. The direct-label entry was kept. Added PT-direct (available, valid sourced, sentiment=0 -> proceed), NT-13 (value_present string false -> unknown/review), NT-14 (source=None and source=blank -> review/available_without_source). A later turn renamed test and plan IDs only, with no business-source edit. Real output: D file 23 passed; offline suite 43 passed; ruff All checks passed.'
+  coding_model_live_requests: true
+  runtime_application_live_requests: false
+  business_source_changed: true
+  existing_tests_changed: true
+  business_dependencies_changed: false
+  course_checker_dependencies_added: false
+  license_changed: false
+  approvals_created: false
+  historical_approvals_modified: false
+  feature_implemented: true
+  course_deviation: false
+  course_deviation_detail: No new course deviation was introduced by this review fix. The work still proceeds under the existing owner-selected deviation recorded in AI-USE-0002; G-1/D9 pre-coding gates remain unsatisfied.
+  caveats: 'BASE-002 upstream full regression is still pending in a full-dependency environment or CI; it was not run in this session and not claimed passed. No git add/commit/push/fetch/merge was executed inside the OpenCode session. Commit fdc4da5, draft PR #1, and this log entry were recorded by the human member after the session. No fabricated approval, teacher waiver, or compliance claim is recorded.'
 policy:
-  - "Append a new entry for every application-code or prompt PR; never edit historical entries."
-  - "Do not claim student authorship; the member field is filled by a human after real contribution."
-  - "Do not record secrets or personal data in this file."
-  - "This entry records scaffold generation by the coding agent, not student human authorship."
+- Append a new entry for every application-code or prompt PR; never edit historical entries.
+- Do not claim student authorship; the member field is filled by a human after real contribution.
+- Do not record secrets or personal data in this file.
+- This entry records scaffold generation by the coding agent, not student human authorship.
 transcript_status:
   full_student_transcripts_submitted: false
-  note: >
-    No full student transcripts exist yet; transcripts/ contains only its
-    README. This bootstrap entry must not be presented as a student transcript.
+  note: 'Two role-D supervised session records are present locally under transcripts/60569580-ChaoqunZHENG/ (raw.json: initial implementation; raw.md: C-to-D review fix). The five required student transcripts are not yet complete or submitted. The bootstrap entry must not be presented as a student transcript.'
