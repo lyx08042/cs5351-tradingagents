@@ -181,6 +181,17 @@ def validate_label(label: DomainLabel) -> list[LabelViolation]:
             )
         )
 
+    if label.status == "available" and not (
+        isinstance(label.source, str) and label.source.strip() != ""
+    ):
+        violations.append(
+            LabelViolation(
+                label.domain,
+                "available_without_source",
+                "available label requires a valid non-empty source",
+            )
+        )
+
     try:
         parse_iso_date(label.as_of)
     except ContractError as exc:

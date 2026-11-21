@@ -63,6 +63,14 @@ def classify(observation: RawObservation) -> DomainLabel:
 
     # 3. A real value observation.
     if observation.kind == "value":
+        if not isinstance(observation.value_present, bool):
+            return DomainLabel(
+                domain=domain,
+                status="unknown",
+                as_of=as_of,
+                reason="value_present is not a boolean; refusing truthiness coercion",
+                source=observation.source,
+            )
         if not observation.value_present or observation.value is None:
             return DomainLabel(
                 domain=domain,

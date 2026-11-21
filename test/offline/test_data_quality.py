@@ -101,6 +101,29 @@ def test_pt3_one_unavailable_abstains():
 
 
 @pytest.mark.unit
+def test_pt_direct_available_label_with_source_proceeds():
+    news = DomainLabel(
+        domain="news",
+        status="available",
+        source="news-src",
+        sentiment=0,
+        as_of=CUTOFF,
+        reason="explicit neutral from valid source",
+    )
+    others = [
+        DomainLabel(
+            domain=domain, status="available", source=f"{domain}-src",
+            sentiment=0, as_of=CUTOFF, reason="valid source data",
+        )
+        for domain in REQUIRED_DOMAINS
+        if domain != "news"
+    ]
+    decision = admit([news] + others, CUTOFF)
+    assert decision.decision == "proceed"
+    assert decision.insufficient_domains == []
+
+
+@pytest.mark.unit
 def test_pt_early_evidence_is_accepted():
     obs = [_value(domain, as_of=EARLY) for domain in REQUIRED_DOMAINS]
     decision = admit(obs, CUTOFF)
@@ -108,6 +131,25 @@ def test_pt_early_evidence_is_accepted():
 
 
 # ---------------------------------------------------------------- negative
+
+
+@pytest.mark.unit
+def test_nt13_value_present_string_not_coerced():
+    bad = RawObservation(
+        domain="news",
+        kind="value",
+        source="news-src",
+        observed_as_of=CUTOFF,
+        value=1.0,
+        value_present="false",
+    )
+    label = classify(bad)
+    assert label.status == "unknown"
+
+    obs = [bad] + [_value(domain) for domain in REQUIRED_DOMAINS if domain != "news"]
+    decision = admit(obs, CUTOFF)
+    assert decision.decision == "review"
+    assert "news" in decision.insufficient_domains
 
 
 @pytest.mark.unit
@@ -228,6 +270,28 @@ def test_nt11_future_date_reviews():
     decision = admit(obs, CUTOFF)
     assert decision.decision == "review"
     assert any(v.code == "future_date" for v in decision.violations)
+
+
+@pytest.mark.unit
+def test_nt14_available_label_without_source_reviews():
+    for bad_source in (None, ""):
+        label = DomainLabel(
+            domain="news",
+            status="available",
+            source=bad_source,
+            sentiment=0,
+            as_of=CUTOFF,
+            reason="available claim without source",
+        )
+        violations = validate_label(label)
+        assert any(v.code == "available_without_source" for v in violations)
+
+        decision = admit([label] + [
+            _value(domain) for domain in REQUIRED_DOMAINS if domain != "news"
+        ], CUTOFF)
+        assert decision.decision == "review"
+        assert any(v.code == "available_without_source" for v in decision.violations)
+        assert "news" in decision.insufficient_domains
 
 
 @pytest.mark.unit

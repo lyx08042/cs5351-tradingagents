@@ -36,6 +36,7 @@
 | PT-2 显式 0/neutral | social 显式 `sentiment=0`（`value=0, value_present=True`），其余 available | `proceed`；social 标签 `status=available`、`sentiment=0`、含 `source` |
 | PT-3 一域 unavailable | news=unavailable，其余 available | `abstain`（或 review），`insufficient_domains=["news"]`，含 reason |
 | PT-early 早于截止的合法证据 | 某域 `as_of=CUTOFF-30d` | 与 PT-1 同样 `proceed`（证据日可早于分析日） |
+| PT-direct 直接可用标签（含有效 source） | news 直接给 `DomainLabel(status="available", source="news-src", sentiment=0)`，其余四域直接 `available` 且各有 source | `proceed`；`insufficient_domains=[]` |
 
 ## 负向测试
 
@@ -53,6 +54,8 @@
 | NT-10 非法日期 | `as_of="2026-13-40"` | `review`（invalid_date） |
 | NT-11 未来日期 | `as_of > CUTOFF` | `review`（future_date） |
 | NT-12 非法 cutoff | `analysis_cutoff="not-a-date"` | `review`（invalid_cutoff） |
+| NT-13 value_present 非布尔 | value 观测 `value_present="false"`（字符串） | `classify` 返回 `unknown`；`review`；`insufficient_domains` 含该域（不做真值强转） |
+| NT-14 直接可用标签无 source | `DomainLabel(status="available", source=None)` 与 `source=""` 各一例，其余 available | 校验记录 `available_without_source`；`review`；该域入 `insufficient_domains` |
 
 ## 扩展/一致性
 
