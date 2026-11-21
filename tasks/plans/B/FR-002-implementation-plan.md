@@ -239,7 +239,7 @@ The four blocks are plain text with stable sentinel prefixes (`[SAFETY]`, `[IDEN
 
 ## 7. Integration point (M4 — implemented on this branch)
 
-Status: `tradingagents/course/budget/integration.py` plus a five-line, opt-in change to
+Status: `tradingagents/course/budget/integration.py` plus a fourteen-line, opt-in change to
 `tradingagents/graph/trading_graph.py`. With no ledger passed, the graph behaves exactly as the upstream baseline;
 with a ledger, both tiers are wrapped and every call is metered.
 

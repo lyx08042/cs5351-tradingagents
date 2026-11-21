@@ -18,13 +18,13 @@
 |---|---|---|---|
 | Structural | `budget/` imports nothing from `evidence/`, `safety/`, `data_quality/`, `audit/` | pass | `test_budget_module_does_not_import_sibling_leaf_modules` (source scan) |
 | Regression | course scaffold schema/trace coverage | pass | `python scripts/check_course.py --root .` 鈫?`course scaffold check: OK` |
-| Behavioral | 49 offline tests across ledger, policy, context, integration and replay | pass | `offline-final.txt` (49 passed) |
+| Behavioral | 56 offline tests across ledger, policy, context, integration and replay | pass | `offline-final.txt` (56 passed) |
 
 ## 3. Key numbers and where they come from
 
 | Item | Value | Source |
 |---|---|---|
-| Budget suite | 49 passed in 0.14 s | `offline-final.txt` |
+| Budget suite | 56 passed in 0.14 s | `offline-final.txt` |
 | Lint | All checks passed | `ruff-final.txt` |
 | Baseline trace | 19 calls, 228,275 tokens (196,870 in + 31,405 out) | `docs/baseline.md` |
 | Replay at 240,000 | 228,275 tokens, L0, 0 degradations | `replay-table.json` |

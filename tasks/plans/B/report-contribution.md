@@ -16,7 +16,7 @@ where the tokens went, and no defined behaviour when a cap is reached 鈥?the ru
 
 The budget is enforced at the model-client boundary rather than inside each agent, because the graph
 constructs exactly two chat models and every node composes `(prompt | llm).invoke(...)`. Wrapping those
-two objects covers the whole pipeline with a five-line, opt-in change and leaves the upstream behaviour
+two objects covers the whole pipeline with a fourteen-line, opt-in change and leaves the upstream behaviour
 untouched when no ledger is supplied.
 
 Four components:
@@ -32,7 +32,7 @@ Four components:
 
 ## 3. Implementation
 
-`tradingagents/course/budget/` (contracts, ledger, policy, context, integration, replay) with 49 offline
+`tradingagents/course/budget/` (contracts, ledger, policy, context, integration, replay) with 56 offline
 tests. The proxy forwards `bind_tools` and `with_structured_output`, because the research manager, the
 trader and the portfolio manager use structured output and would otherwise escape accounting. A provider
 that reports no usage consumes its whole reservation, so a hidden counter cannot defeat the cap.
@@ -77,5 +77,5 @@ projected remaining spend, and the regression is now pinned by `test_a_generous_
 ## 7. Demo material
 
 - Screen 1: the replay table above (baseline vs four caps).
-- Screen 2: `pytest test/offline/test_budget*.py -q` 鈫?49 passed.
+- Screen 2: `pytest test/offline/test_budget*.py -q` 鈫?56 passed.
 - Screen 3: the ledger event log for one tight cap, showing the level transitions with reasons.

@@ -79,8 +79,10 @@ entries:
     feature_implemented: false
     course_deviation: true
     course_deviation_detail: >
-      The coding agent used for this work differs from the one the course expects; the
-      transcripts record the real tool. No fabricated approval, identity or test output.
+      Pre-coding plan/test/safety approval and associated human oversight (course
+      block-gate G-1 and D9 plan stop) are intentionally disabled by owner
+      decision. This is NOT teacher-approved and NOT a course waiver; the repo
+      must not claim course compliance for G-1/D9.
     caveats: >
       No fabricated results, approvals, identities, or tests. Real earlier
       approvals (if any) remain historical. Working plans for future work go in
@@ -96,8 +98,8 @@ entries:
     scope: "role-B implementation: FR-002 / FR-006 / INV-002 / INV-006"
     summary: >
       Defined the scope and rewrote FR-002, added FR-006 and INV-006 with trace-matrix rows; implemented
-      tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py with 48 offline
-      tests; added a five-line opt-in integration in graph/trading_graph.py; produced a deterministic
+      tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py with 56 offline
+      tests; added a fourteen-line opt-in integration in graph/trading_graph.py; produced a deterministic
       replay evaluation and recorded it in docs/architecture/evaluation-logbook.md; detected and fixed
       BUG-004. No live provider call was made and no API key was read.
     coding_model_live_requests: true

@@ -22,7 +22,7 @@
 - Policy: `policy.py` 鈥?L0鈥揕5, projection-aware; `apply_level` is the only mutator and always emits.
 - Context: `context.py` 鈥?section budget, compaction, four mandatory re-injected blocks, `assert_manifest`.
 - Integration: `integration.py` 鈥?`BudgetedChatModel` proxy (`invoke`, `bind_tools`,
-  `with_structured_output`, `__call__`), plus a five-line opt-in change in `graph/trading_graph.py`.
+  `with_structured_output`, `__call__`), plus a fourteen-line opt-in change in `graph/trading_graph.py`.
 - ADR: still to be written (`docs/architecture/adr/00x-...`); the decision is "enforce at the model-client
   boundary", with alternatives recorded in `tasks/plans/B/FR-002-implementation-plan.md` 搂12.
 - Invariants: fail-closed throughout 鈥?invalid config raises at construction, denied calls never reach the
@@ -33,7 +33,7 @@
 - Files: `tradingagents/course/budget/{__init__,contracts,ledger,policy,context,integration,replay}.py`;
   `test/offline/test_budget.py`, `test_budget_integration.py`, `test_budget_replay.py`;
   `test/live/eval_budget.py` (optional live driver).
-- Tests: 49 offline tests, including negative cases for over-budget denial, oversell under 16 threads,
+- Tests: 56 offline tests, including negative cases for over-budget denial, oversell under 16 threads,
   double settlement, level regression, missing re-injection, and provider failure.
 - PR: not opened yet (planned after the transcript lands).
 - Plans: `tasks/plans/B/FR-002-scope.md`, `FR-002-implementation-plan.md`, `FR-002-test-plan.md`.
@@ -68,5 +68,5 @@
 - Report section: `tasks/plans/B/report-contribution.md` (draft; the leader merges it into `Report.md`).
 - Reflection: 300鈥?00 words, to be written by the member in their own voice.
 - Evidence: commits `d90893b`, `a7c7f17`, `8245b6f`, `784ecbd`, `a50de4a`, `e086478`, `aade521`, `cf960f6`;
-  test output (49 passed); evaluation logbook record.
+  test output (56 passed); evaluation logbook record.
 - Demo: the replay table in the logbook is the cheapest demo 鈥?it shows baseline vs four caps in one screen.

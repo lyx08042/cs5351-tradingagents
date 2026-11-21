@@ -142,6 +142,13 @@ class BudgetLedger:
             if self._reservations >= self.config.limit_calls:
                 raise BudgetDenied("call_limit", self._remaining_global())
 
+            # Validate the identity before touching any quota: a duplicate must
+            # not leave a borrow or a charge behind, and a settled id must not be
+            # reusable (that would leak `outstanding` forever).
+            new_id = call_id or self._new_call_id()
+            if new_id in self._reserved or new_id in self._settled:
+                raise ContractError(f"duplicate call_id: {new_id!r}")
+
             estimate = self.estimate(agent, stage)
             remaining = self._remaining_global()
 
@@ -168,10 +175,6 @@ class BudgetLedger:
                     reason="stage_exhausted",
                 )
                 raise BudgetDenied("stage_exhausted", remaining)
-
-            new_id = call_id or self._new_call_id()
-            if new_id in self._reserved:
-                raise ContractError(f"duplicate call_id: {new_id!r}")
 
             self._stage_budget[stage] -= estimate
             self._outstanding += estimate

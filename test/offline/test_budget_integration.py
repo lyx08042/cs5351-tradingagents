@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import pytest
 
-from tradingagents.course.budget.contracts import STAGES, LedgerConfig
+from tradingagents.course.budget.contracts import STAGES, ContractError, LedgerConfig
 from tradingagents.course.budget.integration import (
     BudgetedChatModel,
     BudgetExhausted,
+    BudgetOverrun,
+    budget_stage,
     stage_for_node,
     wrap_models,
 )
@@ -29,15 +31,23 @@ class FakeResponse:
 class FakeModel:
     """Stands in for a chat model: counts calls, returns a usage payload."""
 
-    def __init__(self, usage: tuple[int, int] | None = (100, 50), fail: bool = False) -> None:
+    def __init__(
+        self,
+        usage: tuple[int, int] | None = (100, 50),
+        fail: bool = False,
+        result: object | None = None,
+    ) -> None:
         self.usage = usage
         self.fail = fail
+        self.result = result
         self.calls = 0
 
     def invoke(self, input, config=None, **kwargs):
         self.calls += 1
         if self.fail:
             raise RuntimeError("provider exploded")
+        if self.result is not None:
+            return self.result
         return FakeResponse(self.usage)
 
     def bind_tools(self, tools, **kwargs):
@@ -47,11 +57,17 @@ class FakeModel:
         return FakeModel(self.usage, self.fail)
 
 
-def make_ledger(limit_tokens: int = 100_000, limit_calls: int = 100) -> BudgetLedger:
+def make_ledger(
+    limit_tokens: int = 100_000,
+    limit_calls: int = 100,
+    *,
+    quota: dict[str, float] | None = None,
+) -> BudgetLedger:
     config = LedgerConfig(
         limit_tokens=limit_tokens,
         limit_calls=limit_calls,
         estimate_margin=1.0,
+        **({"stage_quota": quota} if quota else {}),
     )
     estimates = {(None, stage): ESTIMATE for stage in STAGES}
     return BudgetLedger(config, stage_estimates=estimates)
@@ -160,3 +176,63 @@ def test_nt15_exhausted_ledger_blocks_the_call_entirely() -> None:
 
     assert excinfo.value.reason == "call_limit"
     assert model.calls == 0
+
+
+def test_pt27_include_raw_usage_is_read_from_the_raw_response() -> None:
+    """FR-002: with_structured_output(include_raw=True) must still be metered."""
+    ledger = make_ledger()
+    raw = FakeResponse((400, 60))
+    payload = {"parsed": {"action": "hold"}, "raw": raw, "parsing_error": None}
+    proxy = BudgetedChatModel(FakeModel(result=payload), ledger, model_tier="deep")
+
+    proxy.invoke("hello")
+
+    assert ledger.snapshot()["spent"] == 460
+
+
+def test_nt16_negative_usage_does_not_leak_a_reservation() -> None:
+    """INV-002: nonsense usage from a provider must release the reservation."""
+    ledger = make_ledger()
+    proxy = BudgetedChatModel(FakeModel(usage=(-1, 0)), ledger, model_tier="quick")
+
+    with pytest.raises(ContractError):
+        proxy.invoke("hello")
+
+    assert ledger.snapshot()["outstanding"] == 0
+    assert ledger.remaining("global") == 100_000
+
+
+def test_pt28_context_manager_attributes_the_stage() -> None:
+    """FR-002: a caller that knows the stage can set it without a config."""
+    ledger = make_ledger()
+    proxy = BudgetedChatModel(FakeModel(), ledger, model_tier="quick")
+    before = ledger.remaining("risk_debate")
+
+    with budget_stage("risk_debate"):
+        proxy.invoke("hello")
+
+    assert ledger.remaining("risk_debate") < before
+
+
+def test_pt29_with_stage_binds_the_proxy() -> None:
+    """FR-002: a bound proxy charges the bound stage even without metadata."""
+    ledger = make_ledger()
+    proxy = BudgetedChatModel(FakeModel(), ledger, model_tier="quick").with_stage("trader")
+    before = ledger.remaining("trader")
+
+    proxy.invoke("hello")
+
+    assert ledger.remaining("trader") < before
+
+
+def test_nt17_single_call_overrun_is_raised_not_returned() -> None:
+    """INV-002: a call that alone exhausts the pool must not be returned silently."""
+    ledger = make_ledger(limit_tokens=1_000, quota={"analyst": 1.0})
+    proxy = BudgetedChatModel(FakeModel(usage=(2_000, 0)), ledger, model_tier="quick")
+
+    with pytest.raises(BudgetOverrun) as excinfo:
+        proxy.invoke("hello")
+
+    assert excinfo.value.settlement.overrun == 1_000
+    assert excinfo.value.response is not None
+    assert ledger.state == "exhausted"

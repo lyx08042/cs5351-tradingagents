@@ -493,3 +493,29 @@ def test_budget_module_does_not_import_sibling_leaf_modules() -> None:
         for name in forbidden:
             assert f"course.{name}" not in text, f"{path.name} imports course.{name}"
             assert f"from ..{name}" not in text, f"{path.name} imports ..{name}"
+
+
+def test_nt14_duplicate_id_is_rejected_before_any_charge() -> None:
+    """INV-002: a duplicate call id must not mutate a quota on its way out."""
+    ledger = make_ledger(limit_tokens=1_000, quota={"analyst": 1.0})
+    ledger.reserve("market_analyst", "analyst", "quick", "same")
+    before_budget = dict(ledger.snapshot()["stage_budget"])
+    before_events = len(ledger.events())
+
+    with pytest.raises(ContractError):
+        ledger.reserve("market_analyst", "trader", "quick", "same")
+
+    assert ledger.snapshot()["stage_budget"] == before_budget
+    assert len(ledger.events()) == before_events
+
+
+def test_nt15_reusing_a_settled_id_leaks_no_outstanding() -> None:
+    """INV-002: a settled call id cannot be reused, and nothing stays reserved."""
+    ledger = make_ledger(limit_tokens=1_000, quota={"analyst": 1.0})
+    reservation = ledger.reserve("market_analyst", "analyst", "quick", "same")
+    ledger.settle(reservation.call_id, 30, 10)
+
+    with pytest.raises(ContractError):
+        ledger.reserve("market_analyst", "analyst", "quick", "same")
+
+    assert ledger.snapshot()["outstanding"] == 0
