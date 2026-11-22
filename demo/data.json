@@ -1,0 +1,260 @@
+{
+  "baseline": {
+    "calls": 19,
+    "tokens": 228275,
+    "seconds": 150.61,
+    "signal": "Hold"
+  },
+  "replay": [
+    {
+      "label": "No cap (baseline)",
+      "limit": null,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "degradations": 0,
+      "skipped": 0
+    },
+    {
+      "label": "240,000",
+      "limit": 240000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "degradations": 0,
+      "skipped": 0
+    },
+    {
+      "label": "200,000",
+      "limit": 200000,
+      "calls": 19,
+      "tokens": 149519,
+      "delta": -34.5,
+      "level": 1,
+      "degradations": 1,
+      "skipped": 0
+    },
+    {
+      "label": "180,000",
+      "limit": 180000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 2,
+      "degradations": 1,
+      "skipped": 2
+    },
+    {
+      "label": "150,000",
+      "limit": 150000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 3,
+      "degradations": 1,
+      "skipped": 2
+    },
+    {
+      "label": "120,000",
+      "limit": 120000,
+      "calls": 13,
+      "tokens": 104251,
+      "delta": -54.3,
+      "level": 4,
+      "degradations": 2,
+      "skipped": 6
+    }
+  ],
+  "trace": [
+    {
+      "id": "BASE-001",
+      "component": "上游 `TradingAgentsGraph` 公共导入与主流程"
+    },
+    {
+      "id": "BASE-002",
+      "component": "上游测试套件"
+    },
+    {
+      "id": "FR-001",
+      "component": "证据绑定校验器（A）"
+    },
+    {
+      "id": "FR-002",
+      "component": "预算账本 + 分配 + 降级（B）"
+    },
+    {
+      "id": "FR-003",
+      "component": "确定性提案校验器（C）"
+    },
+    {
+      "id": "FR-004",
+      "component": "数据状态标签 + default-deny unknown（D）"
+    },
+    {
+      "id": "FR-005",
+      "component": "追加式审计 + supersede 链 + 回放（E）"
+    },
+    {
+      "id": "FR-006",
+      "component": "降级策略 L1–L5（B）"
+    },
+    {
+      "id": "NFR-001",
+      "component": "预算账本（B）成本统计"
+    },
+    {
+      "id": "NFR-002",
+      "component": "预算 + 证据（B/A）质量对照"
+    },
+    {
+      "id": "NFR-003",
+      "component": "安全 + 审计（C/E）确定性回放"
+    },
+    {
+      "id": "NFR-004",
+      "component": "审计（E）留痕"
+    },
+    {
+      "id": "NFR-005",
+      "component": "结构与契约（共同）"
+    },
+    {
+      "id": "INV-001",
+      "component": "证据绑定校验（A）"
+    },
+    {
+      "id": "INV-002",
+      "component": "账本预留/结算原子性（B）"
+    },
+    {
+      "id": "INV-003",
+      "component": "提案确定性校验（C）"
+    },
+    {
+      "id": "INV-004",
+      "component": "状态标签校验（D）"
+    },
+    {
+      "id": "INV-005",
+      "component": "追加式存储 + 修订链（E）"
+    },
+    {
+      "id": "INV-006",
+      "component": "预算轨迹单调 + 降级必留痕（B）"
+    },
+    {
+      "id": "GOV-001",
+      "component": "人工批准门 + PR 模板"
+    },
+    {
+      "id": "GOV-002",
+      "component": "诚实记录与禁止伪造"
+    },
+    {
+      "id": "SEC-001",
+      "component": "提案校验器 + 无真实执行路径（C）"
+    }
+  ],
+  "reviews": [
+    "PR #4 — feat(B): FR-002 run budget with a degradation ladder",
+    "Round 1 — verdict: CHANGES REQUIRED",
+    "PR #3 — feat/CDE-integration (reviewed by role B)"
+  ],
+  "defects": [
+    {
+      "id": "BUG-000",
+      "title": "<简短标题>",
+      "status": ""
+    },
+    {
+      "id": "BUG-001",
+      "title": "未提供持仓时仍出现条件性仓位表述",
+      "status": "needs"
+    },
+    {
+      "id": "BUG-002",
+      "title": "历史新闻/社交数据不可用 + FRED 无 key，导致缺失 feed 被计为 neutral（5 处）",
+      "status": "needs"
+    },
+    {
+      "id": "BUG-003",
+      "title": "成交量条件 150M vs 298.9M 差异",
+      "status": "needs"
+    },
+    {
+      "id": "BUG-004",
+      "title": "Budget policy degraded a run whose budget was above the baseline",
+      "status": "fixed"
+    }
+  ],
+  "tests": {
+    "A": [
+      "test_evidence.py",
+      "test_evidence_integration.py"
+    ],
+    "B": [
+      "test_budget.py",
+      "test_budget_integration.py",
+      "test_budget_replay.py"
+    ],
+    "C": [
+      "test_safety_simulation.py"
+    ],
+    "D": [
+      "test_data_quality.py"
+    ],
+    "E": [
+      "test_audit.py"
+    ],
+    "Integration": [
+      "test_pipeline_modules.py"
+    ]
+  },
+  "modules": {
+    "A": {
+      "name": "Evidence-grounded debate",
+      "pkg": "evidence",
+      "reqs": [
+        "FR-001",
+        "INV-001"
+      ]
+    },
+    "B": {
+      "name": "Run budget",
+      "pkg": "budget",
+      "reqs": [
+        "FR-002",
+        "FR-006",
+        "INV-002",
+        "INV-006"
+      ]
+    },
+    "C": {
+      "name": "Deterministic simulation safety",
+      "pkg": "safety",
+      "reqs": [
+        "FR-003",
+        "INV-003",
+        "SEC-001"
+      ]
+    },
+    "D": {
+      "name": "Data sufficiency",
+      "pkg": "data_quality",
+      "reqs": [
+        "FR-004",
+        "INV-004"
+      ]
+    },
+    "E": {
+      "name": "Verifiable audit",
+      "pkg": "audit",
+      "reqs": [
+        "FR-005",
+        "INV-005"
+      ]
+    }
+  }
+}

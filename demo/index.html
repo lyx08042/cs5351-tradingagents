@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS5351 — Course Module Evidence</title>
+<style>
+  :root {
+    --ink: #16213c;
+    --ink-soft: #4a5573;
+    --line: #dde3ef;
+    --bg: #f6f8fc;
+    --card: #ffffff;
+    --accent: #1f4bd8;
+    --ok: #17825a;
+    --warn: #b5720d;
+    --bad: #b03a2e;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    background: var(--ink);
+    color: #fff;
+    padding: 22px 32px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; letter-spacing: .2px; }
+  header p { margin: 0; color: #b8c4e0; font-size: 13px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 32px 64px; }
+  section { margin-bottom: 34px; }
+  h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .stat .k { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .8px; }
+  .stat .v { font-size: 26px; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .stat .u { font-size: 12px; color: var(--ink-soft); margin-left: 3px; font-weight: 400; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .7px; color: var(--ink-soft); font-weight: 600; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+  tr.base td { background: #f0f3fa; font-weight: 600; }
+  .down { color: var(--ok); font-weight: 600; }
+  .flat { color: var(--ink-soft); }
+  .lvl { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 12px; font-family: var(--mono); }
+  .l0 { background: #e7f5ee; color: var(--ok); }
+  .l1, .l2 { background: #fdf3e0; color: var(--warn); }
+  .l3, .l4, .l5 { background: #fbe9e7; color: var(--bad); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mod { border-left: 3px solid var(--accent); padding-left: 14px; margin-bottom: 16px; }
+  .mod h3 { margin: 0 0 3px; font-size: 15px; }
+  .mod .reqs { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+  .mod ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .note {
+    background: #eef2fb;
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .tag { font-family: var(--mono); font-size: 12px; padding: 1px 7px; border-radius: 4px; background: #eef2fb; color: var(--accent); }
+  footer { color: var(--ink-soft); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+  code { font-family: var(--mono); font-size: 13px; background: #eef2fb; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CS5351 — Course Module Evidence</h1>
+  <p>Five modules on one branch · every figure on this page is produced by the code, not typed by hand</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Baseline run</h2>
+    <div class="stats">
+      <div class="stat"><div class="k">Model calls</div><div class="v" id="s-calls">—</div></div>
+      <div class="stat"><div class="k">Total tokens</div><div class="v" id="s-tokens">—</div></div>
+      <div class="stat"><div class="k">Wall clock</div><div class="v"><span id="s-seconds">—</span><span class="u">s</span></div></div>
+      <div class="stat"><div class="k">Decision</div><div class="v" id="s-signal">—</div></div>
+    </div>
+    <p class="note">Recorded once in <code>docs/baseline.md</code>. A single run is a data point, not a quality claim.</p>
+  </section>
+
+  <section>
+    <h2>Run budget — what a cap does to the same run</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Budget cap</th><th class="num">Calls made</th><th class="num">Tokens</th>
+            <th class="num">Δ vs baseline</th><th>Degradation</th><th class="num">Calls skipped</th>
+          </tr>
+        </thead>
+        <tbody id="replay-body"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      Deterministic replay of the recorded baseline under five caps. No model is called.
+      The aggregates are real; the per-call split is synthetic because the original run did not record it.
+      L3 downgrades the model tier, so it changes price per token and not token volume — the 150,000 and
+      180,000 rows therefore match.
+    </p>
+  </section>
+
+  <section>
+    <h2>Modules and their requirements</h2>
+    <div class="grid2" id="modules"></div>
+  </section>
+
+  <section>
+    <h2>Traceability — requirement to enforcing component</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Requirement</th><th>Enforcing component</th></tr></thead>
+        <tbody id="trace-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Process evidence</h2>
+    <div class="grid2">
+      <div class="card">
+        <h2 style="margin-bottom:10px">Review rounds</h2>
+        <ul id="reviews" style="margin:0;padding-left:18px;font-size:14px"></ul>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:10px">Defects recorded</h2>
+        <table><tbody id="defects"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Data generated by <code>python -m demo.collect</code> from the repository itself.
+    Offline only: no provider, no key, no network.
+  </footer>
+
+</main>
+
+<script>
+const fmt = n => n.toLocaleString("en-US");
+
+function pct(v) {
+  if (v === 0) return '<span class="flat">0.0%</span>';
+  const cls = v < 0 ? "down" : "flat";
+  return `<span class="${cls}">${v > 0 ? "+" : ""}${v.toFixed(1)}%</span>`;
+}
+
+function levelBadge(level, degradations, skipped) {
+  const label = `L${level}`;
+  let note = "";
+  if (skipped > 0) note = ` · ${skipped} skipped`;
+  else if (degradations > 0) note = ` · ${degradations} event`;
+  return `<span class="lvl l${level}">${label}</span>${note}`;
+}
+
+fetch("data.json")
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("s-calls").textContent = fmt(d.baseline.calls ?? 0);
+    document.getElementById("s-tokens").textContent = fmt(d.baseline.tokens ?? 0);
+    document.getElementById("s-seconds").textContent = d.baseline.seconds ?? "—";
+    document.getElementById("s-signal").textContent = d.baseline.signal ?? "—";
+
+    const body = document.getElementById("replay-body");
+    d.replay.forEach(row => {
+      const tr = document.createElement("tr");
+      if (row.limit === null) tr.className = "base";
+      tr.innerHTML = `
+        <td>${row.label}</td>
+        <td class="num">${row.calls}</td>
+        <td class="num">${fmt(row.tokens)}</td>
+        <td class="num">${row.limit === null ? '<span class="flat">—</span>' : pct(row.delta)}</td>
+        <td>${levelBadge(row.level, row.degradations, row.skipped)}</td>
+        <td class="num">${row.skipped || "—"}</td>`;
+      body.appendChild(tr);
+    });
+
+    const mods = document.getElementById("modules");
+    Object.entries(d.modules).forEach(([role, meta]) => {
+      const files = d.tests[role] || [];
+      const div = document.createElement("div");
+      div.className = "mod";
+      div.innerHTML = `
+        <h3>${role} — ${meta.name}</h3>
+        <div class="reqs">${meta.reqs.join(" · ")}</div>
+        <ul>${files.map(f => `<li>${f}</li>`).join("") || "<li>—</li>"}</ul>`;
+      mods.appendChild(div);
+    });
+    const integ = d.tests["Integration"] || [];
+    if (integ.length) {
+      const div = document.createElement("div");
+      div.className = "mod";
+      div.innerHTML = `<h3>Integration</h3>
+        <div class="reqs">pipeline · budget + evidence + safety + data + audit</div>
+        <ul>${integ.map(f => `<li>${f}</li>`).join("")}</ul>`;
+      mods.appendChild(div);
+    }
+
+    const trace = document.getElementById("trace-body");
+    d.trace.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><span class="tag">${row.id}</span></td><td>${row.component}</td>`;
+      trace.appendChild(tr);
+    });
+
+    const rv = document.getElementById("reviews");
+    d.reviews.forEach(r => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      rv.appendChild(li);
+    });
+
+    const df = document.getElementById("defects");
+    d.defects.forEach(b => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><span class="tag">${b.id}</span></td>
+        <td style="font-size:13px">${b.title}</td>
+        <td style="font-size:12px;color:var(--ink-soft)">${b.status}</td>`;
+      df.appendChild(tr);
+    });
+  })
+  .catch(err => {
+    document.querySelector("main").insertAdjacentHTML("afterbegin",
+      `<p class="note">Could not load <code>data.json</code>: ${err}. Run <code>python -m demo.collect</code> first.</p>`);
+  });
+</script>
+</body>
+</html>
