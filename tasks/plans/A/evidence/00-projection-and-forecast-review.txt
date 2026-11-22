@@ -1,0 +1,5 @@
+Validated top-level projection remained 'golden_cross'; original='golden_cross'
+Public verdict accepted and leaked nested mutable payload: True
+Traceback (most recent call last):
+  File "<stdin>", line 25, in <module>
+TypeError: 'Claim' object is not a mapping

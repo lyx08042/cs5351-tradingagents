@@ -57,6 +57,7 @@ class TradingAgentsGraph:
         debug=False,
         config: dict[str, Any] = None,
         callbacks: list | None = None,
+        budget: Any = None,
     ):
         """Initialize the trading agents graph and components.
 
@@ -65,6 +66,8 @@ class TradingAgentsGraph:
             debug: Whether to run in debug mode
             config: Configuration dictionary. If None, uses default config
             callbacks: Optional list of callback handlers (e.g., for tracking LLM/tool stats)
+            budget: Optional course budget ledger (FR-002). When provided, both
+                model tiers are wrapped so every call reserves and settles.
         """
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
@@ -78,6 +81,17 @@ class TradingAgentsGraph:
         extra = {"callbacks": self.callbacks} if self.callbacks else {}
         self.deep_thinking_llm = create_tier_client(self.config, "deep", **extra).get_llm()
         self.quick_thinking_llm = create_tier_client(self.config, "quick", **extra).get_llm()
+
+        # Course extension (FR-002 / FR-006): an injected ledger meters every
+        # model call at the client boundary. With no ledger the behaviour of
+        # the graph is exactly the upstream baseline.
+        self.budget = budget
+        if budget is not None:
+            from tradingagents.course.budget.integration import wrap_models
+
+            self.quick_thinking_llm, self.deep_thinking_llm = wrap_models(
+                self.quick_thinking_llm, self.deep_thinking_llm, budget
+            )
 
         self.memory_log = TradingMemoryLog(self.config)
 
@@ -555,3 +569,75 @@ class TradingAgentsGraph:
         with open(log_path, "w", encoding="utf-8") as f:
             # Reports can be in any language and this file is read by a person.
             json.dump(entry, f, indent=4, ensure_ascii=False)
+
+    def propagate_with_evidence(
+        self,
+        company_name,
+        trade_date,
+        *,
+        evidence_context,
+        asset_type="stock",
+        portfolio=None,
+    ):
+        """Run evidence mode without changing the default propagate path.
+
+        FR-001 / INV-001 / ADR-005 / ADR-006: rejects checkpointing, validates the
+        canonical snapshot before any run state or provider call, returns an explicit
+        REVIEW abstention for an explicit non-proceed, and otherwise reuses the normal
+        run/graph plumbing. Evidence audit records stay in the returned state only.
+        """
+        from tradingagents.course.evidence.integration import (
+            INVALID_CONTEXT,
+            NON_PROCEED,
+            REVIEW,
+            abstention_turn,
+            resolve_evidence_context,
+        )
+
+        if self.config.get("checkpoint_enabled"):
+            raise ValueError("propagate_with_evidence does not support checkpoint_enabled")
+        trade_date = _validate_trade_date(trade_date)
+        resolution = resolve_evidence_context(evidence_context, trade_date=trade_date)
+        if not resolution.allowed or resolution.context is None:
+            reason = resolution.reason or INVALID_CONTEXT
+            if reason != NON_PROCEED:
+                raise ValueError(reason)
+            turn = abstention_turn("bull", 1, reason, as_of=trade_date)
+            marker = turn.response
+            abstain_state = {
+                "company_of_interest": company_name,
+                "trade_date": trade_date,
+                "asset_type": asset_type,
+                "evidence_verdicts": [turn.audit_record()],
+                "investment_debate_state": {
+                    "bull_history": marker,
+                    "bear_history": "",
+                    "history": marker,
+                    "current_response": marker,
+                    "count": 1,
+                },
+                "final_trade_decision": f"ABSTAIN: {reason}",
+                "final_rating": REVIEW,
+            }
+            return abstain_state, REVIEW
+        context = resolution.context
+        with run_config(self.config):
+            init_agent_state = self.create_run_state(
+                company_name, trade_date, asset_type, portfolio
+            )
+            init_agent_state["evidence_context"] = context.to_dict()
+            init_agent_state["evidence_verdicts"] = []
+            args = self.propagator.get_graph_args()
+            final_state = self.graph.invoke(init_agent_state, **args)
+        debate = final_state.get("investment_debate_state")
+        if isinstance(debate, dict):
+            history = debate.get("history")
+            if isinstance(history, str):
+                lines = history.splitlines()
+                start = None
+                for index, line in enumerate(lines):
+                    if line.startswith(("Bull Analyst:", "Bear Analyst:")):
+                        start = index
+                if start is not None:
+                    debate["current_response"] = "\n".join(lines[start:])
+        return final_state, run_rating(final_state)

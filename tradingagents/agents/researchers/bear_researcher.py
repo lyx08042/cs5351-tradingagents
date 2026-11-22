@@ -4,10 +4,15 @@ from tradingagents.agents.context import (
     opponent_argument_or_opening,
     report_or_absent,
 )
+from tradingagents.course.evidence.integration import run_evidence_turn
 
 
 def create_bear_researcher(llm):
     def bear_node(state) -> dict:
+        if state.get("evidence_context") is not None:
+            return run_evidence_turn(
+                state, llm.invoke, "bear", get_language_instruction()
+            )
         investment_debate_state = state["investment_debate_state"]
         history = investment_debate_state.get("history", "")
         bear_history = investment_debate_state.get("bear_history", "")

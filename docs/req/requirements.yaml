@@ -74,17 +74,17 @@ requirements:
 
   - id: FR-002
     type: functional
-    statement: "一次分析运行必须使用可计量的预算账本：调用前预留、调用后结算；超出预算即 fail-closed 拒绝后续调用。"
+    statement: "A stock-analysis run must use a metered budget ledger: quotas are allocated per stage and role, every LLM call reserves budget before execution and settles it afterwards, and exceeding the global budget fails closed on further calls instead of aborting the run."
     priority: must
-    tradeoff: "预算中断可能降低完整性以换取成本可控。"
+    tradeoff: "Budget pressure may reduce analysis depth in exchange for bounded cost and a usable decision."
     source: [SRC-PROJECT-SHEET]
     owner: B
     status: proposed
     fit:
-      metric: "超预算后仍发生的调用次数"
+      metric: "LLM calls still executed after the budget is exhausted"
       threshold: 0
-      verification: "负向测试：超预算调用被拒绝（planned）"
-    invariants: [INV-002]
+      verification: "Negative test + concurrency test (planned)"
+    invariants: [INV-002, INV-006]
     code_paths: ["tradingagents/course/budget/"]
 
   - id: FR-003
@@ -131,6 +131,21 @@ requirements:
       verification: "覆盖终局决策被拒 + 回放一致性测试（planned）"
     invariants: [INV-005]
     code_paths: ["tradingagents/course/audit/"]
+
+  - id: FR-006
+    type: functional
+    statement: "When the budget is insufficient the run must degrade along the fixed ladder L1-L5 (compress injected content, reduce debate rounds, downgrade model tier, skip optional agents, emit a degraded verdict); the level is monotonic within a run and every degradation produces a retrievable event carrying a reason."
+    priority: must
+    tradeoff: "Keeps a decision available at the cost of reduced analysis depth in extreme cases."
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "Degradations without a recorded reason"
+      threshold: 0
+      verification: "Negative test: force L1-L5 by lowering the budget (planned)"
+    invariants: [INV-006]
+    code_paths: ["tradingagents/course/budget/"]
 
   - id: NFR-001
     type: nonfunctional
@@ -270,6 +285,20 @@ requirements:
       metric: "回放不一致数"
       threshold: 0
       verification: "负向+回放测试（planned）"
+    invariants: []
+
+  - id: INV-006
+    type: invariant
+    statement: "The budget trajectory is monotonic: the degradation level never rises again within a run, and no degradation or budget overrun may occur without an emitted event."
+    priority: must
+    tradeoff: "Removes recovery of quota mid-run in exchange for predictability and auditability."
+    source: [SRC-PROJECT-SHEET]
+    owner: B
+    status: proposed
+    fit:
+      metric: "Level reversals plus the count of degradations with no event"
+      threshold: 0
+      verification: "Invariant test: level never decreases; every degradation emits an event (planned)"
     invariants: []
 
   - id: GOV-001

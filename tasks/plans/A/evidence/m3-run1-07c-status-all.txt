@@ -1,0 +1,27 @@
+ M docs/ai-use-log.yaml
+ M tasks/plans/A/evidence/README.md
+ M tradingagents/agents/researchers/bear_researcher.py
+ M tradingagents/agents/researchers/bull_researcher.py
+ M tradingagents/agents/state.py
+ M tradingagents/course/evidence/README.md
+ M tradingagents/course/evidence/__init__.py
+ M tradingagents/graph/trading_graph.py
+?? docs/architecture/adr/006-evidence-debate-integration.md
+?? tasks/plans/A/evidence/m3-boundary.txt
+?? tasks/plans/A/evidence/m3-final-scope.txt
+?? tasks/plans/A/evidence/m3-preflight-integration1.txt
+?? tasks/plans/A/evidence/m3-run1-01-integration.txt
+?? tasks/plans/A/evidence/m3-run1-02-m2.txt
+?? tasks/plans/A/evidence/m3-run1-03-offline.txt
+?? tasks/plans/A/evidence/m3-run1-04-upstream.txt
+?? tasks/plans/A/evidence/m3-run1-05-ruff.txt
+?? tasks/plans/A/evidence/m3-run1-06-course-checker.txt
+?? tasks/plans/A/evidence/m3-run1-07a-diff-check.txt
+?? tasks/plans/A/evidence/m3-run1-07b-status.txt
+?? tasks/plans/A/evidence/m3-run1-07c-status-all.txt
+?? tasks/plans/A/evidence/m3-run1-results.json
+?? tasks/plans/A/review-B-draft.md
+?? test/offline/test_evidence_integration.py
+?? tradingagents/course/evidence/integration.py
+?? transcripts/role-A/m3-annotations.md
+?? transcripts/role-A/m3-raw.json
