@@ -542,7 +542,10 @@ def _result(
 
 def run_course(
     request: CourseRequest | Mapping[str, Any],
-    invoke_ai: Callable[[str], Mapping[str, Any]],
+    invoke_ai: Callable[..., Mapping[str, Any]],
+    *,
+    budget: Any = None,
+    evidence_context: Any = None,
 ) -> CourseResult:
     """Run D -> AI candidate -> C -> E for one course request (ADR-004 §2.2).
 
@@ -551,6 +554,10 @@ def run_course(
     run with an audit record and zero model calls. C is the only publish gate.
     The audit record is written before any result is returned; a write failure
     raises and publishes nothing.
+
+    ``budget`` and ``evidence_context`` are optional opt-ins for roles B and A.
+    They are forwarded to ``invoke_ai`` as keyword arguments only when supplied,
+    so a caller that does not want them sees the previous behaviour unchanged.
     """
     if isinstance(request, CourseRequest):
         request = request.frozen_copy()
@@ -561,8 +568,26 @@ def run_course(
     pre_admission = admit(list(request.observations), request.analysis_cutoff)
     candidate: Mapping[str, Any] | None = None
     if pre_admission.decision == "proceed":
+        extras: dict[str, Any] = {}
+        if budget is not None:
+            extras["budget"] = budget
+        if evidence_context is not None:
+            extras["evidence_context"] = evidence_context
         try:
-            final_state = invoke_ai(course_context(request))
+            final_state = (
+                invoke_ai(course_context(request), **extras)
+                if extras
+                else invoke_ai(course_context(request))
+            )
+        except TypeError as exc:
+            if extras and "unexpected keyword argument" in str(exc):
+                raise CourseExecutionError(
+                    "invoke_ai does not accept the enabled course modules; "
+                    "wire them into the graph callback before enabling them here"
+                ) from exc
+            raise CourseExecutionError(
+                f"course analysis failed before C: {type(exc).__name__}"
+            ) from exc
         except Exception as exc:  # noqa: BLE001 - never report a model failure as a result.
             raise CourseExecutionError(
                 f"course analysis failed before C: {type(exc).__name__}"
