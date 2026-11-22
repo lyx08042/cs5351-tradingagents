@@ -1,10 +1,10 @@
-# ADR-005 — Enforce the run budget at the model-client boundary
+# ADR-007 — Enforce the run budget at the model-client boundary
 
 - Status: Accepted (role B), pending non-author review
 - Date: 2026-11-19
 - Requirements: FR-002, FR-006, INV-002, INV-006
 - Supersedes: none
-- Numbering: 005 (was 002; renumbered so C's ADR-002 stays unique)
+- Numbering: 007 (was 002, then 005; renumbered again so A's ADR-005 stays unique)
 - Related: ADR-001 (course extension), `tasks/plans/B/FR-002-scope.md`
 
 ## Context

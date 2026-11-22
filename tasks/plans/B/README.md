@@ -49,6 +49,6 @@
 
 - `tasks/B-budget.md` — task book
 - `docs/req/requirements.yaml` — FR-002 / FR-006 / INV-002 / INV-006
-- `docs/architecture/adr/005-budget-at-the-model-client-boundary.md`
+- `docs/architecture/adr/007-budget-at-the-model-client-boundary.md`
 - `docs/architecture/invariants.md`, `docs/architecture/trace-matrix.md`
 - `DEVELOPMENT-POLICY.md` — the active workflow

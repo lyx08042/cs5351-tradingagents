@@ -154,3 +154,45 @@
   discovered_at: "2026-11-14"
 ```
 
+## A 模块剩余项（2026-11-21，FR-001 / INV-001）
+
+```yaml
+- id: DEBT-A-001
+  category: evaluation
+  title: A14 全员共享基线联调（A+B+C+D+E）与在线语义对比评估尚未执行
+  description: >
+    当前 PR #5（M1–M2）与 PR #6（M3）基于 feat/A-evidence 独立验证，已通过脚本化离线端到端
+    测试（A01–A13），但 PR #3（CDE）、PR #4（B）、PR #5/#6（A）尚未合入同一主线基线，
+    因此全员联合回归（A14）与基于真实 LLM 的在线语义评估（NFR-002 / G-4）均未执行。
+  impact: 无法在单分支内证明跨模块联调通过或报告真实模型下的质量差值（pp）。
+  related: [FR-001, INV-001, NFR-002, docs/architecture/adr/006-evidence-debate-integration.md]
+  status: open
+  owner: A
+  discovered_at: "2026-11-21"
+
+- id: DEBT-A-002
+  category: guardrail
+  title: 预算上下文压缩下保护 A 的 as_of、evidence_ref 与证据约束待共享编排层统一接线
+  description: >
+    交叉评审 B（PR #4）确认 tradingagents/course/budget/context.py 超过 12,000 tokens 压缩时
+    仅重注入四个通用块，可能裁掉 A 的分析日期、证据引用与证据约束提示；双方已约定在后续全组
+    协调集成 PR 的共享编排器中将 A 的必保证据锚点纳入不可裁剪与重注入校验清单。
+  impact: 若直接串联 B 压缩与 A 证据辩论而未加保护，压缩后可能导致证据引用丢失并触发大面积 abstain。
+  related: [FR-001, INV-001, FR-002, INV-002, docs/review-memo.md]
+  status: open
+  owner: A
+  discovered_at: "2026-11-21"
+
+- id: DEBT-A-003
+  category: hidden-deps
+  title: Fact.period 仅支持严格 YYYY-MM-DD 单日，且提示目录未对同 ID 幂等重复记录去重
+  description: >
+    M2/M3 面向市场指标单日事实，Fact.period 强制校验 YYYY-MM-DD（暂不支持如 2026-Q2 / FY2025
+    等财务报告周期）；另在 M3 对抗检查中观察到当采集侧向 EvidenceRegistry.build 传入两条完全一致
+    的同 ID 证据时，build_evidence_catalog 会在提示目录中列出两份同 ID 项（不破坏确定性或不变量）。
+  impact: 扩展至基本面季度财报事实前需经 ADR 扩充周期类型；幂等重复输入会轻微增加提示词 token。
+  related: [FR-001, tradingagents/course/evidence/contracts.py, tradingagents/course/evidence/integration.py]
+  status: accepted
+  owner: A
+  discovered_at: "2026-11-21"
+```

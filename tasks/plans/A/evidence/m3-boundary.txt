@@ -1,0 +1,2 @@
+Plain JSON context accepts valid snapshot and rejects tuple, non-string key, surrogate and cycle.
+Five explicit non-proceed values and checkpoint mode refused before graph work.

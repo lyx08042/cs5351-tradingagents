@@ -49,7 +49,7 @@ substring assertion, so a missing block fails closed rather than relying on the 
 **Enforcement point.** The graph constructs exactly two chat models and every node composes
 `(prompt | llm)`; wrapping those two covers the whole pipeline. The proxy forwards `bind_tools` and
 `with_structured_output`, because the research manager, trader and portfolio manager produce structured
-output and would otherwise escape accounting. ADR-005 records this decision against three alternatives
+output and would otherwise escape accounting. ADR-007 records this decision against three alternatives
 (per-agent accounting, orchestrator accounting, provider quotas).
 
 ## 3. Verification
