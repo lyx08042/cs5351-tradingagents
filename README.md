@@ -1,5 +1,14 @@
 # TradingAgents — CS5351 课程团队仓库
 
+> ## 📦 最终交付分支
+>
+> **`feat/all-modules-20261123`** 是本项目的最终提交版本。它包含 A–E 全部五个模块
+> （`evidence`、`budget`、`safety`、`data_quality`、`audit`）、串联它们的 `pipeline.py`，
+> 以及全部计划、证据、transcript 与治理记录。
+>
+> `main` 未合并这些内容（按团队决定保持不动）；其他 feature 分支仅供参考。
+> 打包与演示请以 `feat/all-modules-20261123` 为准。
+
 > ## ⚠️ 当前生效政策（CURRENT OVERRIDE）：`DEVELOPMENT-POLICY.md`（ACTIVE, owner-selected, 2026-11-07）
 >
 > - Owner `@lyx08042` 于 2026-11-07 当前对话中**显式决定取消所有成员的实现前批准**（在被告知这违反课程实现前测试/计划批准要求之后）。由 **Codex 编排 OpenCode** 记录，**非教师批准**。
