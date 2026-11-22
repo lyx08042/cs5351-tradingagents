@@ -57,6 +57,7 @@ class TradingAgentsGraph:
         debug=False,
         config: dict[str, Any] = None,
         callbacks: list | None = None,
+        budget: Any = None,
     ):
         """Initialize the trading agents graph and components.
 
@@ -65,6 +66,8 @@ class TradingAgentsGraph:
             debug: Whether to run in debug mode
             config: Configuration dictionary. If None, uses default config
             callbacks: Optional list of callback handlers (e.g., for tracking LLM/tool stats)
+            budget: Optional course budget ledger (FR-002). When provided, both
+                model tiers are wrapped so every call reserves and settles.
         """
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
@@ -78,6 +81,17 @@ class TradingAgentsGraph:
         extra = {"callbacks": self.callbacks} if self.callbacks else {}
         self.deep_thinking_llm = create_tier_client(self.config, "deep", **extra).get_llm()
         self.quick_thinking_llm = create_tier_client(self.config, "quick", **extra).get_llm()
+
+        # Course extension (FR-002 / FR-006): an injected ledger meters every
+        # model call at the client boundary. With no ledger the behaviour of
+        # the graph is exactly the upstream baseline.
+        self.budget = budget
+        if budget is not None:
+            from tradingagents.course.budget.integration import wrap_models
+
+            self.quick_thinking_llm, self.deep_thinking_llm = wrap_models(
+                self.quick_thinking_llm, self.deep_thinking_llm, budget
+            )
 
         self.memory_log = TradingMemoryLog(self.config)
 
@@ -164,7 +178,8 @@ class TradingAgentsGraph:
             f"settings={digest}",
         ])
 
-    def propagate(self, company_name, trade_date, asset_type: str = "stock", portfolio=None):
+    def propagate(self, company_name, trade_date, asset_type: str = "stock", portfolio=None,
+                  course_request=None):
         """Run the trading agents graph for a company on a specific date.
 
         ``asset_type`` selects between the stock pipeline (default) and the
@@ -174,13 +189,40 @@ class TradingAgentsGraph:
         a per-ticker SqliteSaver so a crashed run can resume from the last
         successful node on a subsequent invocation with the same ticker+date.
 
+        ``course_request`` enables the CDE course path (ADR-004): D runs before
+        the model, the original graph produces an optional structured candidate,
+        C validates it, E records the aggregate gate, and the returned signal is
+        derived from the safety outcome. When it is None the original behaviour
+        and return value are unchanged. Course mode rejects checkpoint resume.
+
         Returns ``(final_state, signal)`` where ``signal`` is one of the 5-tier
         ratings (Buy / Overweight / Hold / Underweight / Sell) or ``"REVIEW"``
         when the decision had no parseable rating (#1170); guard with
         ``tradingagents.agents.rating.is_review`` before mapping it to the
-        PortfolioRating enum.
+        PortfolioRating enum. Course mode returns Buy/Sell/Hold only for a C
+        acceptance and REVIEW otherwise.
         """
         trade_date = _validate_trade_date(trade_date)
+
+        if course_request is not None:
+            from tradingagents.course.pipeline import CourseRequest, CourseRequestError
+
+            if not isinstance(course_request, CourseRequest):
+                course_request = CourseRequest.from_mapping(course_request)
+            if course_request.instrument.strip() != str(company_name).strip():
+                raise CourseRequestError(
+                    f"course request instrument {course_request.instrument!r} does not "
+                    f"match propagate instrument {company_name!r}"
+                )
+            if course_request.analysis_cutoff.strip() != str(trade_date).strip():
+                raise CourseRequestError(
+                    f"course request analysis_cutoff {course_request.analysis_cutoff!r} "
+                    f"does not match propagate trade_date {trade_date!r}"
+                )
+            return self._propagate_course(
+                company_name, trade_date, asset_type=asset_type,
+                portfolio=portfolio, course_request=course_request,
+            )
 
         with run_config(self.config), \
                 self.checkpoint_scope(company_name, trade_date, asset_type, portfolio) as thread_id_value:
@@ -188,6 +230,108 @@ class TradingAgentsGraph:
                 company_name, trade_date, asset_type=asset_type,
                 checkpoint_thread_id=thread_id_value, portfolio=portfolio,
             )
+
+    def _propagate_course(self, company_name, trade_date, asset_type: str = "stock",
+                          portfolio=None, course_request=None):
+        """Run one CDE course request through the shared pipeline (ADR-004).
+
+        Anchors: FR-003, FR-004, FR-005, INV-003, INV-004, INV-005. The original
+        graph produces the candidate; pipeline D/C/E decide the outcome. A stale
+        checkpoint cannot carry course context, so enabling checkpoint for a
+        course run is refused instead of silently reusing old state.
+        """
+        from tradingagents.course.pipeline import (
+            CourseCheckpointUnsupported,
+            CourseRequestError,
+            run_course,
+        )
+
+        if self.config.get("checkpoint_enabled"):
+            raise CourseCheckpointUnsupported(
+                "course mode cannot resume from a checkpoint built without course context"
+            )
+
+        state_holder: dict[str, Any] = {}
+
+        def invoke_ai(context: str, **course_modules: Any):
+            """Run the graph for one course request.
+
+            ``course_modules`` may carry ``budget`` (role B, FR-002) and
+            ``evidence_context`` (role A, FR-001). When neither is supplied the
+            behaviour is exactly the CDE path from before. Both are opt-in.
+            """
+            run_budget = course_modules.get("budget")
+            evidence_context = course_modules.get("evidence_context")
+
+            if run_budget is not None and run_budget is not self.budget:
+                raise CourseRequestError(
+                    "course mode received a ledger that was not injected into the graph; "
+                    "construct TradingAgentsGraph(budget=ledger) instead"
+                )
+
+            evidence_state: dict[str, Any] = {}
+            if evidence_context is not None:
+                from tradingagents.course.evidence.integration import (
+                    NON_PROCEED,
+                    resolve_evidence_context,
+                )
+
+                resolution = resolve_evidence_context(
+                    evidence_context, trade_date=trade_date
+                )
+                if not resolution.allowed or resolution.context is None:
+                    reason = resolution.reason or "invalid_evidence_context"
+                    if reason != NON_PROCEED:
+                        raise CourseRequestError(reason)
+                    # An explicit non-proceed ends the run before any model call,
+                    # the same contract A uses in propagate_with_evidence.
+                    skipped = {
+                        "company_of_interest": company_name,
+                        "trade_date": str(trade_date),
+                        "final_trade_decision": f"ABSTAIN: {reason}",
+                        "final_rating": "REVIEW",
+                        "simulation_proposal": None,
+                        "evidence_abstained": reason,
+                    }
+                    state_holder["final_state"] = skipped
+                    return skipped
+                evidence_state = {
+                    "evidence_context": resolution.context.to_dict(),
+                    "evidence_verdicts": [],
+                }
+
+            final_state, _signal = self._run_graph(
+                company_name, trade_date, asset_type=asset_type,
+                portfolio=portfolio, course_context=context, record=False,
+                evidence_state=evidence_state or None,
+            )
+            if run_budget is not None or evidence_state:
+                final_state = dict(final_state)
+                if run_budget is not None:
+                    final_state["budget_snapshot"] = run_budget.snapshot()
+                    final_state["budget_events"] = [
+                        event.to_dict() for event in run_budget.events()
+                    ]
+            state_holder["final_state"] = final_state
+            return final_state
+
+        with run_config(self.config):
+            result = run_course(course_request, invoke_ai)
+
+        final_state = state_holder.get("final_state")
+        if final_state is None:
+            final_state = {
+                "company_of_interest": company_name,
+                "trade_date": str(trade_date),
+                "final_trade_decision": "",
+                "final_rating": "REVIEW",
+                "simulation_proposal": None,
+            }
+        else:
+            final_state = dict(final_state)
+        final_state["course_result"] = result.to_dict()
+        final_state["course_signal"] = result.signal
+        return final_state, result.signal
 
     def begin_checkpoint(self, company_name, trade_date, asset_type: str = "stock", portfolio=None) -> str | None:
         """Recompile the graph with a per-ticker checkpointer and return the
@@ -290,21 +434,26 @@ class TradingAgentsGraph:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return Path(self.config["results_dir"]) / "reports" / f"{safe_ticker_component(ticker)}_{stamp}"
 
-    def create_run_state(self, company_name, trade_date, asset_type: str = "stock", portfolio=None):
+    def create_run_state(self, company_name, trade_date, asset_type: str = "stock", portfolio=None,
+                         course_context: str | None = None):
         """Build a run's initial state; propagate() and the CLI both start here.
 
         Injects the resolved instrument identity for every agent (#814). The
         memory log's lessons are not here: the graph's Memory Log step settles
-        and loads them alongside the analysts (see ``_memory_step``).
+        and loads them alongside the analysts (see ``_memory_step``). A course
+        run also carries the pipeline's prompt context (ADR-004).
         """
         trade_date = _validate_trade_date(trade_date)
-        return self.propagator.create_initial_state(
+        state = self.propagator.create_initial_state(
             company_name,
             trade_date,
             asset_type=asset_type,
             instrument_context=self.resolve_instrument_context(company_name, asset_type, trade_date),
             portfolio_context=portfolio.render(company_name) if portfolio is not None else "",
         )
+        if course_context is not None:
+            state["course_context"] = course_context
+        return state
 
     def _memory_step(self, state):
         """The graph's Memory Log step, alongside the analysts (#1428): settle every
@@ -371,9 +520,19 @@ class TradingAgentsGraph:
         )
 
     def _run_graph(self, company_name, trade_date, asset_type: str = "stock",
-                   checkpoint_thread_id: str | None = None, portfolio=None):
-        """Execute the graph and write the resulting state to disk and memory log."""
-        init_agent_state = self.create_run_state(company_name, trade_date, asset_type, portfolio)
+                   checkpoint_thread_id: str | None = None, portfolio=None,
+                   course_context: str | None = None, record: bool = True,
+                   evidence_state: dict[str, Any] | None = None):
+        """Execute the graph and write the resulting state to disk and memory log.
+
+        ``evidence_state`` optionally seeds role A's evidence fields into the
+        initial state (FR-001). It is empty for every default and CDE-only run.
+        """
+        init_agent_state = self.create_run_state(
+            company_name, trade_date, asset_type, portfolio, course_context=course_context
+        )
+        if evidence_state:
+            init_agent_state.update(evidence_state)
         args = self.propagator.get_graph_args()
 
         # Inject the checkpoint thread_id (from checkpoint_scope) so the same
@@ -397,7 +556,8 @@ class TradingAgentsGraph:
         else:
             final_state = self.graph.invoke(graph_input, **args)
 
-        self.record_decision(company_name, trade_date, final_state)
+        if record:
+            self.record_decision(company_name, trade_date, final_state)
 
         # Clear checkpoint on successful completion to avoid stale state.
         self.clear_checkpoint_on_success(company_name, trade_date, asset_type, portfolio)
@@ -474,3 +634,75 @@ class TradingAgentsGraph:
         with open(log_path, "w", encoding="utf-8") as f:
             # Reports can be in any language and this file is read by a person.
             json.dump(entry, f, indent=4, ensure_ascii=False)
+
+    def propagate_with_evidence(
+        self,
+        company_name,
+        trade_date,
+        *,
+        evidence_context,
+        asset_type="stock",
+        portfolio=None,
+    ):
+        """Run evidence mode without changing the default propagate path.
+
+        FR-001 / INV-001 / ADR-005 / ADR-006: rejects checkpointing, validates the
+        canonical snapshot before any run state or provider call, returns an explicit
+        REVIEW abstention for an explicit non-proceed, and otherwise reuses the normal
+        run/graph plumbing. Evidence audit records stay in the returned state only.
+        """
+        from tradingagents.course.evidence.integration import (
+            INVALID_CONTEXT,
+            NON_PROCEED,
+            REVIEW,
+            abstention_turn,
+            resolve_evidence_context,
+        )
+
+        if self.config.get("checkpoint_enabled"):
+            raise ValueError("propagate_with_evidence does not support checkpoint_enabled")
+        trade_date = _validate_trade_date(trade_date)
+        resolution = resolve_evidence_context(evidence_context, trade_date=trade_date)
+        if not resolution.allowed or resolution.context is None:
+            reason = resolution.reason or INVALID_CONTEXT
+            if reason != NON_PROCEED:
+                raise ValueError(reason)
+            turn = abstention_turn("bull", 1, reason, as_of=trade_date)
+            marker = turn.response
+            abstain_state = {
+                "company_of_interest": company_name,
+                "trade_date": trade_date,
+                "asset_type": asset_type,
+                "evidence_verdicts": [turn.audit_record()],
+                "investment_debate_state": {
+                    "bull_history": marker,
+                    "bear_history": "",
+                    "history": marker,
+                    "current_response": marker,
+                    "count": 1,
+                },
+                "final_trade_decision": f"ABSTAIN: {reason}",
+                "final_rating": REVIEW,
+            }
+            return abstain_state, REVIEW
+        context = resolution.context
+        with run_config(self.config):
+            init_agent_state = self.create_run_state(
+                company_name, trade_date, asset_type, portfolio
+            )
+            init_agent_state["evidence_context"] = context.to_dict()
+            init_agent_state["evidence_verdicts"] = []
+            args = self.propagator.get_graph_args()
+            final_state = self.graph.invoke(init_agent_state, **args)
+        debate = final_state.get("investment_debate_state")
+        if isinstance(debate, dict):
+            history = debate.get("history")
+            if isinstance(history, str):
+                lines = history.splitlines()
+                start = None
+                for index, line in enumerate(lines):
+                    if line.startswith(("Bull Analyst:", "Bear Analyst:")):
+                        start = index
+                if start is not None:
+                    debate["current_response"] = "\n".join(lines[start:])
+        return final_state, run_rating(final_state)

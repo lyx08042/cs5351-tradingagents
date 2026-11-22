@@ -1,0 +1,61 @@
+{
+  "run_id": "course-sample-001",
+  "timestamp": "2026-11-18T10:00:00+08:00",
+  "analysis_cutoff": "2026-11-17",
+  "observations": [
+    {
+      "domain": "news",
+      "kind": "value",
+      "source": "fixture",
+      "observed_as_of": "2026-11-17",
+      "value": 1,
+      "value_present": true
+    },
+    {
+      "domain": "social",
+      "kind": "value",
+      "source": "fixture",
+      "observed_as_of": "2026-11-17",
+      "value": 1,
+      "value_present": true
+    },
+    {
+      "domain": "macro",
+      "kind": "value",
+      "source": "fixture",
+      "observed_as_of": "2026-11-17",
+      "value": 1,
+      "value_present": true
+    },
+    {
+      "domain": "price",
+      "kind": "value",
+      "source": "fixture",
+      "observed_as_of": "2026-11-17",
+      "value": 1,
+      "value_present": true
+    },
+    {
+      "domain": "fundamentals",
+      "kind": "value",
+      "source": "fixture",
+      "observed_as_of": "2026-11-17",
+      "value": 1,
+      "value_present": true
+    }
+  ],
+  "holdings_snapshot": {
+    "snapshot_id": "acct-sample-20261117",
+    "as_of": "2026-11-17",
+    "currency": "USD",
+    "cash": "10000.00",
+    "positions": {
+      "NVDA": "10"
+    },
+    "flat_declared": false
+  },
+  "instrument": "NVDA",
+  "instrument_currency": "USD",
+  "rule_version": "cde-long-only-v1",
+  "audit_path": "cde-course.sqlite"
+}

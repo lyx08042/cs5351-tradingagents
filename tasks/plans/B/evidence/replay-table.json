@@ -1,0 +1,84 @@
+{
+  "generated": "2026-11-15",
+  "method": "deterministic replay of the docs/baseline.md trace; no model call",
+  "rows": [
+    {
+      "label": "baseline",
+      "limit_tokens": null,
+      "calls": 19,
+      "input": 196870,
+      "output": 31405,
+      "total": 228275,
+      "delta_pct": 0.0,
+      "level": 0,
+      "degradations": 0,
+      "skipped": 0,
+      "ended": "completed"
+    },
+    {
+      "label": "240000",
+      "limit_tokens": 240000,
+      "calls": 19,
+      "input": 196870,
+      "output": 31405,
+      "total": 228275,
+      "delta_pct": 0.0,
+      "level": 0,
+      "degradations": 0,
+      "skipped": 0,
+      "ended": "completed"
+    },
+    {
+      "label": "200000",
+      "limit_tokens": 200000,
+      "calls": 19,
+      "input": 118114,
+      "output": 31405,
+      "total": 149519,
+      "delta_pct": -34.5,
+      "level": 1,
+      "degradations": 1,
+      "skipped": 0,
+      "ended": "completed"
+    },
+    {
+      "label": "180000",
+      "limit_tokens": 180000,
+      "calls": 17,
+      "input": 103349,
+      "output": 27478,
+      "total": 130827,
+      "delta_pct": -42.7,
+      "level": 2,
+      "degradations": 1,
+      "skipped": 2,
+      "ended": "completed"
+    },
+    {
+      "label": "150000",
+      "limit_tokens": 150000,
+      "calls": 17,
+      "input": 103349,
+      "output": 27478,
+      "total": 130827,
+      "delta_pct": -42.7,
+      "level": 3,
+      "degradations": 1,
+      "skipped": 2,
+      "ended": "completed"
+    },
+    {
+      "label": "120000",
+      "limit_tokens": 120000,
+      "calls": 13,
+      "input": 82353,
+      "output": 21898,
+      "total": 104251,
+      "delta_pct": -54.3,
+      "level": 4,
+      "degradations": 2,
+      "skipped": 6,
+      "ended": "completed"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, NotRequired
 
 from langgraph.graph import MessagesState
 from typing_extensions import TypedDict
@@ -71,3 +71,8 @@ class AgentState(MessagesState):
     past_context: Annotated[str, "Memory log context for the Portfolio Manager (same-ticker decisions + cross-ticker lessons), written by the Memory Log step"]
     memory_note: Annotated[str, "What the Memory Log step could not settle or read this run, for the report; empty when all went well"]
     portfolio_context: Annotated[str, "Caller-supplied holdings and cash, rendered at run start; empty when not provided"]
+    course_context: Annotated[str, "Course-mode prompt context; set only by the CDE pipeline (ADR-004)"]
+    simulation_proposal: Annotated[dict | None, "Optional structured simulation candidate from the Portfolio Manager; course mode only (ADR-004)"]
+    course_result: Annotated[dict | None, "Deterministic D/C/E outcome attached after a course run (ADR-004)"]
+    evidence_context: NotRequired[Annotated[dict, "Validated canonical evidence snapshot injected by evidence mode; absent in default runs"]]
+    evidence_verdicts: NotRequired[Annotated[list[dict], "Plain-JSON evidence audit records preserved in the returned state"]]

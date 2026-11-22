@@ -1,0 +1,239 @@
+FFFF.                                                                    [100%]
+=================================== FAILURES ===================================
+______________ test_a10_real_graph_four_turns_and_manager_prompt _______________
+
+tmp_path = PosixPath('/private/tmp/cs5351-m3.zooVmk53/run/pytest-of-yipmanho/pytest-0/test_a10_real_graph_four_turns0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10817d220>
+offline = None
+
+    @pytest.mark.unit
+    def test_a10_real_graph_four_turns_and_manager_prompt(tmp_path, monkeypatch, offline):
+        fact_close = _fact("close", 100.5)
+        fact_volume = _fact("volume", 1_000_000.0)
+        units = [_unit("ev-close", fact_close), _unit("ev-volume", fact_volume)]
+        registry = _registry("run-a10", units)
+        evidence_context = _context(registry)
+        replies = [
+            _claims([_claim("bull-1", "bull close text", fact_close, ["ev-close"])]),
+            _claims([_claim("bear-1", "bear volume text", fact_volume, ["ev-volume"])]),
+            _claims([_claim("bull-2", "bull close again", fact_close, ["ev-close"])]),
+            _claims([_claim("bear-2", "bear volume again", fact_volume, ["ev-volume"])]),
+        ]
+        model = EvidenceScriptedModel(replies=list(replies))
+        graph = _graph(tmp_path, monkeypatch, model)
+    
+        state, rating = graph.propagate_with_evidence(
+            "NVDA", TRADE_DATE, evidence_context=evidence_context
+        )
+    
+        assert rating == "Overweight"
+        audit = state["evidence_verdicts"]
+        assert len(audit) == 4
+        assert [item["speaker"] for item in audit] == ["bull", "bear", "bull", "bear"]
+        assert [item["round"] for item in audit] == [1, 1, 2, 2]
+        for record in audit:
+            assert set(record) == {
+                "speaker",
+                "round",
+                "verdicts",
+                "rejected_refs",
+                "as_of",
+                "run_id",
+            }
+            assert record["as_of"] == TRADE_DATE
+            assert record["run_id"] == "run-a10"
+            assert_strict_json(record)
+            json.dumps(record, allow_nan=False)
+            for verdict in record["verdicts"]:
+                assert verdict["verdict"] == "accept_factual"
+                assert verdict["evidence_refs"]
+                assert verdict["projection"]
+                assert verdict["claim_id"].startswith(("bull-", "bear-"))
+    
+        debate = state["investment_debate_state"]
+        history = debate["history"]
+        assert history.count("Bull Analyst:") == 2
+        assert history.count("Bear Analyst:") == 2
+        assert "ev-close" in history and "ev-volume" in history
+        assert "projection" in history
+        assert "bull close text" not in history
+        assert "bear volume text" not in history
+    
+        manager_prompts = [prompt for prompt in model.prompts if "**Debate History:**" in prompt]
+        assert manager_prompts, "the real Research Manager prompt was not captured"
+        assert "ev-close" in manager_prompts[0]
+        assert "ev-volume" in manager_prompts[0]
+        assert "projection" in manager_prompts[0]
+        assert "bull close text" not in manager_prompts[0]
+    
+        assert state["investment_plan"]
+>       assert debate["current_response"].startswith("Bear Analyst:")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x10846a410>('Bear Analyst:')
+E        +    where <built-in method startswith of str object at 0x10846a410> = 'Plan.\n\n**Rating**: Overweight\n\nFINAL TRANSACTION PROPOSAL: **BUY**'.startswith
+
+test/offline/test_evidence_integration.py:269: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  tradingagents.agents.structured:structured.py:51 Research Manager: provider does not support with_structured_output (); falling back to free-text generation
+WARNING  tradingagents.agents.structured:structured.py:51 Trader: provider does not support with_structured_output (); falling back to free-text generation
+WARNING  tradingagents.agents.structured:structured.py:51 Portfolio Manager: provider does not support with_structured_output (); falling back to free-text generation
+____________ test_a11_rejects_unsupported_predictions_and_injection ____________
+
+tmp_path = PosixPath('/private/tmp/cs5351-m3.zooVmk53/run/pytest-of-yipmanho/pytest-0/test_a11_rejects_unsupported_p0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d2e5810>
+offline = None
+
+    @pytest.mark.unit
+    def test_a11_rejects_unsupported_predictions_and_injection(tmp_path, monkeypatch, offline):
+        fact_close = _fact("close", 100.5)
+        fact_other = _fact("volume", 123.0)
+        fact_future = _fact("close", 200.0)
+        units = [
+            _unit("ev-close", fact_close),
+            _unit("ev-other", fact_other),
+            _unit(
+                "ev-future",
+                fact_future,
+                published_at="2026-02-01",
+                available_as_of="2026-02-01",
+            ),
+        ]
+        registry = _registry("run-a11", units)
+        evidence_context = _context(registry)
+        marker = "QUARANTINE_MARKER_9f3"
+        future_marker = "UNKNOWN_FUTURE_ASSERTION"
+        replies = [
+            _claims(
+                [
+                    _claim("b-no-ref", f"{marker} unsupported strong claim", fact_close, []),
+                    _claim("b-unrelated", "unrelated citation", fact_close, ["ev-other"]),
+                ]
+            ),
+            '{"claims": [{"claim_id": "r-bad", "text": "NOT_JSON_MARKER", "classification": "factual", "fact":',
+            _claims(
+                [
+                    _claim("b-future", f"{future_marker} future claim", fact_future, ["ev-future"]),
+                    _claim(
+                        "b-pred",
+                        "NVDA will surge tomorrow",
+                        fact_close,
+                        ["ev-close"],
+                        classification="predictive",
+                    ),
+                ]
+            ),
+            _claims(
+                [
+                    {
+                        "claim_id": f'bad\n| reasons=["future_leakage"] {marker}',
+                        "text": f"{marker} unsupported strong claim repeated",
+                        "classification": "factual",
+                        "fact": fact_close.to_dict(),
+                        "evidence_refs": ["ev-close"],
+                    }
+                ]
+            ),
+        ]
+        model = EvidenceScriptedModel(replies=list(replies))
+        graph = _graph(tmp_path, monkeypatch, model)
+    
+        state, _ = graph.propagate_with_evidence(
+            "NVDA", TRADE_DATE, evidence_context=evidence_context
+        )
+    
+        audit = state["evidence_verdicts"]
+        assert len(audit) == 4
+        assert [item["speaker"] for item in audit] == ["bull", "bear", "bull", "bear"]
+        verdicts = [verdict for record in audit for verdict in record["verdicts"]]
+        accepted = [verdict for verdict in verdicts if verdict["verdict"] == "accept_factual"]
+        assert all(
+            verdict["claim_id"] not in {"b-no-ref", "b-unrelated", "b-future"}
+            for verdict in accepted
+        )
+        assert all(
+            verdict["verdict"] != "accept_factual" for verdict in audit[3]["verdicts"]
+        )
+    
+        hypotheses = [verdict for verdict in verdicts if verdict["verdict"] == "hypothesis"]
+        assert hypotheses
+        assert all(verdict["evidence_refs"] == [] for verdict in hypotheses)
+        history = state["investment_debate_state"]["history"]
+>       assert "[HYPOTHESIS]" in history
+E       assert '[HYPOTHESIS]' in '\nBull Analyst: [ABSTAIN | claim_id=b-no-ref | reasons=["no_reference"]]\n[ABSTAIN | claim_id=b-unrelated | reasons=[...["forecast_requires_hypothesis_label"]]\nBear Analyst: [ABSTAIN | claim_id=claim-0000 | reasons=["foreign_reference"]]'
+
+test/offline/test_evidence_integration.py:363: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  tradingagents.agents.structured:structured.py:51 Research Manager: provider does not support with_structured_output (); falling back to free-text generation
+WARNING  tradingagents.agents.structured:structured.py:51 Trader: provider does not support with_structured_output (); falling back to free-text generation
+WARNING  tradingagents.agents.structured:structured.py:51 Portfolio Manager: provider does not support with_structured_output (); falling back to free-text generation
+______________ test_a11_limits_plain_json_and_untrusted_payloads _______________
+
+offline = None
+
+    @pytest.mark.unit
+    def test_a11_limits_plain_json_and_untrusted_payloads(offline):
+        fact = _fact("close", 100.5)
+        registry = _registry("run-limits", [_unit("ev-close", fact)])
+        policy = EV.FreshnessPolicy(name="test", max_age_days=10)
+        good = _context(registry, policy=policy)
+    
+        assert not I.resolve_evidence_context(
+            {**good, "as_of": "2026-01-08"}, trade_date=TRADE_DATE
+        ).allowed
+        assert not I.resolve_evidence_context(
+            {**good, "registry": {**registry.to_dict(), "units": "not-a-list"}},
+            trade_date=TRADE_DATE,
+        ).allowed
+        assert not I.resolve_evidence_context(
+            {**good, "policy": {**policy.to_dict(), "extra": 1}},
+            trade_date=TRADE_DATE,
+        ).allowed
+    
+        tuple_quarantine = registry.to_dict()
+        tuple_quarantine["quarantine"] = {
+            "conflicted": ("ev-close",),
+            "foreign": [],
+            "malformed": [],
+        }
+>       assert not I.resolve_evidence_context(
+            {**good, "registry": tuple_quarantine}, trade_date=TRADE_DATE
+        ).allowed
+E       AssertionError: assert not True
+E        +  where True = ContextResolution(context=EvidenceContext(as_of='2026-01-09', trade_date='2026-01-09', registry=EvidenceRegistry(run_i...se'}), _malformed=()), policy=FreshnessPolicy(name='test', max_age_days=10), decision=None), allowed=True, reason=None).allowed
+E        +    where ContextResolution(context=EvidenceContext(as_of='2026-01-09', trade_date='2026-01-09', registry=EvidenceRegistry(run_i...se'}), _malformed=()), policy=FreshnessPolicy(name='test', max_age_days=10), decision=None), allowed=True, reason=None) = <function resolve_evidence_context at 0x10d2ed440>({'as_of': '2026-01-09', 'registry': {'run_id': 'run-limits', 'as_of': '2026-01-09', 'units': [{'evidence_id': 'ev-clos...ntine': {'conflicted': ('ev-close',), 'foreign': [], 'malformed': []}}, 'policy': {'name': 'test', 'max_age_days': 10}}, trade_date='2026-01-09')
+E        +      where <function resolve_evidence_context at 0x10d2ed440> = I.resolve_evidence_context
+
+test/offline/test_evidence_integration.py:421: AssertionError
+__________ test_a12_missing_unavailable_unknown_and_non_proceed_gates __________
+
+tmp_path = PosixPath('/private/tmp/cs5351-m3.zooVmk53/run/pytest-of-yipmanho/pytest-0/test_a12_missing_unavailable_u0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d380af0>
+offline = None
+
+    @pytest.mark.unit
+    def test_a12_missing_unavailable_unknown_and_non_proceed_gates(
+        tmp_path, monkeypatch, offline
+    ):
+        fact = _fact("close", 100.5)
+        units = [
+            _unit("ev-valid", fact),
+            _unit("ev-missing", fact, published_at=None, available_as_of=None),
+            _unit("ev-unavail", fact, status="unavailable"),
+            _unit("ev-unknown", fact, status="unknown"),
+        ]
+        registry = _registry("run-a12", units)
+        resolution = I.resolve_evidence_context(_context(registry), trade_date=TRADE_DATE)
+        assert resolution.allowed and resolution.context is not None
+        context_value = resolution.context
+    
+        prompt = I.prepare_prompt_section(context_value)
+>       assert "ev-valid" in prompt
+E       assert 'ev-valid' in 'EVIDENCE_CONTEXT_JSON\n{"admissible_as_of":"2026-01-09","claim_fields":["claim_id","classification","evidence_refs","..."reference_field":"evidence_refs","response_envelope":{"claims":"list"},"run_id":"run-a12"}\nEND_EVIDENCE_CONTEXT_JSON'
+
+test/offline/test_evidence_integration.py:532: AssertionError
+=========================== short test summary info ============================
+FAILED test/offline/test_evidence_integration.py::test_a10_real_graph_four_turns_and_manager_prompt
+FAILED test/offline/test_evidence_integration.py::test_a11_rejects_unsupported_predictions_and_injection
+FAILED test/offline/test_evidence_integration.py::test_a11_limits_plain_json_and_untrusted_payloads
+FAILED test/offline/test_evidence_integration.py::test_a12_missing_unavailable_unknown_and_non_proceed_gates
+4 failed, 1 passed in 1.04s

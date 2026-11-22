@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-14",
+  "source_commit": "fe5805ffc4c16bd8e69379a70a8b93ca94746ec4",
+  "base_commit": "7dc46516935755d5a09ba3507ccd55dbadda066b",
+  "executor": "Codex independently ran commands; OpenCode generated code/tests/docs",
+  "session_id": "ses_e26a98708ffehPgZu8n5f9GKTo",
+  "model": "cityu/CS5351/DeepSeek-V4-Flash",
+  "opencode_version": "1.18.29",
+  "offline": {
+    "passed": 80,
+    "E_added": 60,
+    "scaffold": 20
+  },
+  "compatibility": {
+    "passed": 156,
+    "C_commit": "a78d88cc3fd7ca4e877a677a95e9ada0caddaed5",
+    "D_commit": "bd3a853ee332b72c46d86a62a39c457782e6ddcb",
+    "method": "temporary combined source and offline tests only; not production workflow integration"
+  },
+  "ruff": "passed",
+  "standalone_demo": {
+    "command": "python -S -m audit --demo",
+    "cwd": "tradingagents/course",
+    "exit_code": 0,
+    "all_expected": true
+  },
+  "runtime_api_calls": false,
+  "other_modules_modified": false,
+  "independent_human_review": "pending D",
+  "PR": "not yet created at document generation",
+  "github_code_snapshot": "94ba2e51d3117aad3b24027c378b74faa28c5815",
+  "github_blob_verification": {
+    "checked_files": 12,
+    "mismatches": 0,
+    "method": "GitHub tree blob SHAs compared with local git blob SHAs",
+    "note": "source_commit is a local commit; web publication creates different GitHub commit IDs"
+  }
+}
