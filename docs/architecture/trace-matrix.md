@@ -17,10 +17,11 @@
 | 需求 | 强制组件 | 提议代码路径 | 测试/证据（planned） | 运行时监控 |
 |---|---|---|---|---|
 | FR-001 | 证据绑定校验器（A） | `tradingagents/course/evidence/` | 有证据通过 + 无证据降级负向测试 | 无证据断言比例 |
-| FR-002 | 预算账本 reserve/settle（B） | `tradingagents/course/budget/` | 超预算拒绝负向测试 | 预算耗尽事件 |
+| FR-002 | 预算账本 + 分配 + 降级（B） | `tradingagents/course/budget/` | 超预算拒绝负向测试；并发不超卖测试 | 预算耗尽事件、剩余额度 |
 | FR-003 | 确定性提案校验器（C） | `tradingagents/course/safety/` | 缺快照/非法 units/未声明 flat 负向测试 | 拒绝事件与原因 |
 | FR-004 | 数据状态标签 + default-deny unknown（D） | `tradingagents/course/data_quality/` | unavailable 被标 neutral 负向测试；unknown/缺失默认拒绝 | unavailable / unknown 比例 |
 | FR-005 | 追加式审计 + supersede 链 + 回放（E） | `tradingagents/course/audit/` | 覆盖终局决策被拒 + 回放一致性 | 修订次数、回放差异 |
+| FR-006 | 降级策略 L1–L5（B） | `tradingagents/course/budget/` | 人为压低预算触发 L1–L5 的负向测试 | 降级事件与档位 |
 
 ## 3. 非功能需求（NFR）
 
@@ -41,6 +42,7 @@
 | INV-003 | 提案确定性校验（C） | `tradingagents/course/safety/` | 缺快照/非法 units/未声明 flat 被拒 | 拒绝事件 |
 | INV-004 | 状态标签校验（D） | `tradingagents/course/data_quality/` | unknown/缺失不当中性被拒 | unavailable / unknown 比例 |
 | INV-005 | 追加式存储 + 修订链（E） | `tradingagents/course/audit/` | 覆盖终局决策被拒；回放一致性 | 修订次数、回放差异 |
+| INV-006 | 预算轨迹单调 + 降级必留痕（B） | `tradingagents/course/budget/` | 档位不回升测试；无事件降级被拒 | 降级档位历史 |
 
 ## 5. 治理需求（GOV）
 

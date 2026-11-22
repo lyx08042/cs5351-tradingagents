@@ -117,6 +117,24 @@ entries:
     runtime_application_live_requests: false
     business_source_changed: true
     new_offline_tests_added: true
+  - id: AI-USE-B-0001
+    date: "2026-11-15"
+    model: "DeepSeek (harness default)"
+    tool: "DeepSeek Harness coding agent"
+    session_id: "not exported by the harness; see transcripts/ for the session record"
+    actor: "coding-agent"
+    orchestration: "single agent session, directed turn by turn by the role-B member"
+    member: "role B — name and student id to be filled by the member; not fabricated here"
+    scope: "role-B implementation: FR-002 / FR-006 / INV-002 / INV-006"
+    summary: >
+      Defined the scope and rewrote FR-002, added FR-006 and INV-006 with trace-matrix rows; implemented
+      tradingagents/course/budget/{contracts,ledger,policy,context,integration,replay}.py with 58 offline
+      tests; added a fourteen-line opt-in integration in graph/trading_graph.py; produced a deterministic
+      replay evaluation and recorded it in docs/architecture/evaluation-logbook.md; detected and fixed
+      BUG-004. No live provider call was made and no API key was read.
+    coding_model_live_requests: true
+    runtime_application_live_requests: false
+    business_source_changed: true
     existing_tests_changed: false
     business_dependencies_changed: false
     course_checker_dependencies_added: false
@@ -387,6 +405,14 @@ entries:
       and is to be exported verbatim by Codex; no identity is filled here. No
       real broker or runtime live API evaluation was performed. Course G-1/D9
       remain unsatisfied; this entry does not claim course compliance.
+    course_deviation: true
+    course_deviation_detail: >
+      The coding agent used for this work is not the one the course is built around; the session
+      record and the transcript state the real tool. Recorded so that nothing here is mistaken for
+      a course-compliant toolchain. No fabricated approval, identity or test output.
+    caveats: >
+      Evaluation is a deterministic replay of a recorded run, not a live measurement; decision quality is
+      unmeasured. No fabricated approvals, identities or test output.
 policy:
   - "Append a new entry for every application-code or prompt PR; never edit historical entries."
   - "Do not claim student authorship; the member field is filled by a human after real contribution."

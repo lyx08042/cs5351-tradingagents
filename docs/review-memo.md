@@ -38,3 +38,98 @@
 <approve / request changes / reject>（只可基于真实检查填写）
 
 > 本模板不会自动产生通过结论。
+
+## 记录
+
+### PR #4 — feat(B): FR-002 run budget with a degradation ladder
+
+- PR / commit: #4 — round 1 reviewed at `cba1277`, fixes in `b23f541`
+- 作者: 60399223 SONG Yixin (role B)
+- 评审人（非作者）: A
+- 评审日期: 2026-11-21
+- 关联需求 ID: FR-002, FR-006, INV-002, INV-006
+
+#### Round 1 — verdict: CHANGES REQUIRED
+
+Four items were raised against `cba1277`; all four were accepted and fixed in `b23f541`:
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | `AI-USE-0002`, the owner's historical G-1/D9 entry, had been rewritten | Restored verbatim from `origin/main`; only the new AI-USE-B-0001 entry is added (`git diff origin/main -- docs/ai-use-log.yaml` now shows an addition only) |
+| 2 | `reserve()` borrowed quota before validating the call id, and never checked settled ids | Identity is validated before any borrow or charge; settled ids are rejected; two regression tests added |
+| 3 | Stage attribution fell back to `analyst` when a caller passes no config (the researchers call `llm.invoke(prompt)`); `include_raw` usage was ignored; a provider returning negative usage leaked the reservation; a single-call overrun was returned downstream | Added `budget_stage()` / `with_stage()` / `stage_resolver`; usage is read from the `raw` member; a failed settlement releases the reservation; an overrun that exhausts the pool raises `BudgetOverrun` carrying the response |
+| 4 | Stale counts and statuses in the B documents; `INV-006` missing from the invariant register | Counts aligned to 58 tests, integration described as fourteen lines, ADR-002 and the catalogue recorded as written, `INV-006` added |
+
+Deferred by agreement with the reviewer:
+
+- Protecting A's `as_of` / `evidence_ref` blocks during compaction, and wiring `DegradationPolicy` into the
+  runtime — both belong to the shared orchestrator and will be handled in the group integration PR.
+- ADR numbering was resolved on this branch: the B ADR became `005`, so C's `002` stays unique.
+  `tradingagents/course/__init__.py` still conflicts with the A/CDE branches and is left to integration.
+
+#### Checklist (round 2, at `b23f541`)
+
+| Item | Status | Note |
+|---|---|---|
+| Test plan approved (`docs/approvals/`) | n/a | pre-coding approval disabled by `DEVELOPMENT-POLICY.md`; recorded as a course deviation |
+| Implementation plan approved | n/a | same policy; plans are working documents under `tasks/plans/B/` |
+| Safety-change ADR | n/a | the module changes no safety boundary; ADR-005 covers the integration point |
+| At least one negative test | pass | 58 offline tests; new ones cover duplicate ids, settled-id reuse, negative usage, single-call overrun |
+| Existing tests not weakened | pass | `tests/` untouched |
+| `tests/` not modified | pass | `git diff origin/main -- tests/` is empty |
+| Leaf modules free of cycles | pass | `test_budget_module_does_not_import_sibling_leaf_modules` |
+| Missing-data semantics (unavailable vs neutral) | n/a | owned by module D |
+| fail-closed behaviour verified | pass | invalid config raises; a denied call never reaches the provider; an overrun raises |
+| ai-use-log updated | pass | AI-USE-B-0001 (history restored) |
+| Documentation status truthful | pass | `tasks/plans/B/validation.md` §5 lists what was not verified |
+
+#### Verdict
+
+Round 1: **CHANGES REQUIRED**. Round 2: awaiting the reviewer's re-check; **no approval is claimed here**.
+When the reviewer approves on GitHub, record their handle and the date in this table.
+
+### PR #3 — feat/CDE-integration (reviewed by role B)
+
+- PR / commit: #3 / `afe1215` (48 commits, 72 files, +71,429 / −14)
+- 作者: role C (C + D + E integration)
+- 评审人（非作者）: 60399223 SONG Yixin (role B)
+- 评审日期: 2026-11-21
+- 关联需求 ID: FR-003, FR-004, FR-005, INV-003/004/005
+
+Method: static review of the diff and of repository metadata. Nothing was executed locally (no runtime
+dependencies, no provider key), so behavioural claims are read, not measured.
+
+| # | Finding | Blocking |
+|---|---|---|
+| F1 | Three D plans added under `docs/approvals/**`, a human-only path; they belong under `tasks/plans/D/` | yes |
+| F2 | C's `adr/002-simulation-safety.md` collided with the B branch's ADR-002 | yes — **resolved**: B renumbered its ADR to `005` |
+| F3 | `AI-USE-0003` is duplicated across the B and D branches; this PR already carries D's entry | yes — **resolved**: B renamed its entry to `AI-USE-B-0001` |
+| F4 | The five new `test/offline/*.py` files are not collected by any workflow (`testpaths=["tests"]`); CI green does not cover them | no, needs a caveat |
+| F5 | `cli/main.py` is a protected baseline file; the scope must be recorded | no, needs a record |
+
+Verdict: **CHANGES REQUIRED** for F1–F3; F4 and F5 need a sentence rather than a code change. Full record:
+`tasks/plans/B/review-of-PR3.md`. No approval is claimed.
+
+#### Author response (2026-11-21)
+
+F2 and F3 are resolved on the B side (ADR renumbered to `005`, AI-use entry renamed to `AI-USE-B-0001`).
+F4 and F5 were accepted by the author, who will state the offline-test caveat and the CLI scope in the PR
+description. F1 remains open: the three plan documents arrived with D's branch and are textually identical to
+D's copies, so the decision whether they belong in `docs/approvals/` sits with D and the leader. Re-review is
+pending that decision; no approval is claimed.
+
+#### F1 mitigation (2026-11-21)
+
+The leader accepted the reviewer's proposal: the three plan documents carried in from the D branch stay in
+`docs/approvals/` **only with a status line** at the top of each file:
+
+> Historical record (D branch). Carried into `main` with the D branch merge. It records a stage approval for
+> D's independent module only. It supersedes nothing and is not an approval for the CDE integration. See
+> `DEVELOPMENT-POLICY.md`.
+
+Author D agreed to the change. The files sit on a human-only path, so the reviewer did **not** edit them; the
+change is made by a member through the GitHub web editor and proposed as a small PR against
+`feat/CDE-integration`. This memo records the decision and the owner of the fix, not the fix itself.
+
+Reviewer's approval of PR #3 is conditional on that line landing before `main` first contains those files.
+If it does not land, this note is the record that the condition was known and accepted.
