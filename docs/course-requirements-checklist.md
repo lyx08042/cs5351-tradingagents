@@ -14,8 +14,8 @@
 | D2 | 需求工程（可度量） | `docs/req/requirements.yaml`、`req-schema.json`、`docs/req/README.md` | PROPOSED（未批准） |
 | D3 | 架构设计（模块边界/权威性） | `architecture-blueprint.md`、`docs/architecture/adr/001-course-extension.md` | PROPOSED |
 | D4 | 治理（审批、评审、AI 记录） | `AGENTS.md`、`Prompt.md`、`docs/approvals/`、`docs/ai-use-log.yaml`、`templates/` | 机制存在；批准记录为空 |
-| D5 | 测试（三层 + 负向） | `tests/`（基线）、`test/`（脚手架）、`docs/code-governance/verification-constraints.md` | 仅脚手架 + 基线；行为层未实现 |
-| D6 | 代码实现 F1–F5 | `tradingagents/course/**` | **未实现（目录不存在）** |
+| D5 | 测试（三层 + 负向） | `tests/`（基线）、`test/`（脚手架）、`test/offline/`（五个模块的正负向测试）、`docs/code-governance/verification-constraints.md` | 基线 + 脚手架 + 五个模块的行为层测试（整合分支） |
+| D6 | 代码实现 F1–F5 | `tradingagents/course/**` | **已实现**（`feat/CDE-integration`：audit / budget / data_quality / evidence / safety + pipeline） |
 | D7 | 评估 | `docs/evaluation/`、`docs/architecture/evaluation-table.md` | planned，无结果 |
 | D8 | 文档/报告/视频 | `Report.md`、`transcripts/`、`docs/submission-checklist.md` | 提纲/模板，未完成 |
 | D9 | 提交与诚信 | `docs/submission-checklist.md`、`docs/github-setup.md` | 待人工执行；**D9 计划/停止要求未满足**（owner 2026-11-07 取消实现前批准，见 `DEVELOPMENT-POLICY.md`） |

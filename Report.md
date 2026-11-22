@@ -37,8 +37,9 @@
 - 引用 `architecture-blueprint.md`、`docs/architecture/`。
 
 ### 5. 实现（~2 页）
-- 按 F1–F5 分节；**如实标注实现状态**（当前：未实现）。
-- 代码路径 `tradingagents/course/**`（PROPOSED）。
+- 按 F1–F5 分节；**如实标注实现状态**：五个模块均已实现，位于 `feat/CDE-integration` 分支的
+  `tradingagents/course/{evidence,budget,safety,data_quality,audit}/`，由 `pipeline.py` 串联。
+- 代码路径 `tradingagents/course/**`（已实现）。`main` 未合并这些内容，交付以整合分支为准。
 
 ### 6. 验证与评估（~2 页）
 - 三层验证；负向测试。

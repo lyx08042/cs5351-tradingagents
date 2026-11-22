@@ -34,4 +34,4 @@ pytest
 ## 4. 当前状态
 
 - `test/offline/` 仅含课程脚手架测试。
-- F1–F5 的真实测试**尚未实现**。
+- F1–F5 的真实测试位于 `test/offline/`（整合分支 `feat/CDE-integration`）。

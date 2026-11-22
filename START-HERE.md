@@ -70,7 +70,7 @@ pip install -r requirements-course.txt
 | D | F4 全局数据充分性（unavailable vs neutral） | `tasks/D-data-quality.md` | `tradingagents/course/data_quality/` |
 | E | F5 可验证审计 + 决策修订 + 离线 gate 回放 | `tasks/E-audit.md` | `tradingagents/course/audit/` |
 
-> 上述 `tradingagents/course/**` 目录**当前不存在**；它们是 PROPOSED 设计。是否采用该布局以及是否必须迁移到课程要求目录，**以教师答复为准**。成员身份与姓名**未知/待填**，不得虚构。
+> 上述 `tradingagents/course/**` 目录已在整合分支 `feat/CDE-integration` 中实现。是否采用该布局以及是否必须迁移到课程要求目录，**以教师答复为准**。成员身份与姓名**未知/待填**，不得虚构。
 
 **交叉评审环**：A 评审 B，B 评审 C，C 评审 D，D 评审 E，E 评审 A。评审人不得是作者本人。交接方向与之对应：A→E、B→A、C→B、D→C、E→D。
 
@@ -122,4 +122,4 @@ pip install -r requirements-course.txt
 | 课程架构/需求 | **PROPOSED**，待学生批准 |
 | 课程脚手架 CI | 仅 schema/trace 引导检查，**不是**全部六道 gate |
 | 测试/计划批准自动化 | **PENDING**，目前人工流程 |
-| F1–F5 实现 | **未实现** |
+| F1–F5 实现 | **已实现并集成**（`feat/CDE-integration`，五个模块 + pipeline 串联） |

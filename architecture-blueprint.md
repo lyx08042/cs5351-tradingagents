@@ -28,9 +28,9 @@
 
 模块映射见 `src/README.md` 与 `test/README.md`。
 
-### 1.2 课程扩展范围（F1–F5，**未实现**）
+### 1.2 课程扩展范围（F1–F5，**已在整合分支实现**）
 
-| 功能 | 命题 | 提议归属 | 提议代码位置（当前不存在） |
+| 功能 | 命题 | 归属 | 代码位置（已实现于整合分支） |
 |---|---|---|---|
 | **F1** 证据约束辩论 | 辩论中的断言须绑定到已检索证据（evidence-grounded） | A | `tradingagents/course/evidence/` |
 | **F2** 运行预算 | 为一次分析运行设置可计量、可拒绝的预算（调用/令牌/成本） | B | `tradingagents/course/budget/` |
@@ -38,7 +38,7 @@
 | **F4** 全局数据充分性 | 明确区分 *不可用（unavailable）* 与 *中性（neutral）*，并据此 gate | D | `tradingagents/course/data_quality/` |
 | **F5** 可验证审计 | 不可变审计、最终决策权威、决策修订与离线 gate 回放 | E | `tradingagents/course/audit/` |
 
-> **重要**：`tradingagents/course/**` 目录当前**不存在**，也没有任何文件。它们只是本提案中的**计划路径**，不是已完成代码。
+> **重要**：`tradingagents/course/**` 已在整合分支 `feat/CDE-integration` 中实现，包含 `evidence/`、`budget/`、`safety/`、`data_quality/`、`audit/` 五个模块与 `pipeline.py`。`main` 尚未合并；交付以整合分支为准。
 
 ---
 
@@ -72,7 +72,7 @@
 
 ```
 tradingagents/
-  course/                 # PROPOSED，当前不存在
+  course/                 # 已实现于 feat/CDE-integration
     evidence/             # A：证据检索、断言绑定、引用校验
     budget/               # B：预算账本、预留、结算、拒绝
     safety/               # C：模拟提案 schema、确定性规则、失效关闭
@@ -141,7 +141,7 @@ identity → constraints → retrieved evidence → conversation → state → t
 
 - **结构层**：schema/契约/导入方向检查（planned）。
 - **回归层**：上游测试 `tests/` 必须保持通过（BASE-002）。
-- **行为层**：F1–F5 各自的正向 + 负向测试（planned）。
+- **行为层**：F1–F5 各自的正向 + 负向测试（已实现于 `test/offline/`，见各模块 README）。
 - **监控**：预算耗尽事件、fail-closed 事件、unavailable 比例、审计修订次数、回放一致性（planned，目前无运行监控）。
 - 课程脚手架当前仅做 schema/trace 引导检查，**不是**六道 gate 的完整实现。
 

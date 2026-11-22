@@ -36,7 +36,7 @@
 ## 关键事实（避免误解）
 
 - 上游 v0.7.1 **已经具备**：并行分析师、每次调用 token 配置、辩论/工具轮次上限、重试、结构化 schema、checkpoint、memory、报告与测试。**这些不是**本团队的新功能，不得在报告或视频中宣称为新实现。
-- 本团队计划的功能（F1–F5）**尚未实现**，当前目录 `tradingagents/course/` **不存在**（蓝图中的 PROPOSED 路径）。
+- 本团队的功能（F1–F5）**已实现并集成**在整合分支 `feat/CDE-integration` 的 `tradingagents/course/` 下（`evidence`、`budget`、`safety`、`data_quality`、`audit`），由 `pipeline.py` 串联。`main` 尚未合并这些内容，交付以整合分支为准。
 - 运行时 AI（被评测的交易分析系统）与本仓库的编码代理（OpenCode）是**两个不同主体**，见 `AGENTS.md`。
 - 模板不承诺完成度；任何“已完成/已批准/已评审”的标记只能由真实事件与真实签名产生。
 

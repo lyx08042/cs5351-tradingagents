@@ -42,7 +42,7 @@
 |---|---|---|
 | 结构层 | schema、ID 唯一、trace 覆盖、导入方向、必需文件 | 部分（`scripts/check_course.py`） |
 | 回归层 | 上游 `tests/`（BASE-002） | 已有基线；fork CI 待启用 |
-| 行为层 | F1–F5 正向/负向/回放测试 | planned，未实现 |
+| 行为层 | F1–F5 正向/负向/回放测试 | 已实现于 `test/offline/`（整合分支 `feat/CDE-integration`） |
 
 ## 5. 每个功能至少一个负向测试（planned）
 

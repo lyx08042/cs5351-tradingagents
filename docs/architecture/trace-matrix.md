@@ -2,7 +2,7 @@
 
 > 状态：**PROPOSED**。覆盖关系是**计划**，不代表已实现。
 > 每行对应 `docs/req/requirements.yaml` 中**一个真实需求 ID**。列含义：强制组件 → 提议代码路径 → 计划测试/证据 → 运行时监控。
-> 代码路径 `tradingagents/course/**` **当前不存在**；所有测试/监控均为 **planned**。
+> 代码路径 `tradingagents/course/**` 已实现于整合分支 `feat/CDE-integration`；本表其余覆盖关系仍为计划性质。
 > `scripts/check_course.py` 要求本文件出现**每一个** registry 需求 ID；缺失即校验失败（不得弱化检查）。
 
 ## 1. 基线需求（BASE）
