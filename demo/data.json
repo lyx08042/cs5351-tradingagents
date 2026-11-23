@@ -421,6 +421,123 @@
       "result": "success"
     }
   },
+  "stories": {
+    "A": {
+      "role": "A",
+      "name": "Evidence-grounded debate",
+      "reqs": [
+        "FR-001",
+        "INV-001"
+      ],
+      "question": "Can a claim be made without evidence?",
+      "answer": "No. A strong claim must bind to a retrieved evidence unit, and the evidence must not be dated after the analysis date.",
+      "refuse": "A claim without evidence is demoted to a hypothesis, or the turn abstains.",
+      "adr": "005-evidence-grounded-debate.md",
+      "files": [
+        "__init__.py",
+        "__main__.py",
+        "claims.py",
+        "contracts.py",
+        "integration.py"
+      ],
+      "tests": [
+        "test_evidence.py",
+        "test_evidence_integration.py"
+      ]
+    },
+    "B": {
+      "role": "B",
+      "name": "Run budget",
+      "reqs": [
+        "FR-002",
+        "FR-006",
+        "INV-002",
+        "INV-006"
+      ],
+      "question": "What bounds the cost of a run?",
+      "answer": "A metered ledger: reserve before the call, settle after it, refuse past the cap.",
+      "refuse": "Past the cap the call is refused; below the cap the run degrades along a fixed ladder instead of dying.",
+      "adr": "007-budget-at-the-model-client-boundary.md",
+      "files": [
+        "__init__.py",
+        "context.py",
+        "contracts.py",
+        "integration.py",
+        "ledger.py",
+        "policy.py",
+        "replay.py"
+      ],
+      "tests": [
+        "test_budget.py",
+        "test_budget_integration.py",
+        "test_budget_replay.py"
+      ]
+    },
+    "C": {
+      "role": "C",
+      "name": "Deterministic simulation safety",
+      "reqs": [
+        "FR-003",
+        "INV-003",
+        "SEC-001"
+      ],
+      "question": "Who decides whether a trade proposal is legal?",
+      "answer": "Deterministic code, not the model. The model proposes; the validator accepts or rejects.",
+      "refuse": "A proposal without a holdings snapshot, with units <= 0 for a buy, or beyond cash is rejected.",
+      "adr": "002-simulation-safety.md",
+      "files": [
+        "__init__.py",
+        "models.py",
+        "validator.py"
+      ],
+      "tests": [
+        "test_safety_simulation.py"
+      ]
+    },
+    "D": {
+      "role": "D",
+      "name": "Data sufficiency",
+      "reqs": [
+        "FR-004",
+        "INV-004"
+      ],
+      "question": "What does it mean when the data is not there?",
+      "answer": "Three states, not two: available, unavailable, unknown. Neutral is a value, not a status.",
+      "refuse": "unavailable abstains; unknown escalates to review. Neither is ever treated as a neutral signal.",
+      "adr": null,
+      "files": [
+        "__init__.py",
+        "admission.py",
+        "classifier.py",
+        "contracts.py"
+      ],
+      "tests": [
+        "test_data_quality.py"
+      ]
+    },
+    "E": {
+      "role": "E",
+      "name": "Verifiable audit",
+      "reqs": [
+        "FR-005",
+        "INV-005"
+      ],
+      "question": "Can a finished decision be trusted later?",
+      "answer": "An append-only hash chain, a supersede chain for revisions, and an offline gate replay.",
+      "refuse": "Overwriting a final decision is rejected; a broken chain fails verification.",
+      "adr": "003-append-only-audit.md",
+      "files": [
+        "__init__.py",
+        "__main__.py",
+        "records.py",
+        "replay.py",
+        "store.py"
+      ],
+      "tests": [
+        "test_audit.py"
+      ]
+    }
+  },
   "trace": [
     {
       "id": "BASE-001",

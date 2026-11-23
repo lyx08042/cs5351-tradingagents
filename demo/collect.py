@@ -357,6 +357,72 @@ def ci_checks() -> dict:
     }
 
 
+MODULE_STORY = {
+    "A": {
+        "question": "Can a claim be made without evidence?",
+        "answer": "No. A strong claim must bind to a retrieved evidence unit, and the evidence must not be dated after the analysis date.",
+        "refuse": "A claim without evidence is demoted to a hypothesis, or the turn abstains.",
+        "adr": "005-evidence-grounded-debate.md",
+        "files": None,  # filled from disk
+    },
+    "B": {
+        "question": "What bounds the cost of a run?",
+        "answer": "A metered ledger: reserve before the call, settle after it, refuse past the cap.",
+        "refuse": "Past the cap the call is refused; below the cap the run degrades along a fixed ladder instead of dying.",
+        "adr": "007-budget-at-the-model-client-boundary.md",
+        "files": None,
+    },
+    "C": {
+        "question": "Who decides whether a trade proposal is legal?",
+        "answer": "Deterministic code, not the model. The model proposes; the validator accepts or rejects.",
+        "refuse": "A proposal without a holdings snapshot, with units <= 0 for a buy, or beyond cash is rejected.",
+        "adr": "002-simulation-safety.md",
+        "files": None,
+    },
+    "D": {
+        "question": "What does it mean when the data is not there?",
+        "answer": "Three states, not two: available, unavailable, unknown. Neutral is a value, not a status.",
+        "refuse": "unavailable abstains; unknown escalates to review. Neither is ever treated as a neutral signal.",
+        "adr": None,
+        "files": None,
+    },
+    "E": {
+        "question": "Can a finished decision be trusted later?",
+        "answer": "An append-only hash chain, a supersede chain for revisions, and an offline gate replay.",
+        "refuse": "Overwriting a final decision is rejected; a broken chain fails verification.",
+        "adr": "003-append-only-audit.md",
+        "files": None,
+    },
+}
+
+
+def module_stories() -> dict[str, dict]:
+    """One short story per module for the section switcher.
+
+    The file lists and ADR names come from disk, so the page cannot show a
+    module that does not exist or name an ADR that was never written.
+    """
+    out: dict[str, dict] = {}
+    for role, story in MODULE_STORY.items():
+        package = MODULES[role]["pkg"]
+        directory = ROOT / "tradingagents" / "course" / package
+        files = sorted(p.name for p in directory.glob("*.py")) if directory.is_dir() else []
+        adr = story["adr"]
+        adr_present = bool(adr) and (ROOT / "docs" / "architecture" / "adr" / adr).exists()
+        out[role] = {
+            "role": role,
+            "name": MODULES[role]["name"],
+            "reqs": MODULES[role]["reqs"],
+            "question": story["question"],
+            "answer": story["answer"],
+            "refuse": story["refuse"],
+            "adr": adr if adr_present else None,
+            "files": files,
+            "tests": [],  # filled by the caller from tests_per_module()
+        }
+    return out
+
+
 def trace_pairs() -> list[dict]:
     """Requirement -> enforcing component pairs from the trace matrix."""
     text = (ROOT / "docs" / "architecture" / "trace-matrix.md").read_text(encoding="utf-8")
@@ -411,6 +477,11 @@ def tests_per_module() -> dict[str, list[str]]:
 
 
 def main() -> int:
+    stories = module_stories()
+    tests = tests_per_module()
+    for role in stories:
+        stories[role]["tests"] = tests.get(role, [])
+
     payload = {
         "baseline": baseline(),
         "replay": budget_replay(),
@@ -419,10 +490,11 @@ def main() -> int:
         "timeline": design_timeline(),
         "governance": governance_steps(),
         "ci": ci_checks(),
+        "stories": stories,
         "trace": trace_pairs(),
         "reviews": review_rounds(),
         "defects": defects(),
-        "tests": tests_per_module(),
+        "tests": tests,
         "modules": MODULES,
     }
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -434,6 +506,8 @@ def main() -> int:
     print(f"  timeline : {len(payload['timeline'])} design steps")
     print(f"  govern   : {len(payload['governance'])} process steps")
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
+    for r, s in stories.items():
+        print(f"  story {r}  : {len(s['files'])} files, adr={'yes' if s['adr'] else 'no'}")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")

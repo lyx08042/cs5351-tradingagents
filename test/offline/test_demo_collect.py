@@ -13,7 +13,7 @@ import pytest
 
 from demo import collect
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture(scope="module")
@@ -171,3 +171,23 @@ def test_the_course_suite_is_reported_as_wired(payload) -> None:
     suite = next(c for c in payload["ci"]["checks"] if c["name"] == "course offline suite")
 
     assert suite["state"] == "on", "course-bootstrap no longer runs the full offline suite"
+
+def test_every_module_has_a_story(payload) -> None:
+    """Each role gets a section in the switcher, so all five appear in the demo."""
+    stories = payload["stories"]
+
+    assert set(stories) == {"A", "B", "C", "D", "E"}
+    for role, story in stories.items():
+        assert story["question"], role
+        assert story["answer"], role
+        assert story["refuse"], role
+        assert story["files"], f"{role} lists no code files"
+
+
+def test_story_adr_references_existing_files(payload) -> None:
+    """A story names an ADR only when that ADR exists on disk."""
+    adr_dir = ROOT / "docs" / "architecture" / "adr"
+
+    for role, story in payload["stories"].items():
+        if story["adr"]:
+            assert (adr_dir / story["adr"]).exists(), f"{role} names a missing ADR"

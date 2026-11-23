@@ -74,26 +74,52 @@
   .badge-ok2 { display: inline-block; background: #e7f5ee; color: var(--ok); font-family: var(--mono);
                font-size: 11px; padding: 1px 7px; border-radius: 4px; }
 
+  /* module switcher */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px;
+         padding: 7px 18px; font-size: 13.5px; cursor: pointer; transition: .15s;
+         font-family: inherit; color: var(--ink); }
+  .tab:hover { border-color: var(--accent); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .story h3 { margin: 0 0 4px; font-size: 17px; }
+  .story .role-tag { font-family: var(--mono); font-size: 11px; color: var(--accent);
+                     background: #eef2fb; padding: 2px 8px; border-radius: 5px; }
+  .story .q { font-size: 13px; text-transform: uppercase; letter-spacing: .7px;
+              color: var(--ink-soft); margin: 16px 0 4px; font-weight: 600; }
+  .story .a { font-size: 14px; }
+  .story .refuse { margin-top: 12px; padding: 10px 14px; background: #fbe9e7;
+                   border-radius: 7px; font-size: 13px; color: #8d2f24; }
+  .story ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .story .meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .story .meta code { font-size: 12px; }
+
   /* governance */
-  .gov { display: grid; gap: 0; }
-  .gov-step { display: grid; grid-template-columns: 46px 1fr; gap: 16px; padding: 14px 0;
-              border-left: 2px solid var(--line); margin-left: 24px; padding-left: 26px;
-              position: relative; cursor: pointer; }
-  .gov-step:last-child { border-left-color: transparent; }
-  .gov-step:hover { background: #f9fafd; }
-  .gov-num { position: absolute; left: -25px; top: 14px; width: 46px; height: 46px;
+  .gov { display: grid; gap: 6px; position: relative; padding-left: 8px; }
+  /* the vertical rail sits behind the number badges */
+  .gov::before { content: ""; position: absolute; left: 31px; top: 26px; bottom: 26px;
+                 width: 2px; background: var(--line); }
+  .gov-step { display: grid; grid-template-columns: 48px 1fr; gap: 18px;
+              align-items: start; padding: 10px 12px 10px 0;
+              position: relative; cursor: pointer; border-radius: 8px; }
+  .gov-step:hover { background: #f7f9fd; }
+  .gov-num { position: relative; z-index: 1; width: 48px; height: 48px;
              border-radius: 50%; display: grid; place-items: center;
-             font-family: var(--mono); font-size: 14px; font-weight: 600; background: #eef2fb;
-             color: var(--accent); border: 2px solid var(--card); }
+             font-family: var(--mono); font-size: 15px; font-weight: 600;
+             background: #eef2fb; color: var(--accent);
+             border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--line); }
   .gov-bad .gov-num { background: #fbe9e7; color: var(--bad); }
   .gov-good .gov-num { background: #e7f5ee; color: var(--ok); }
+  .gov-body { padding-top: 4px; padding-right: 8px; }
   .gov-title { font-weight: 650; font-size: 14.5px; }
-  .gov-detail { font-size: 13px; color: var(--ink-soft); margin-top: 3px;
-                max-height: 0; overflow: hidden; transition: max-height .2s; }
-  .gov-step.open .gov-detail { max-height: 300px; }
+  .gov-detail { font-size: 13px; color: var(--ink-soft); margin-top: 4px;
+                max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+  .gov-step.open .gov-detail { max-height: 320px; }
   .gov-evidence { font-family: var(--mono); font-size: 12px; color: var(--accent);
-                  margin-top: 6px; display: none; }
+                  margin-top: 8px; display: none; }
   .gov-step.open .gov-evidence { display: block; }
+  .gov-hint { font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+  .gov-step.open .gov-hint { display: none; }
 
   /* ci board */
   .ci-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
@@ -162,6 +188,15 @@
       <div class="stat"><div class="k">Decision</div><div class="v" id="s-signal">—</div></div>
     </div>
     <p class="note">Recorded once in <code>docs/baseline.md</code>. A single run is a data point, not a quality claim.</p>
+  </section>
+
+  <!-- ============ MODULE SWITCHER ============ -->
+  <section>
+    <h2>Five modules — one question each</h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="card">
+      <div class="story" id="story"></div>
+    </div>
   </section>
 
   <!-- ============ 1. SLIDER ============ -->
@@ -372,6 +407,54 @@ fetch("data.json")
       tl.appendChild(el);
     });
 
+    /* ---------- module switcher ---------- */
+    const tabs = document.getElementById("tabs");
+    const storyBox = document.getElementById("story");
+    const stories = d.stories || {};
+
+    function renderStory(role) {
+      const s = stories[role];
+      if (!s) return;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.role === role));
+      storyBox.innerHTML = `
+        <div>
+          <span class="role-tag">Module ${s.role}</span>
+          <h3 style="margin-top:8px">${s.name}</h3>
+          <div class="meta">${s.reqs.join(" · ")}</div>
+
+          <div class="q">The question</div>
+          <div class="a">${s.question}</div>
+
+          <div class="q">The answer</div>
+          <div class="a">${s.answer}</div>
+
+          <div class="refuse"><strong>What it refuses:</strong> ${s.refuse}</div>
+        </div>
+        <div>
+          <div class="q">Code</div>
+          <ul>${s.files.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}</ul>
+
+          <div class="q">Tests</div>
+          <ul>${s.tests.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}</ul>
+
+          <div class="meta" style="margin-top:14px">
+            ${s.adr
+              ? `ADR: <code>${s.adr}</code>`
+              : `No ADR for this module — the decision is recorded in its task plan instead.`}
+          </div>
+        </div>`;
+    }
+
+    Object.keys(stories).forEach(role => {
+      const btn = document.createElement("button");
+      btn.className = "tab";
+      btn.dataset.role = role;
+      btn.textContent = `${role} · ${stories[role].name}`;
+      btn.addEventListener("click", () => renderStory(role));
+      tabs.appendChild(btn);
+    });
+    if (Object.keys(stories).length) renderStory("B");
+
     /* ---------- governance ---------- */
     const gov = document.getElementById("gov");
     (d.governance || []).forEach(node => {
@@ -379,8 +462,9 @@ fetch("data.json")
       el.className = "gov-step gov-" + node.state;
       el.innerHTML = `
         <div class="gov-num">${node.step}</div>
-        <div>
+        <div class="gov-body">
           <div class="gov-title">${node.title}</div>
+          <div class="gov-hint">click to see the evidence</div>
           <div class="gov-detail">${node.detail}</div>
           <div class="gov-evidence">${node.evidence}</div>
         </div>`;
