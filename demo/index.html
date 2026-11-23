@@ -74,6 +74,33 @@
   .badge-ok2 { display: inline-block; background: #e7f5ee; color: var(--ok); font-family: var(--mono);
                font-size: 11px; padding: 1px 7px; border-radius: 4px; }
 
+  /* matrix */
+  #matrix td, #matrix th { text-align: center; }
+  #matrix th:first-child, #matrix td:first-child { text-align: left; }
+  #matrix td.label { font-size: 12px; text-transform: uppercase; letter-spacing: .7px;
+                     color: var(--ink-soft); font-weight: 600; }
+  #matrix td.role { font-weight: 600; font-size: 13px; }
+  #matrix td.num { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  #matrix td.refuse { font-size: 12px; color: var(--bad); }
+  #matrix td.adr { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+
+  /* pipeline */
+  .pipeline { display: grid; gap: 0; }
+  .pipe-node { display: grid; grid-template-columns: 54px 1fr; gap: 16px; align-items: center;
+               padding: 12px 14px; border-radius: 9px; background: #fbfcff;
+               border: 1px solid var(--line); position: relative; }
+  .pipe-badge { width: 54px; height: 40px; border-radius: 7px; display: grid; place-items: center;
+                font-family: var(--mono); font-weight: 700; font-size: 14px; }
+  .pipe-a .pipe-badge { background: #eef4ff; color: #2f5bd4; }
+  .pipe-b .pipe-badge { background: #fff4e6; color: #a86412; }
+  .pipe-c .pipe-badge { background: #fdeeee; color: #a83a2e; }
+  .pipe-d .pipe-badge { background: #eefaf3; color: #177a55; }
+  .pipe-e .pipe-badge { background: #f3eefb; color: #5b3aa0; }
+  .pipe-plain .pipe-badge { background: #eef2fb; color: var(--ink-soft); font-size: 11px; }
+  .pipe-label { font-size: 14px; font-weight: 600; }
+  .pipe-sub { font-size: 12.5px; color: var(--ink-soft); }
+  .pipe-gap { height: 16px; width: 2px; background: var(--line); margin-left: 41px; }
+
   /* module switcher */
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px;
@@ -188,6 +215,38 @@
       <div class="stat"><div class="k">Decision</div><div class="v" id="s-signal">—</div></div>
     </div>
     <p class="note">Recorded once in <code>docs/baseline.md</code>. A single run is a data point, not a quality claim.</p>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section>
+    <h2>Five modules, one row each</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:150px"></th>
+            <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th>
+          </tr>
+        </thead>
+        <tbody id="matrix"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      Each module answers a different question and refuses in a different way. The counts are collected
+      by running pytest on each module's own test files.
+    </p>
+  </section>
+
+  <!-- ============ PIPELINE ============ -->
+  <section>
+    <h2>How the five fit into one run</h2>
+    <div class="card">
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+    <p class="note">
+      D gates the request before any model call. A and B work inside the call itself. C decides whether
+      the proposal may be published. E records whatever happened, including the refusals.
+    </p>
   </section>
 
   <!-- ============ MODULE SWITCHER ============ -->
@@ -327,11 +386,6 @@
         <tbody id="trace-body"></tbody>
       </table>
     </div>
-  </section>
-
-  <section>
-    <h2>Modules and their tests</h2>
-    <div class="grid2" id="modules"></div>
   </section>
 
   <section>
@@ -503,6 +557,69 @@ fetch("data.json")
         </div>`;
     }
 
+    /* ---------- module matrix ---------- */
+    const matrix = document.getElementById("matrix");
+    const roles = ["A", "B", "C", "D", "E"];
+    const st = d.stories || {};
+    if (roles.every(r => st[r])) {
+      const rows = [
+        ["Question", r => st[r].question],
+        ["Refuses", r => `<span class="refuse">${st[r].refuse_short}</span>`],
+        ["Tests", r => st[r].test_count],
+        ["ADR", r => st[r].adr ? st[r].adr.slice(0, 3) : "—"],
+      ];
+      const head = document.createElement("tr");
+      head.innerHTML = `<td class="label">Module</td>` +
+        roles.map(r => `<td class="role">${r}<div style="font-weight:400;font-size:11px;color:var(--ink-soft)">${st[r].name.split(" ")[0]}</div></td>`).join("");
+      matrix.appendChild(head);
+
+      rows.forEach(([label, fn]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="label">${label}</td>` +
+          roles.map(r => {
+            const v = fn(r);
+            const cls = label === "Question" ? "question"
+                      : label === "Tests" ? "num"
+                      : label === "ADR" ? "adr" : "refuse";
+            return `<td class="${cls}" style="${label === 'Question' ? 'font-size:12px;text-align:left;padding:8px 12px' : ''}">${v}</td>`;
+          }).join("");
+        matrix.appendChild(tr);
+      });
+
+      const total = roles.reduce((n, r) => n + (st[r].test_count || 0), 0);
+      const foot = document.createElement("tr");
+      foot.innerHTML = `<td class="label">Total</td><td colspan="5" style="text-align:left;font-family:var(--mono);font-size:13px">${total} test cases across the five modules</td>`;
+      matrix.appendChild(foot);
+    }
+
+    /* ---------- pipeline ---------- */
+    const pipe = document.getElementById("pipeline");
+    if (Object.keys(st).length) {
+      const nodes = [
+        { cls: "pipe-plain", badge: "IN", label: "CourseRequest", sub: "instrument, date, observations, holdings, audit path" },
+        { cls: "pipe-d", badge: "D", label: st.D?.answer ? "Data admission" : "Data admission", sub: st.D?.refuse_short ? `refuses with ${st.D.refuse_short}` : "" },
+        { cls: "pipe-plain", badge: "G", label: "The graph runs", sub: "10 agents produce a candidate proposal" },
+        { cls: "pipe-a", badge: "A", label: "Evidence in the debate", sub: st.A?.refuse_short ? `refuses with: ${st.A.refuse_short}` : "" },
+        { cls: "pipe-b", badge: "B", label: "Budget on every call", sub: st.B?.refuse_short ? `refuses with: ${st.B.refuse_short}` : "" },
+        { cls: "pipe-c", badge: "C", label: "Proposal validated", sub: st.C?.refuse_short ? `refuses with: ${st.C.refuse_short}` : "" },
+        { cls: "pipe-e", badge: "E", label: "Outcome recorded", sub: st.E?.refuse_short ? `refuses with: ${st.E.refuse_short}` : "" },
+      ];
+      nodes.forEach((n, i) => {
+        if (i) {
+          const gap = document.createElement("div");
+          gap.className = "pipe-gap";
+          pipe.appendChild(gap);
+        }
+        const el = document.createElement("div");
+        el.className = "pipe-node " + n.cls;
+        el.innerHTML = `<div class="pipe-badge">${n.badge}</div>
+          <div><div class="pipe-label">${n.label}</div>
+          <div class="pipe-sub">${n.sub}</div></div>`;
+        pipe.appendChild(el);
+      });
+    }
+
+    /* ---------- five refusal cards, one per module ---------- */
     /* ---------- 2. rejection cards ---------- */
     const cards = document.getElementById("rej-cards");
     const detail = document.getElementById("rej-detail");
@@ -557,22 +674,6 @@ fetch("data.json")
       tr.addEventListener("click", () => detailRow.classList.toggle("open"));
       trace.appendChild(tr);
       trace.appendChild(detailRow);
-    });
-
-    /* ---------- modules ---------- */
-    const mods = document.getElementById("modules");
-    Object.entries(d.modules).forEach(([role, meta]) => {
-      const files = d.tests[role] || [];
-      const div = document.createElement("div");
-      div.className = "mod";
-      div.style.borderLeft = "3px solid var(--accent)";
-      div.style.paddingLeft = "14px";
-      div.style.marginBottom = "16px";
-      div.innerHTML = `<h3 style="margin:0 0 3px;font-size:15px">${role} — ${meta.name}</h3>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft)">${meta.reqs.join(" · ")}</div>
-        <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">
-          ${files.map(f => `<li>${f}</li>`).join("") || "<li>—</li>"}</ul>`;
-      mods.appendChild(div);
     });
 
     /* ---------- process evidence ---------- */

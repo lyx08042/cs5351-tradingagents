@@ -362,13 +362,15 @@ MODULE_STORY = {
         "question": "Can a claim be made without evidence?",
         "answer": "No. A strong claim must bind to a retrieved evidence unit, and the evidence must not be dated after the analysis date.",
         "refuse": "A claim without evidence is demoted to a hypothesis, or the turn abstains.",
+        "refuse_short": "Demoted to hypothesis",
         "adr": "005-evidence-grounded-debate.md",
-        "files": None,  # filled from disk
+        "files": None,
     },
     "B": {
         "question": "What bounds the cost of a run?",
         "answer": "A metered ledger: reserve before the call, settle after it, refuse past the cap.",
         "refuse": "Past the cap the call is refused; below the cap the run degrades along a fixed ladder instead of dying.",
+        "refuse_short": "Call refused",
         "adr": "007-budget-at-the-model-client-boundary.md",
         "files": None,
     },
@@ -376,6 +378,7 @@ MODULE_STORY = {
         "question": "Who decides whether a trade proposal is legal?",
         "answer": "Deterministic code, not the model. The model proposes; the validator accepts or rejects.",
         "refuse": "A proposal without a holdings snapshot, with units <= 0 for a buy, or beyond cash is rejected.",
+        "refuse_short": "Proposal rejected",
         "adr": "002-simulation-safety.md",
         "files": None,
     },
@@ -383,6 +386,7 @@ MODULE_STORY = {
         "question": "What does it mean when the data is not there?",
         "answer": "Three states, not two: available, unavailable, unknown. Neutral is a value, not a status.",
         "refuse": "unavailable abstains; unknown escalates to review. Neither is ever treated as a neutral signal.",
+        "refuse_short": "abstain / review",
         "adr": None,
         "files": None,
     },
@@ -390,17 +394,59 @@ MODULE_STORY = {
         "question": "Can a finished decision be trusted later?",
         "answer": "An append-only hash chain, a supersede chain for revisions, and an offline gate replay.",
         "refuse": "Overwriting a final decision is rejected; a broken chain fails verification.",
+        "refuse_short": "Overwrite rejected",
         "adr": "003-append-only-audit.md",
         "files": None,
     },
 }
 
+# Which pytest file proves which module. Counted, not estimated.
+MODULE_TEST_FILES = {
+    "A": ["test_evidence.py"],
+    "B": ["test_budget.py", "test_budget_integration.py", "test_budget_replay.py"],
+    "C": ["test_safety_simulation.py"],
+    "D": ["test_data_quality.py"],
+    "E": ["test_audit.py"],
+}
+
+# Where each module sits in one course run.
+PIPELINE_STAGE = {
+    "A": {"label": "Evidence injected into the debate", "after": "D"},
+    "B": {"label": "Every model call metered", "after": "D"},
+    "C": {"label": "Proposal validated before publishing", "after": "graph"},
+    "D": {"label": "Data admitted before any model call", "after": "request"},
+    "E": {"label": "Every outcome recorded and replayable", "after": "C"},
+}
+
+
+def count_tests(role: str) -> int:
+    """Number of test cases in this module's files, counted by pytest."""
+    import subprocess
+
+    total = 0
+    for name in MODULE_TEST_FILES[role]:
+        path = ROOT / "test" / "offline" / name
+        if not path.exists():
+            continue
+        try:
+            out = subprocess.run(
+                [sys.executable, "-m", "pytest", "-o", "testpaths=test/offline",
+                 "-p", "no:cacheprovider", str(path), "--collect-only", "-q"],
+                capture_output=True, text=True, timeout=120, cwd=str(ROOT),
+            )
+        except Exception:  # noqa: BLE001 - a missing count is shown as 0, not guessed
+            continue
+        match = re.search(r"(\d+) tests? collected", out.stdout)
+        if match:
+            total += int(match.group(1))
+    return total
+
 
 def module_stories() -> dict[str, dict]:
-    """One short story per module for the section switcher.
+    """One short story per module for the section switcher and the matrix.
 
-    The file lists and ADR names come from disk, so the page cannot show a
-    module that does not exist or name an ADR that was never written.
+    Every file list, ADR name and test count comes from disk, so the page cannot
+    show a module that does not exist or claim tests that are not there.
     """
     out: dict[str, dict] = {}
     for role, story in MODULE_STORY.items():
@@ -416,9 +462,12 @@ def module_stories() -> dict[str, dict]:
             "question": story["question"],
             "answer": story["answer"],
             "refuse": story["refuse"],
+            "refuse_short": story["refuse_short"],
             "adr": adr if adr_present else None,
             "files": files,
-            "tests": [],  # filled by the caller from tests_per_module()
+            "tests": MODULE_TEST_FILES[role],
+            "test_count": count_tests(role),
+            "stage": PIPELINE_STAGE[role],
         }
     return out
 
@@ -479,8 +528,6 @@ def tests_per_module() -> dict[str, list[str]]:
 def main() -> int:
     stories = module_stories()
     tests = tests_per_module()
-    for role in stories:
-        stories[role]["tests"] = tests.get(role, [])
 
     payload = {
         "baseline": baseline(),
@@ -507,7 +554,7 @@ def main() -> int:
     print(f"  govern   : {len(payload['governance'])} process steps")
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
     for r, s in stories.items():
-        print(f"  story {r}  : {len(s['files'])} files, adr={'yes' if s['adr'] else 'no'}")
+        print(f"  story {r}  : {len(s['files'])} files, {s['test_count']} tests, adr={'yes' if s['adr'] else 'no'}")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")

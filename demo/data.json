@@ -432,6 +432,7 @@
       "question": "Can a claim be made without evidence?",
       "answer": "No. A strong claim must bind to a retrieved evidence unit, and the evidence must not be dated after the analysis date.",
       "refuse": "A claim without evidence is demoted to a hypothesis, or the turn abstains.",
+      "refuse_short": "Demoted to hypothesis",
       "adr": "005-evidence-grounded-debate.md",
       "files": [
         "__init__.py",
@@ -441,9 +442,13 @@
         "integration.py"
       ],
       "tests": [
-        "test_evidence.py",
-        "test_evidence_integration.py"
-      ]
+        "test_evidence.py"
+      ],
+      "test_count": 43,
+      "stage": {
+        "label": "Evidence injected into the debate",
+        "after": "D"
+      }
     },
     "B": {
       "role": "B",
@@ -457,6 +462,7 @@
       "question": "What bounds the cost of a run?",
       "answer": "A metered ledger: reserve before the call, settle after it, refuse past the cap.",
       "refuse": "Past the cap the call is refused; below the cap the run degrades along a fixed ladder instead of dying.",
+      "refuse_short": "Call refused",
       "adr": "007-budget-at-the-model-client-boundary.md",
       "files": [
         "__init__.py",
@@ -471,7 +477,12 @@
         "test_budget.py",
         "test_budget_integration.py",
         "test_budget_replay.py"
-      ]
+      ],
+      "test_count": 58,
+      "stage": {
+        "label": "Every model call metered",
+        "after": "D"
+      }
     },
     "C": {
       "role": "C",
@@ -484,6 +495,7 @@
       "question": "Who decides whether a trade proposal is legal?",
       "answer": "Deterministic code, not the model. The model proposes; the validator accepts or rejects.",
       "refuse": "A proposal without a holdings snapshot, with units <= 0 for a buy, or beyond cash is rejected.",
+      "refuse_short": "Proposal rejected",
       "adr": "002-simulation-safety.md",
       "files": [
         "__init__.py",
@@ -492,7 +504,12 @@
       ],
       "tests": [
         "test_safety_simulation.py"
-      ]
+      ],
+      "test_count": 56,
+      "stage": {
+        "label": "Proposal validated before publishing",
+        "after": "graph"
+      }
     },
     "D": {
       "role": "D",
@@ -504,6 +521,7 @@
       "question": "What does it mean when the data is not there?",
       "answer": "Three states, not two: available, unavailable, unknown. Neutral is a value, not a status.",
       "refuse": "unavailable abstains; unknown escalates to review. Neither is ever treated as a neutral signal.",
+      "refuse_short": "abstain / review",
       "adr": null,
       "files": [
         "__init__.py",
@@ -513,7 +531,12 @@
       ],
       "tests": [
         "test_data_quality.py"
-      ]
+      ],
+      "test_count": 20,
+      "stage": {
+        "label": "Data admitted before any model call",
+        "after": "request"
+      }
     },
     "E": {
       "role": "E",
@@ -525,6 +548,7 @@
       "question": "Can a finished decision be trusted later?",
       "answer": "An append-only hash chain, a supersede chain for revisions, and an offline gate replay.",
       "refuse": "Overwriting a final decision is rejected; a broken chain fails verification.",
+      "refuse_short": "Overwrite rejected",
       "adr": "003-append-only-audit.md",
       "files": [
         "__init__.py",
@@ -535,7 +559,12 @@
       ],
       "tests": [
         "test_audit.py"
-      ]
+      ],
+      "test_count": 60,
+      "stage": {
+        "label": "Every outcome recorded and replayable",
+        "after": "C"
+      }
     }
   },
   "trace": [
