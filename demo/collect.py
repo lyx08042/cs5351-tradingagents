@@ -185,6 +185,61 @@ def rejection_cases() -> list[dict]:
         }
     )
 
+    # C — a proposal that deterministic code refuses.
+    from decimal import Decimal
+
+    from tradingagents.course.safety import (
+        HoldingsSnapshot,
+        RuleSet,
+        SafetyContext,
+        validate_proposal,
+    )
+
+    rule_version = "cde-long-only-v1"
+    snapshot = HoldingsSnapshot(
+        snapshot_id="snap-1",
+        as_of=cutoff,
+        currency="USD",
+        cash=Decimal("1000.00"),
+        positions={},
+    )
+    context = SafetyContext(
+        instrument="NVDA",
+        instrument_currency="USD",
+        holdings_snapshot=snapshot,
+        rule_set=RuleSet(version=rule_version),
+        available_rule_versions=frozenset({rule_version}),
+    )
+    verdict = validate_proposal(
+        {
+            "action": "buy",
+            "units": 100_000,
+            "price": "100.00",
+            "currency": "USD",
+            "holdings_snapshot": {
+                "snapshot_id": "snap-1",
+                "as_of": cutoff,
+                "currency": "USD",
+                "cash": "1000.00",
+                "positions": {},
+            },
+            "rule_version": rule_version,
+            "status": "proposed",
+        },
+        context=context,
+    )
+    cases.append(
+        {
+            "key": "safety",
+            "module": "C",
+            "title": "Proposal the validator refuses",
+            "input": f"buy 100,000 units at 100.00, cash 1,000.00 ({verdict.reason_code.value})",
+            "outcome": verdict.status.value,
+            "meaning": "The model's proposal is never published: deterministic code decides, not the prose.",
+            "requirement": "FR-003 / INV-003",
+        }
+    )
+
     # B — the call cap is reached.
     ledger = BudgetLedger(LedgerConfig(limit_tokens=240_000, limit_calls=1))
     ledger.reserve("market_analyst", "analyst", "quick", "call-1")
@@ -255,6 +310,60 @@ def design_timeline() -> list[dict]:
             "result": "The bug cannot come back silently.",
         },
     ]
+
+
+# Four choices the system had to make. Each belongs to a different module and
+# names what was rejected, so the page shows engineering judgement rather than a
+# feature list.
+DESIGN_DECISIONS = [
+    {
+        "num": "1",
+        "modules": ["C", "E"],
+        "question": "Who decides if a proposal is legal?",
+        "chosen": "Deterministic code. The model proposes; a validator accepts or rejects.",
+        "rejected": "Letting the model judge its own proposal, or trusting prose that claims safety.",
+        "because": "A model that can write \"this trade is safe\" can also write it when it is not.",
+    },
+    {
+        "num": "2",
+        "modules": ["D"],
+        "question": "What does missing data mean?",
+        "chosen": "Three states: available, unavailable, unknown. Neutral is a value, never a status.",
+        "rejected": "Treating a missing feed as a zero, which reads as a neutral signal.",
+        "because": "The baseline run recorded five missing feeds as neutral. That is how an outage becomes an opinion.",
+    },
+    {
+        "num": "3",
+        "modules": ["B"],
+        "question": "What happens when the budget runs out?",
+        "chosen": "A fixed degradation ladder, so the run still produces a decision.",
+        "rejected": "Stopping the run when a cap is hit, which trades a cost problem for a missing answer.",
+        "because": (
+            "The first version compared the remaining budget with fixed fractions and degraded a run "
+            "that fit (BUG-004); the projection form fixed it."
+        ),
+    },
+    {
+        "num": "4",
+        "modules": ["A"],
+        "question": "Can a claim stand without evidence?",
+        "chosen": "A strong claim must bind to a retrieved unit, dated no later than the analysis date.",
+        "rejected": "Publishing the debate as prose and hoping the reader notices which lines are guesses.",
+        "because": (
+            "A forecast can never be evidence-backed, so it is labelled a hypothesis rather than removed."
+        ),
+    },
+]
+
+
+def design_decisions() -> list[dict]:
+    """The four decisions, with the module facts attached from disk."""
+    stories = module_stories()
+    out = []
+    for item in DESIGN_DECISIONS:
+        present = [m for m in item["modules"] if m in stories]
+        out.append({**item, "present": present})
+    return out
 
 
 def governance_steps() -> list[dict]:
@@ -536,6 +645,7 @@ def main() -> int:
         "rejections": rejection_cases(),
         "timeline": design_timeline(),
         "governance": governance_steps(),
+        "decisions": design_decisions(),
         "ci": ci_checks(),
         "stories": stories,
         "trace": trace_pairs(),
@@ -552,6 +662,7 @@ def main() -> int:
     print(f"  reject   : {len(payload['rejections'])} executed cases")
     print(f"  timeline : {len(payload['timeline'])} design steps")
     print(f"  govern   : {len(payload['governance'])} process steps")
+    print(f"  decisions: {len(payload['decisions'])} design choices")
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
     for r, s in stories.items():
         print(f"  story {r}  : {len(s['files'])} files, {s['test_count']} tests, adr={'yes' if s['adr'] else 'no'}")

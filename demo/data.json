@@ -308,6 +308,15 @@
       "requirement": "FR-004 / INV-004"
     },
     {
+      "key": "safety",
+      "module": "C",
+      "title": "Proposal the validator refuses",
+      "input": "buy 100,000 units at 100.00, cash 1,000.00 (undeclared_flat)",
+      "outcome": "rejected",
+      "meaning": "The model's proposal is never published: deterministic code decides, not the prose.",
+      "requirement": "FR-003 / INV-003"
+    },
+    {
       "key": "budget",
       "module": "B",
       "title": "Budget exhausted",
@@ -382,6 +391,62 @@
       "title": "Green, approved, merged",
       "detail": "Eight checks pass on four Python versions and the reviewer approves.",
       "evidence": "c306f81 — course scaffold success"
+    }
+  ],
+  "decisions": [
+    {
+      "num": "1",
+      "modules": [
+        "C",
+        "E"
+      ],
+      "question": "Who decides if a proposal is legal?",
+      "chosen": "Deterministic code. The model proposes; a validator accepts or rejects.",
+      "rejected": "Letting the model judge its own proposal, or trusting prose that claims safety.",
+      "because": "A model that can write \"this trade is safe\" can also write it when it is not.",
+      "present": [
+        "C",
+        "E"
+      ]
+    },
+    {
+      "num": "2",
+      "modules": [
+        "D"
+      ],
+      "question": "What does missing data mean?",
+      "chosen": "Three states: available, unavailable, unknown. Neutral is a value, never a status.",
+      "rejected": "Treating a missing feed as a zero, which reads as a neutral signal.",
+      "because": "The baseline run recorded five missing feeds as neutral. That is how an outage becomes an opinion.",
+      "present": [
+        "D"
+      ]
+    },
+    {
+      "num": "3",
+      "modules": [
+        "B"
+      ],
+      "question": "What happens when the budget runs out?",
+      "chosen": "A fixed degradation ladder, so the run still produces a decision.",
+      "rejected": "Stopping the run when a cap is hit, which trades a cost problem for a missing answer.",
+      "because": "The first version compared the remaining budget with fixed fractions and degraded a run that fit (BUG-004); the projection form fixed it.",
+      "present": [
+        "B"
+      ]
+    },
+    {
+      "num": "4",
+      "modules": [
+        "A"
+      ],
+      "question": "Can a claim stand without evidence?",
+      "chosen": "A strong claim must bind to a retrieved unit, dated no later than the analysis date.",
+      "rejected": "Publishing the debate as prose and hoping the reader notices which lines are guesses.",
+      "because": "A forecast can never be evidence-backed, so it is labelled a hypothesis rather than removed.",
+      "present": [
+        "A"
+      ]
     }
   ],
   "ci": {

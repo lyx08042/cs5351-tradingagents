@@ -101,6 +101,21 @@
   .pipe-sub { font-size: 12.5px; color: var(--ink-soft); }
   .pipe-gap { height: 16px; width: 2px; background: var(--line); margin-left: 41px; }
 
+  /* decisions */
+  .decisions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .decision { border: 1px solid var(--line); border-radius: 9px; padding: 16px 18px; background: #fbfcff; }
+  .decision .head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .decision .num { font-family: var(--mono); font-size: 12px; font-weight: 700;
+                   background: var(--ink); color: #fff; width: 24px; height: 24px;
+                   border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .decision .mods { font-family: var(--mono); font-size: 11px; color: var(--accent);
+                    background: #eef2fb; padding: 2px 8px; border-radius: 5px; }
+  .decision .q { font-weight: 650; font-size: 14.5px; }
+  .decision .chosen { font-size: 13.5px; margin-top: 8px; }
+  .decision .rejected { font-size: 12.5px; color: var(--bad); margin-top: 8px;
+                        padding-top: 8px; border-top: 1px dashed var(--line); }
+  .decision .note2 { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+
   /* module switcher */
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px;
@@ -285,64 +300,16 @@
 
   <!-- ============ 4. DESIGN TIMELINE ============ -->
   <section>
-    <h2>One design that changed — BUG-004</h2>
+    <h2>Four decisions the whole system had to get right</h2>
     <div class="card">
-      <div class="timeline" id="timeline"></div>
+      <div class="decisions" id="decisions"></div>
     </div>
     <p class="note">
-      The first version compared the remaining budget with fixed fractions of the total. Every healthy run
-      dips below those fractions near its end, so a cap <em>above</em> the baseline still degraded the run.
-      Unit tests could not see it: each one exercised a single stage. A full replay did.
+      Each decision belongs to a different module, and each one names what was rejected.
+      A business feature would only show what was built; these are the choices behind it.
     </p>
   </section>
 
-  <!-- ============ 5. ARCHITECTURE ============ -->
-  <section>
-    <h2>Where the budget is enforced — and what was rejected</h2>
-    <div class="card">
-      <div class="arch-cols">
-        <div>
-          <div class="arch-label">Chosen: wrap the two model clients</div>
-          <div class="arch">
-            <div class="arch-box muted">10 agent modules</div>
-            <div class="arch-arrow">↓ (prompt | llm).invoke()</div>
-            <div class="arch-box accent">BudgetedChatModel — reserve / settle</div>
-            <div class="arch-arrow">↓</div>
-            <div class="arch-box muted">provider</div>
-          </div>
-          <p class="note" style="margin-top:14px">
-            <span class="badge-ok2">14 lines</span> in <code>trading_graph.py</code>. Covers every agent,
-            including the three that use structured output.
-          </p>
-        </div>
-        <div>
-          <div class="arch-label">Rejected alternatives</div>
-          <div class="arch" style="justify-items:start">
-            <div class="arch-box" style="min-width:0;width:100%">
-              <span class="badge-x">rejected</span> accounting inside each agent
-              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
-                ten edits to shared code; a new agent escapes by omission
-              </div>
-            </div>
-            <div class="arch-box" style="min-width:0;width:100%">
-              <span class="badge-x">rejected</span> accounting in the orchestrator
-              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
-                blind to calls inside tool loops, where most tokens go
-              </div>
-            </div>
-            <div class="arch-box" style="min-width:0;width:100%">
-              <span class="badge-x">rejected</span> provider-side quotas
-              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
-                cannot express stage allocation; fails the run instead of degrading it
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ 6. GOVERNANCE ============ -->
   <section>
     <h2>Agent governance — how a change got through</h2>
     <div class="card">
@@ -367,7 +334,7 @@
   </section>
 
   <section>
-    <h2>Four ways the system says no — click a card</h2>
+    <h2>Five refusals — one per module, click a card</h2>
     <div class="rej" id="rej-cards"></div>
     <div class="card rej-detail" id="rej-detail" style="display:none"></div>
     <p class="note">
@@ -509,6 +476,23 @@ fetch("data.json")
     });
     if (Object.keys(stories).length) renderStory("B");
 
+    /* ---------- design decisions ---------- */
+    const dec = document.getElementById("decisions");
+    (d.decisions || []).forEach(item => {
+      const el = document.createElement("div");
+      el.className = "decision";
+      el.innerHTML = `
+        <div class="head">
+          <div class="num">${item.num}</div>
+          <div class="q">${item.question}</div>
+        </div>
+        <div class="mods">${item.present.join(" · ")}</div>
+        <div class="chosen"><strong>Chosen:</strong> ${item.chosen}</div>
+        <div class="rejected"><strong>Rejected:</strong> ${item.rejected}</div>
+        <div class="note2">${item.because}</div>`;
+      dec.appendChild(el);
+    });
+
     /* ---------- governance ---------- */
     const gov = document.getElementById("gov");
     (d.governance || []).forEach(node => {
@@ -569,7 +553,7 @@ fetch("data.json")
         ["ADR", r => st[r].adr ? st[r].adr.slice(0, 3) : "—"],
       ];
       const head = document.createElement("tr");
-      head.innerHTML = `<td class="label">Module</td>` +
+      head.innerHTML = `<td class="label"></td>` +
         roles.map(r => `<td class="role">${r}<div style="font-weight:400;font-size:11px;color:var(--ink-soft)">${st[r].name.split(" ")[0]}</div></td>`).join("");
       matrix.appendChild(head);
 
