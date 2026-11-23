@@ -414,68 +414,6 @@ fetch("data.json")
     slider.addEventListener("input", e => renderCap(Number(e.target.value)));
     renderCap(sweep.length - 1);
 
-    /* ---------- design timeline ---------- */
-    const tl = document.getElementById("timeline");
-    (d.timeline || []).forEach(node => {
-      const el = document.createElement("div");
-      el.className = "tl-node " + (node.state === "good" ? "tl-good" : "tl-bad");
-      el.innerHTML = `
-        <div class="tl-dot"></div>
-        <div class="tl-step">${node.step}</div>
-        <div class="tl-title">${node.title}</div>
-        <div class="tl-detail">${node.detail}</div>
-        <div class="tl-result">${node.result}</div>`;
-      tl.appendChild(el);
-    });
-
-    /* ---------- module switcher ---------- */
-    const tabs = document.getElementById("tabs");
-    const storyBox = document.getElementById("story");
-    const stories = d.stories || {};
-
-    function renderStory(role) {
-      const s = stories[role];
-      if (!s) return;
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.role === role));
-      storyBox.innerHTML = `
-        <div>
-          <span class="role-tag">Module ${s.role}</span>
-          <h3 style="margin-top:8px">${s.name}</h3>
-          <div class="meta">${s.reqs.join(" · ")}</div>
-
-          <div class="q">The question</div>
-          <div class="a">${s.question}</div>
-
-          <div class="q">The answer</div>
-          <div class="a">${s.answer}</div>
-
-          <div class="refuse"><strong>What it refuses:</strong> ${s.refuse}</div>
-        </div>
-        <div>
-          <div class="q">Code</div>
-          <ul>${s.files.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}</ul>
-
-          <div class="q">Tests</div>
-          <ul>${s.tests.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}</ul>
-
-          <div class="meta" style="margin-top:14px">
-            ${s.adr
-              ? `ADR: <code>${s.adr}</code>`
-              : `No ADR for this module — the decision is recorded in its task plan instead.`}
-          </div>
-        </div>`;
-    }
-
-    Object.keys(stories).forEach(role => {
-      const btn = document.createElement("button");
-      btn.className = "tab";
-      btn.dataset.role = role;
-      btn.textContent = `${role} · ${stories[role].name}`;
-      btn.addEventListener("click", () => renderStory(role));
-      tabs.appendChild(btn);
-    });
-    if (Object.keys(stories).length) renderStory("B");
-
     /* ---------- design decisions ---------- */
     const dec = document.getElementById("decisions");
     (d.decisions || []).forEach(item => {

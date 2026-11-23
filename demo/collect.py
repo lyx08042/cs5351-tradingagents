@@ -263,55 +263,6 @@ def rejection_cases() -> list[dict]:
     return cases
 
 
-def design_timeline() -> list[dict]:
-    """BUG-004 as three states, taken from the bug diary and the replay.
-
-    The first version compared the remaining budget with fixed fractions of the
-    total. Every healthy run dips below those fractions near its end, so a cap
-    above the baseline still degraded the run. The fix compares the remaining
-    budget with the projected remaining spend instead.
-    """
-    sys.path.insert(0, str(ROOT))
-    from tradingagents.course.budget.replay import baseline_trace, replay
-
-    trace = baseline_trace()
-    current = replay(trace, limit_tokens=240_000)
-
-    return [
-        {
-            "step": "v1",
-            "state": "bad",
-            "title": "Fixed fractions",
-            "detail": "Degrade when the remaining budget falls below 15% / 10% of the total.",
-            "result": "A 240,000 cap degraded the run to L1 and cut it to 177,519 tokens.",
-        },
-        {
-            "step": "found",
-            "state": "bad",
-            "title": "Found by replay, not by unit tests",
-            "detail": "Each unit test exercised one stage in isolation, so every stage looked correct alone.",
-            "result": "Only a full 19-call trace showed the rules firing near the end of every stage.",
-        },
-        {
-            "step": "v2",
-            "state": "good",
-            "title": "Projection-aware",
-            "detail": "Compare the remaining budget with the projected remaining spend.",
-            "result": (
-                f"The same cap now leaves the run at L{current.level} "
-                f"with {current.calls_executed} calls and {current.total_tokens:,} tokens."
-            ),
-        },
-        {
-            "step": "guard",
-            "state": "good",
-            "title": "Pinned by a regression test",
-            "detail": "test_a_generous_budget_changes_nothing fails if a cap above the baseline ever degrades.",
-            "result": "The bug cannot come back silently.",
-        },
-    ]
-
-
 # Four choices the system had to make. Each belongs to a different module and
 # names what was rejected, so the page shows engineering judgement rather than a
 # feature list.
@@ -643,7 +594,6 @@ def main() -> int:
         "replay": budget_replay(),
         "sweep": budget_sweep(),
         "rejections": rejection_cases(),
-        "timeline": design_timeline(),
         "governance": governance_steps(),
         "decisions": design_decisions(),
         "ci": ci_checks(),
@@ -660,7 +610,6 @@ def main() -> int:
     print(f"  replay   : {len(payload['replay'])} rows")
     print(f"  sweep    : {len(payload['sweep'])} caps for the slider")
     print(f"  reject   : {len(payload['rejections'])} executed cases")
-    print(f"  timeline : {len(payload['timeline'])} design steps")
     print(f"  govern   : {len(payload['governance'])} process steps")
     print(f"  decisions: {len(payload['decisions'])} design choices")
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")

@@ -134,22 +134,6 @@ def test_unavailable_and_unknown_stay_distinct(payload) -> None:
 
     assert by_key["unavailable"] != by_key["unknown"]
 
-def test_timeline_records_the_design_change(payload) -> None:
-    """The page tells the BUG-004 story, so the steps must be present in order."""
-    steps = [node["step"] for node in payload["timeline"]]
-
-    assert steps == ["v1", "found", "v2", "guard"]
-
-
-def test_timeline_ends_with_the_current_behaviour(payload) -> None:
-    """The v2 line quotes the replay, not a hand-written claim."""
-    row = next(r for r in payload["replay"] if r["limit"] == 240_000)
-    v2 = next(node for node in payload["timeline"] if node["step"] == "v2")
-
-    assert f"L{row['level']}" in v2["result"]
-    assert f"{row['calls']} calls" in v2["result"]
-    assert f"{row['tokens']:,} tokens" in v2["result"]
-
 def test_governance_records_both_episodes(payload) -> None:
     """The process section must show the review catch and the CI catch."""
     text = " ".join(node["detail"] + node["title"] for node in payload["governance"])
@@ -191,3 +175,25 @@ def test_story_adr_references_existing_files(payload) -> None:
     for role, story in payload["stories"].items():
         if story["adr"]:
             assert (adr_dir / story["adr"]).exists(), f"{role} names a missing ADR"
+
+def test_decisions_cover_all_five_modules(payload) -> None:
+    """The page presents the system, not one module: every role must appear."""
+    covered = set()
+    for item in payload["decisions"]:
+        covered.update(item["present"])
+
+    assert covered == {"A", "B", "C", "D", "E"}
+
+
+def test_each_decision_names_what_was_rejected(payload) -> None:
+    """A design choice without a rejected alternative is just a feature."""
+    for item in payload["decisions"]:
+        assert item["rejected"].strip()
+        assert item["because"].strip()
+
+
+def test_refusals_cover_more_than_one_module(payload) -> None:
+    """The refusal cards must not be dominated by a single module."""
+    modules = {c["module"] for c in payload["rejections"]}
+
+    assert len(modules) >= 3, f"refusals only cover {modules}"
