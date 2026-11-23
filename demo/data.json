@@ -281,6 +281,15 @@
   ],
   "rejections": [
     {
+      "key": "evidence",
+      "module": "A",
+      "title": "Evidence dated after the analysis",
+      "input": "evidence available 2026-09-05, analysis dated 2026-09-01",
+      "outcome": "rejected",
+      "meaning": "Future information would leak into the analysis, so the context is refused before the debate starts.",
+      "requirement": "FR-001 / INV-001"
+    },
+    {
       "key": "unavailable",
       "module": "D",
       "title": "Required data unavailable",
@@ -317,6 +326,15 @@
       "requirement": "FR-003 / INV-003"
     },
     {
+      "key": "audit",
+      "module": "E",
+      "title": "Overwriting a final decision",
+      "input": "write a second decision with the same record id",
+      "outcome": "rejected",
+      "meaning": "Records are append-only. A revision must be a new record that points at the old one, so the history stays readable.",
+      "requirement": "FR-005 / INV-005"
+    },
+    {
       "key": "budget",
       "module": "B",
       "title": "Budget exhausted",
@@ -344,9 +362,9 @@
     {
       "step": "3",
       "state": "bad",
-      "title": "Reviewer finds five issues",
-      "detail": "One mattered most: while adding a new log entry, the agent had rewritten AI-USE-0002, the owner's historical record of the G-1/D9 decision. Merged as is, the real record would have disappeared.",
-      "evidence": "docs/review-memo.md — round 1, CHANGES REQUIRED"
+      "title": "Review and CI catch what the agent missed",
+      "detail": "Each module had something the first pass did not. A review found that adding a new log entry had also rewritten a historical governance record. For B, replaying a real trace showed a cap above the baseline still degrading the run (BUG-004). For the integration, a signature change broke an older test the CI never collected. None of these came from the agent reporting its own mistake.",
+      "evidence": "review-memo round 1; BUG-004; test_propagate_course_request_entrypoint"
     },
     {
       "step": "4",

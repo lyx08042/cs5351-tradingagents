@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -143,6 +144,39 @@ def rejection_cases() -> list[dict]:
 
     cases: list[dict] = []
 
+    # A — evidence dated after the analysis date.
+    from tradingagents.course.evidence.integration import resolve_evidence_context
+
+    resolution = resolve_evidence_context(
+        {
+            "as_of": "2026-09-05",
+            "units": [
+                {
+                    "id": "ev-1",
+                    "source": "demo-fixture",
+                    "published_at": "2026-09-05",
+                    "available_as_of": "2026-09-05",
+                    "summary": "announcement published after the analysis date",
+                }
+            ],
+        },
+        trade_date=cutoff,
+    )
+    cases.append(
+        {
+            "key": "evidence",
+            "module": "A",
+            "title": "Evidence dated after the analysis",
+            "input": "evidence available 2026-09-05, analysis dated 2026-09-01",
+            "outcome": "accepted" if resolution.allowed else "rejected",
+            "meaning": (
+                "Future information would leak into the analysis, so the context is refused "
+                "before the debate starts."
+            ),
+            "requirement": "FR-001 / INV-001",
+        }
+    )
+
     # D — a required domain is unavailable.
     result = admit(observations("no_data"), cutoff)
     cases.append(
@@ -240,6 +274,50 @@ def rejection_cases() -> list[dict]:
         }
     )
 
+    # E — an attempt to overwrite an existing decision record.
+    from tradingagents.course.audit import AuditError, AuditStore
+
+    audit_dir = ROOT / ".demo_audit"
+    audit_dir.mkdir(exist_ok=True)
+    audit_path = audit_dir / f"audit-{abs(hash(cutoff))}.db"
+    store = AuditStore.open(str(audit_path))
+    store.append(
+        record_id="e-demo-1",
+        run_id="demo-run-001",
+        timestamp="2026-09-01T12:00:00Z",
+        entry_type="decision",
+        payload={"final_rating": "Buy"},
+        rules_version="cde-long-only-v1",
+    )
+    try:
+        store.append(
+            record_id="e-demo-1",
+            run_id="demo-run-001",
+            timestamp="2026-09-01T12:05:00Z",
+            entry_type="decision",
+            payload={"final_rating": "Sell"},
+            rules_version="cde-long-only-v1",
+        )
+        audit_outcome = "accepted"
+    except AuditError:
+        audit_outcome = "rejected"
+    store.close()
+    shutil.rmtree(audit_dir, ignore_errors=True)
+    cases.append(
+        {
+            "key": "audit",
+            "module": "E",
+            "title": "Overwriting a final decision",
+            "input": "write a second decision with the same record id",
+            "outcome": audit_outcome,
+            "meaning": (
+                "Records are append-only. A revision must be a new record that points at the old one, "
+                "so the history stays readable."
+            ),
+            "requirement": "FR-005 / INV-005",
+        }
+    )
+
     # B — the call cap is reached.
     ledger = BudgetLedger(LedgerConfig(limit_tokens=240_000, limit_calls=1))
     ledger.reserve("market_analyst", "analyst", "quick", "call-1")
@@ -320,9 +398,8 @@ def design_decisions() -> list[dict]:
 def governance_steps() -> list[dict]:
     """How a change got through the process, with the checkout evidence.
 
-    The two episodes shown here are the ones the repository can prove: a review
-    that caught the agent overwriting a historical record, and a CI failure that
-    no local run could have produced.
+    Every episode shown here is one the repository can prove, and they come from
+    different modules: a review finding, a replay finding, and a CI finding.
     """
     return [
         {
@@ -346,13 +423,15 @@ def governance_steps() -> list[dict]:
         {
             "step": "3",
             "state": "bad",
-            "title": "Reviewer finds five issues",
+            "title": "Review and CI catch what the agent missed",
             "detail": (
-                "One mattered most: while adding a new log entry, the agent had rewritten "
-                "AI-USE-0002, the owner's historical record of the G-1/D9 decision. Merged as "
-                "is, the real record would have disappeared."
+                "Each module had something the first pass did not. A review found that adding a new "
+                "log entry had also rewritten a historical governance record. For B, replaying a real "
+                "trace showed a cap above the baseline still degrading the run (BUG-004). For the "
+                "integration, a signature change broke an older test the CI never collected. None of "
+                "these came from the agent reporting its own mistake."
             ),
-            "evidence": "docs/review-memo.md — round 1, CHANGES REQUIRED",
+            "evidence": "review-memo round 1; BUG-004; test_propagate_course_request_entrypoint",
         },
         {
             "step": "4",

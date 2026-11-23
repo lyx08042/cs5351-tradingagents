@@ -134,12 +134,14 @@ def test_unavailable_and_unknown_stay_distinct(payload) -> None:
 
     assert by_key["unavailable"] != by_key["unknown"]
 
-def test_governance_records_both_episodes(payload) -> None:
-    """The process section must show the review catch and the CI catch."""
+def test_governance_records_findings_from_several_modules(payload) -> None:
+    """The process section must not tell a single module's story."""
     text = " ".join(node["detail"] + node["title"] for node in payload["governance"])
 
-    assert "AI-USE-0002" in text
-    assert "BOM" in text
+    # a review finding, a replay finding and a CI finding
+    assert "historical governance record" in text
+    assert "BUG-004" in text
+    assert "BOM" in text or "signature" in text
 
 
 def test_ci_checks_are_read_from_the_workflows(payload) -> None:
