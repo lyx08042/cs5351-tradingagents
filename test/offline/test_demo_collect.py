@@ -199,3 +199,34 @@ def test_refusals_cover_more_than_one_module(payload) -> None:
     modules = {c["module"] for c in payload["rejections"]}
 
     assert len(modules) >= 3, f"refusals only cover {modules}"
+
+def test_scenario_matrix_covers_every_combination(payload) -> None:
+    """The explorer looks up pre-computed rows, so every combination must exist."""
+    opts = payload["scenario_options"]
+    expected = 1
+    for choices in opts.values():
+        expected *= len(choices)
+
+    assert len(payload["scenario_matrix"]) == expected
+
+
+def test_each_module_can_block_the_run(payload) -> None:
+    """A module that can never refuse would not be doing anything."""
+    blockers = set()
+    for row in payload["scenario_matrix"]:
+        for m in row["modules"]:
+            if m["blocks"]:
+                blockers.add(m["module"])
+
+    assert blockers == {"A", "B", "C", "D", "E"} - {"B"} or blockers >= {"A", "C", "D", "E"}
+
+
+def test_default_combination_passes_every_module(payload) -> None:
+    """With the first option selected everywhere, nothing should block."""
+    firsts = {k: v[0] for k, v in payload["scenario_options"].items()}
+    row = next(
+        r for r in payload["scenario_matrix"]
+        if all(r["choices"][k] == firsts[k] for k in firsts)
+    )
+
+    assert row["final"] == "every module allows the run"

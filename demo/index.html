@@ -116,6 +116,29 @@
                         padding-top: 8px; border-top: 1px dashed var(--line); }
   .decision .note2 { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
 
+  /* scenario explorer */
+  .controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .control label { display: block; font-family: var(--mono); font-size: 11px; font-weight: 700;
+                   color: var(--accent); margin-bottom: 6px; letter-spacing: .5px; }
+  .control select { width: 100%; padding: 8px 10px; font-size: 13px; font-family: inherit;
+                    border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+                    color: var(--ink); }
+  .control select:hover { border-color: var(--accent); }
+  .verdicts { display: grid; gap: 6px; }
+  .vrow { display: grid; grid-template-columns: 34px 1fr 190px 1fr; gap: 12px; align-items: center;
+          padding: 9px 12px; border-radius: 7px; background: #fbfcff; border: 1px solid var(--line);
+          font-size: 13px; }
+  .vrow.blocked { background: #fdf3f2; border-color: #f3d6d2; }
+  .vrow .m { font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--ink-soft); }
+  .vrow.blocked .m { color: var(--bad); }
+  .vrow .v { font-family: var(--mono); font-size: 12.5px; padding: 2px 8px; border-radius: 5px;
+             background: #e7f5ee; color: var(--ok); display: inline-block; }
+  .vrow.blocked .v { background: #fbe9e7; color: var(--bad); }
+  .vrow .d { font-size: 12px; color: var(--ink-soft); }
+  .final-line { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 14px;
+                font-weight: 600; background: #eef2fb; color: var(--accent); }
+  .final-line.blocked { background: #fbe9e7; color: var(--bad); }
+
   /* module switcher */
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px;
@@ -230,6 +253,20 @@
       <div class="stat"><div class="k">Decision</div><div class="v" id="s-signal">—</div></div>
     </div>
     <p class="note">Recorded once in <code>docs/baseline.md</code>. A single run is a data point, not a quality claim.</p>
+  </section>
+
+  <!-- ============ SCENARIO EXPLORER ============ -->
+  <section>
+    <h2>Set one option per module — see what the system does</h2>
+    <div class="card">
+      <div class="controls" id="controls"></div>
+      <div class="verdicts" id="verdicts"></div>
+      <div class="final-line" id="final-line"></div>
+    </div>
+    <p class="note">
+      Every combination was executed when the page data was collected: D, A, B, C and E each ran for real.
+      The result is not a lookup table of guesses — it is what the five modules returned.
+    </p>
   </section>
 
   <!-- ============ MATRIX ============ -->
@@ -532,6 +569,70 @@ fetch("data.json")
           <div style="font-size:12px">${d.ci.after.result}</div>
         </div>`;
     }
+
+    /* ---------- scenario explorer ---------- */
+    const controls = document.getElementById("controls");
+    const verdicts = document.getElementById("verdicts");
+    const finalLine = document.getElementById("final-line");
+    const options = d.scenario_options || {};
+    const matrix = d.scenario_matrix || [];
+    const order = ["D", "A", "B", "C", "E"];
+
+    function label(value) {
+      if (typeof value === "number") return "cap " + value.toLocaleString("en-US");
+      return String(value);
+    }
+
+    const selects = {};
+    order.forEach(module => {
+      const wrap = document.createElement("div");
+      wrap.className = "control";
+      const id = "sel-" + module;
+      wrap.innerHTML = `<label for="${id}">Module ${module}</label>
+        <select id="${id}"></select>`;
+      controls.appendChild(wrap);
+      const sel = wrap.querySelector("select");
+      (options[module] || []).forEach(value => {
+        const opt = document.createElement("option");
+        opt.value = JSON.stringify(value);
+        opt.textContent = label(value);
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", update);
+      selects[module] = sel;
+    });
+
+    function currentChoices() {
+      const out = {};
+      order.forEach(m => { out[m] = JSON.parse(selects[m].value); });
+      return out;
+    }
+
+    function findRow(choices) {
+      return matrix.find(row => order.every(m => JSON.stringify(row.choices[m]) === JSON.stringify(choices[m])));
+    }
+
+    function update() {
+      const choices = currentChoices();
+      const row = findRow(choices);
+      if (!row) {
+        verdicts.innerHTML = `<div class="vrow"><div class="m">—</div>
+          <div>This combination was not pre-computed.</div><div></div><div></div></div>`;
+        finalLine.textContent = "";
+        return;
+      }
+      verdicts.innerHTML = row.modules.map(m => `
+        <div class="vrow ${m.blocks ? "blocked" : ""}">
+          <div class="m">${m.module}</div>
+          <div>${label(choices[m.module])}</div>
+          <div><span class="v">${m.verdict}</span></div>
+          <div class="d">${m.detail}</div>
+        </div>`).join("");
+      finalLine.textContent = row.final;
+      finalLine.className = "final-line" + (row.final.includes("blocked") ? " blocked" : "");
+    }
+
+    if (matrix.length) update();
 
     /* ---------- module matrix ---------- */
     const matrix = document.getElementById("matrix");

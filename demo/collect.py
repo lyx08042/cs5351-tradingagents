@@ -26,6 +26,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+from demo.scenario import SCENARIO_OPTIONS, sample_scenarios as _samples  # noqa: E402
+
+SAMPLE_SCENARIOS: list[dict] = []
 OUT = Path(__file__).resolve().parent / "data.json"
 
 MODULES = {
@@ -611,6 +615,39 @@ def module_stories() -> dict[str, dict]:
     return out
 
 
+def scenario_matrix() -> list[dict]:
+    """Pre-compute every combination so the page needs no backend.
+
+    D has 3 options, A 3, B 4, C 2 and E 2, so there are 144 rows. Each row is
+    the real output of the five modules, not a label typed by hand.
+    """
+    import itertools
+
+    from demo.scenario import SCENARIO_OPTIONS, run_scenario
+
+    keys = ["D", "A", "B", "C", "E"]
+    rows = []
+    for combo in itertools.product(*(SCENARIO_OPTIONS[k] for k in keys)):
+        choices = dict(zip(keys, combo, strict=True))
+        result = run_scenario(choices)
+        rows.append(
+            {
+                "choices": choices,
+                "modules": [
+                    {
+                        "module": r["module"],
+                        "verdict": r["verdict"],
+                        "blocks": r["blocks"],
+                        "detail": r["detail"],
+                    }
+                    for r in result["modules"]
+                ],
+                "final": result["final"],
+            }
+        )
+    return rows
+
+
 def trace_pairs() -> list[dict]:
     """Requirement -> enforcing component pairs from the trace matrix."""
     text = (ROOT / "docs" / "architecture" / "trace-matrix.md").read_text(encoding="utf-8")
@@ -665,6 +702,9 @@ def tests_per_module() -> dict[str, list[str]]:
 
 
 def main() -> int:
+    global SAMPLE_SCENARIOS
+    SAMPLE_SCENARIOS = _samples()
+
     stories = module_stories()
     tests = tests_per_module()
 
@@ -677,6 +717,9 @@ def main() -> int:
         "decisions": design_decisions(),
         "ci": ci_checks(),
         "stories": stories,
+        "scenario_options": SCENARIO_OPTIONS,
+        "scenarios": SAMPLE_SCENARIOS,
+        "scenario_matrix": scenario_matrix(),
         "trace": trace_pairs(),
         "reviews": review_rounds(),
         "defects": defects(),
@@ -694,6 +737,7 @@ def main() -> int:
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
     for r, s in stories.items():
         print(f"  story {r}  : {len(s['files'])} files, {s['test_count']} tests, adr={'yes' if s['adr'] else 'no'}")
+    print(f"  scenario : {len(SAMPLE_SCENARIOS)} samples, {len(payload['scenario_matrix'])} combinations")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")
