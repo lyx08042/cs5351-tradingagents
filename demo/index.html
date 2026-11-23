@@ -238,10 +238,6 @@
     <div class="card">
       <table>
         <thead>
-          <tr>
-            <th style="width:150px"></th>
-            <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th>
-          </tr>
         </thead>
         <tbody id="matrix"></tbody>
       </table>
@@ -413,6 +409,64 @@ fetch("data.json")
     }
     slider.addEventListener("input", e => renderCap(Number(e.target.value)));
     renderCap(sweep.length - 1);
+
+    /* ---------- module switcher ---------- */
+    const tabs = document.getElementById("tabs");
+    const storyBox = document.getElementById("story");
+    const stories = d.stories || {};
+
+    function renderStory(role) {
+      const s = stories[role];
+      if (!s) return;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.role === role));
+      storyBox.innerHTML = `
+        <div>
+          <span class="role-tag">Module ${s.role}</span>
+          <h3 style="margin-top:8px">${s.name}</h3>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px">${s.reqs.join(" · ")}</div>
+
+          <div class="q">The question</div>
+          <div class="a" style="font-size:14px">${s.question}</div>
+
+          <div class="q">The answer</div>
+          <div class="a" style="font-size:14px">${s.answer}</div>
+
+          <div class="refuse" style="margin-top:14px;padding:10px 14px;background:#fbe9e7;border-radius:7px;font-size:13px;color:#8d2f24">
+            <strong>What it refuses:</strong> ${s.refuse}
+          </div>
+        </div>
+        <div>
+          <div class="q">Code</div>
+          <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">
+            ${s.files.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}
+          </ul>
+
+          <div class="q">Tests</div>
+          <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">
+            ${(s.tests || []).map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}
+          </ul>
+
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:14px">
+            ${s.adr
+              ? `ADR: <code>${s.adr}</code>`
+              : `No ADR for this module — the decision is recorded in its task plan instead.`}
+          </div>
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
+            ${s.test_count} test cases
+          </div>
+        </div>`;
+    }
+
+    const roleKeys = Object.keys(stories);
+    roleKeys.forEach(role => {
+      const btn = document.createElement("button");
+      btn.className = "tab";
+      btn.dataset.role = role;
+      btn.textContent = `${role} · ${stories[role].name.split(" ")[0]}`;
+      btn.addEventListener("click", () => renderStory(role));
+      tabs.appendChild(btn);
+    });
+    if (roleKeys.length) renderStory(roleKeys.includes("B") ? "B" : roleKeys[0]);
 
     /* ---------- design decisions ---------- */
     const dec = document.getElementById("decisions");
