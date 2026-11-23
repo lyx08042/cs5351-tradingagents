@@ -87,6 +87,127 @@ def budget_replay() -> list[dict]:
     return rows
 
 
+def budget_sweep() -> list[dict]:
+    """Every cap from 100k to 300k in 10k steps, for the slider.
+
+    Pre-computed so the page never needs a backend: the slider picks a row.
+    """
+    sys.path.insert(0, str(ROOT))
+    from tradingagents.course.budget.replay import BASELINE_TOTAL_TOKENS, baseline_trace, replay
+
+    trace = baseline_trace()
+    rows = []
+    for limit in range(100_000, 301_000, 10_000):
+        result = replay(trace, limit_tokens=limit)
+        rows.append(
+            {
+                "limit": limit,
+                "calls": result.calls_executed,
+                "tokens": result.total_tokens,
+                "delta": round((result.total_tokens / BASELINE_TOTAL_TOKENS - 1) * 100, 1),
+                "level": result.level,
+                "skipped": result.skipped,
+                "degradations": result.degradations,
+                "ended": result.ended,
+            }
+        )
+    return rows
+
+
+def rejection_cases() -> list[dict]:
+    """Four ways the system can refuse, each executed for real.
+
+    These are pure functions: no model, no network. What the page shows is what
+    the code returned while collecting.
+    """
+    sys.path.insert(0, str(ROOT))
+    from tradingagents.course.budget.contracts import BudgetDenied, LedgerConfig
+    from tradingagents.course.budget.ledger import BudgetLedger
+    from tradingagents.course.data_quality.admission import admit
+
+    domains = ("news", "social", "macro", "price", "fundamentals")
+    cutoff = "2026-09-01"
+
+    def observations(kind: str, value: int | None = None) -> list[dict]:
+        return [
+            {
+                "domain": domain,
+                "kind": kind,
+                "value": value,
+                "value_present": value is not None,
+                "source": "demo-fixture",
+                "observed_as_of": "2026-08-30",
+            }
+            for domain in domains
+        ]
+
+    cases: list[dict] = []
+
+    # D — a required domain is unavailable.
+    result = admit(observations("no_data"), cutoff)
+    cases.append(
+        {
+            "key": "unavailable",
+            "module": "D",
+            "title": "Required data unavailable",
+            "input": "all five domains report no_data",
+            "outcome": result.decision,
+            "meaning": "The system abstains: it will not guess from data it does not have.",
+            "requirement": "FR-004 / INV-004",
+        }
+    )
+
+    # D — a required domain is missing entirely -> default-deny.
+    result = admit(observations("value", 1)[:4], cutoff)
+    cases.append(
+        {
+            "key": "unknown",
+            "module": "D",
+            "title": "Required domain missing",
+            "input": "fundamentals absent from the report",
+            "outcome": result.decision,
+            "meaning": "Unknown is escalated to review, never treated as neutral.",
+            "requirement": "FR-004 / INV-004",
+        }
+    )
+
+    # D — the happy path, so the contrast is visible.
+    result = admit(observations("value", 1), cutoff)
+    cases.append(
+        {
+            "key": "proceed",
+            "module": "D",
+            "title": "All domains available",
+            "input": "all five domains report a value",
+            "outcome": result.decision,
+            "meaning": "Only this outcome lets the run reach the model.",
+            "requirement": "FR-004 / INV-004",
+        }
+    )
+
+    # B — the call cap is reached.
+    ledger = BudgetLedger(LedgerConfig(limit_tokens=240_000, limit_calls=1))
+    ledger.reserve("market_analyst", "analyst", "quick", "call-1")
+    try:
+        ledger.reserve("market_analyst", "analyst", "quick", "call-2")
+        outcome = "allowed"
+    except BudgetDenied as exc:
+        outcome = exc.reason
+    cases.append(
+        {
+            "key": "budget",
+            "module": "B",
+            "title": "Budget exhausted",
+            "input": "limit_calls = 1, second call attempted",
+            "outcome": outcome,
+            "meaning": "The call is refused before it reaches the provider.",
+            "requirement": "FR-002 / INV-002",
+        }
+    )
+
+    return cases
+
+
 def trace_pairs() -> list[dict]:
     """Requirement -> enforcing component pairs from the trace matrix."""
     text = (ROOT / "docs" / "architecture" / "trace-matrix.md").read_text(encoding="utf-8")
@@ -144,6 +265,8 @@ def main() -> int:
     payload = {
         "baseline": baseline(),
         "replay": budget_replay(),
+        "sweep": budget_sweep(),
+        "rejections": rejection_cases(),
         "trace": trace_pairs(),
         "reviews": review_rounds(),
         "defects": defects(),
@@ -154,6 +277,8 @@ def main() -> int:
     print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
     print(f"  baseline : {payload['baseline']}")
     print(f"  replay   : {len(payload['replay'])} rows")
+    print(f"  sweep    : {len(payload['sweep'])} caps for the slider")
+    print(f"  reject   : {len(payload['rejections'])} executed cases")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")

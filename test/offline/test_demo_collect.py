@@ -92,3 +92,44 @@ def test_collected_json_is_valid_and_serialisable(payload) -> None:
     """The page parses this file, so it must round-trip through JSON."""
     text = json.dumps(payload, ensure_ascii=False)
     assert json.loads(text) == payload
+
+def test_sweep_covers_the_slider_range(payload) -> None:
+    """The slider needs a row per step, from 100k to 300k."""
+    sweep = payload["sweep"]
+
+    assert len(sweep) == 21
+    assert sweep[0]["limit"] == 100_000
+    assert sweep[-1]["limit"] == 300_000
+
+
+def test_sweep_never_spends_more_as_the_cap_shrinks(payload) -> None:
+    """Monotonic in the cap: a tighter budget cannot cost more tokens."""
+    tokens = [row["tokens"] for row in payload["sweep"]]
+
+    assert tokens == sorted(tokens)
+
+
+def test_the_widest_cap_matches_the_baseline(payload) -> None:
+    """300k is above the recorded run, so nothing changes."""
+    row = payload["sweep"][-1]
+
+    assert row["delta"] == 0.0
+    assert row["level"] == 0
+    assert row["calls"] == payload["baseline"]["calls"]
+
+
+def test_rejection_cases_were_actually_executed(payload) -> None:
+    """Each card carries the outcome the code returned, not a label typed in."""
+    by_key = {c["key"]: c["outcome"] for c in payload["rejections"]}
+
+    assert by_key["proceed"] == "proceed"
+    assert by_key["unavailable"] == "abstain"
+    assert by_key["unknown"] == "review"
+    assert by_key["budget"] == "call_limit"
+
+
+def test_unavailable_and_unknown_stay_distinct(payload) -> None:
+    """FR-004 / INV-004: the two failures must not collapse into one answer."""
+    by_key = {c["key"]: c["outcome"] for c in payload["rejections"]}
+
+    assert by_key["unavailable"] != by_key["unknown"]

@@ -67,6 +67,256 @@
       "skipped": 6
     }
   ],
+  "sweep": [
+    {
+      "limit": 100000,
+      "calls": 10,
+      "tokens": 81821,
+      "delta": -64.2,
+      "level": 4,
+      "skipped": 9,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 110000,
+      "calls": 12,
+      "tokens": 96775,
+      "delta": -57.6,
+      "level": 4,
+      "skipped": 7,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 120000,
+      "calls": 13,
+      "tokens": 104251,
+      "delta": -54.3,
+      "level": 4,
+      "skipped": 6,
+      "degradations": 2,
+      "ended": "completed"
+    },
+    {
+      "limit": 130000,
+      "calls": 14,
+      "tokens": 108401,
+      "delta": -52.5,
+      "level": 4,
+      "skipped": 5,
+      "degradations": 2,
+      "ended": "completed"
+    },
+    {
+      "limit": 140000,
+      "calls": 16,
+      "tokens": 123351,
+      "delta": -46.0,
+      "level": 3,
+      "skipped": 3,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 150000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 3,
+      "skipped": 2,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 160000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 2,
+      "skipped": 2,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 170000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 2,
+      "skipped": 2,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 180000,
+      "calls": 17,
+      "tokens": 130827,
+      "delta": -42.7,
+      "level": 2,
+      "skipped": 2,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 190000,
+      "calls": 19,
+      "tokens": 149519,
+      "delta": -34.5,
+      "level": 1,
+      "skipped": 0,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 200000,
+      "calls": 19,
+      "tokens": 149519,
+      "delta": -34.5,
+      "level": 1,
+      "skipped": 0,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 210000,
+      "calls": 19,
+      "tokens": 149519,
+      "delta": -34.5,
+      "level": 1,
+      "skipped": 0,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 220000,
+      "calls": 19,
+      "tokens": 177519,
+      "delta": -22.2,
+      "level": 1,
+      "skipped": 0,
+      "degradations": 1,
+      "ended": "completed"
+    },
+    {
+      "limit": 230000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 240000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 250000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 260000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 270000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 280000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 290000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    },
+    {
+      "limit": 300000,
+      "calls": 19,
+      "tokens": 228275,
+      "delta": 0.0,
+      "level": 0,
+      "skipped": 0,
+      "degradations": 0,
+      "ended": "completed"
+    }
+  ],
+  "rejections": [
+    {
+      "key": "unavailable",
+      "module": "D",
+      "title": "Required data unavailable",
+      "input": "all five domains report no_data",
+      "outcome": "abstain",
+      "meaning": "The system abstains: it will not guess from data it does not have.",
+      "requirement": "FR-004 / INV-004"
+    },
+    {
+      "key": "unknown",
+      "module": "D",
+      "title": "Required domain missing",
+      "input": "fundamentals absent from the report",
+      "outcome": "review",
+      "meaning": "Unknown is escalated to review, never treated as neutral.",
+      "requirement": "FR-004 / INV-004"
+    },
+    {
+      "key": "proceed",
+      "module": "D",
+      "title": "All domains available",
+      "input": "all five domains report a value",
+      "outcome": "proceed",
+      "meaning": "Only this outcome lets the run reach the model.",
+      "requirement": "FR-004 / INV-004"
+    },
+    {
+      "key": "budget",
+      "module": "B",
+      "title": "Budget exhausted",
+      "input": "limit_calls = 1, second call attempted",
+      "outcome": "call_limit",
+      "meaning": "The call is refused before it reaches the provider.",
+      "requirement": "FR-002 / INV-002"
+    }
+  ],
   "trace": [
     {
       "id": "BASE-001",
