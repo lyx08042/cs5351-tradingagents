@@ -300,10 +300,17 @@ class TradingAgentsGraph:
                     "evidence_verdicts": [],
                 }
 
+            # Only pass `evidence_state` when role A is actually enabled. Passing
+            # it as None would change the call shape for every CDE-only run and
+            # breaks callers (and test doubles) that use the previous signature.
+            run_kwargs: dict[str, Any] = {}
+            if evidence_state:
+                run_kwargs["evidence_state"] = evidence_state
+
             final_state, _signal = self._run_graph(
                 company_name, trade_date, asset_type=asset_type,
                 portfolio=portfolio, course_context=context, record=False,
-                evidence_state=evidence_state or None,
+                **run_kwargs,
             )
             if run_budget is not None or evidence_state:
                 final_state = dict(final_state)
