@@ -706,11 +706,9 @@ def main() -> int:
     SAMPLE_SCENARIOS = _samples()
 
     stories = module_stories()
-    tests = tests_per_module()
 
     payload = {
         "baseline": baseline(),
-        "replay": budget_replay(),
         "sweep": budget_sweep(),
         "rejections": rejection_cases(),
         "governance": governance_steps(),
@@ -718,18 +716,14 @@ def main() -> int:
         "ci": ci_checks(),
         "stories": stories,
         "scenario_options": SCENARIO_OPTIONS,
-        "scenarios": SAMPLE_SCENARIOS,
         "scenario_matrix": scenario_matrix(),
         "trace": trace_pairs(),
         "reviews": review_rounds(),
         "defects": defects(),
-        "tests": tests,
-        "modules": MODULES,
     }
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
     print(f"  baseline : {payload['baseline']}")
-    print(f"  replay   : {len(payload['replay'])} rows")
     print(f"  sweep    : {len(payload['sweep'])} caps for the slider")
     print(f"  reject   : {len(payload['rejections'])} executed cases")
     print(f"  govern   : {len(payload['governance'])} process steps")
@@ -737,11 +731,10 @@ def main() -> int:
     print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
     for r, s in stories.items():
         print(f"  story {r}  : {len(s['files'])} files, {s['test_count']} tests, adr={'yes' if s['adr'] else 'no'}")
-    print(f"  scenario : {len(SAMPLE_SCENARIOS)} samples, {len(payload['scenario_matrix'])} combinations")
+    print(f"  scenario : {len(payload['scenario_matrix'])} combinations")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")
-    print(f"  tests    : {sum(len(v) for v in payload['tests'].values())} files")
     return 0
 
 
