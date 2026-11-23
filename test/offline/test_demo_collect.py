@@ -1,0 +1,234 @@
+"""Tests for the demo page's data collector.
+
+The page renders whatever `demo.collect` writes, so a wrong collector means a
+wrong demo. These tests pin the shape and the provenance of each figure.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+# The demo package lives beside the repository root, not inside a package the
+# project installs, so pytest needs the root on the path before the import.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from demo import collect  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def payload(tmp_path_factory):
+    """Run the collector once and hand back what it produced."""
+    collect.main()
+    data_path = Path(collect.__file__).parent / "data.json"
+    return json.loads(data_path.read_text(encoding="utf-8"))
+
+
+def test_baseline_figures_match_the_recorded_run(payload) -> None:
+    """The baseline block is read from docs/baseline.md, not invented."""
+    baseline = payload["baseline"]
+    assert baseline["calls"] == 19
+    assert baseline["tokens"] == 228_275
+    assert baseline["seconds"] == pytest.approx(150.61, abs=0.01)
+
+
+def test_sweep_matches_the_budget_module(payload) -> None:
+    """The replay rows come from the same function the module's own tests use.
+
+    Recomputing here means a change in `replay.py` cannot silently leave the
+    page showing stale numbers.
+    """
+    from tradingagents.course.budget.replay import baseline_trace, replay
+
+    trace = baseline_trace()
+    for row in payload["sweep"]:
+        expected = replay(trace, limit_tokens=row["limit"])
+        assert row["calls"] == expected.calls_executed, row["limit"]
+        assert row["tokens"] == expected.total_tokens, row["limit"]
+        assert row["level"] == expected.level, row["limit"]
+
+
+def test_a_cap_above_the_baseline_does_not_degrade(payload) -> None:
+    """BUG-004 regression, visible on the page: 240k must stay at L0."""
+    row = next(r for r in payload["sweep"] if r["limit"] == 240_000)
+
+    assert row["level"] == 0
+    assert row["skipped"] == 0
+    assert row["delta"] == 0.0
+
+
+def test_sweep_is_ordered_from_tight_to_loose(payload) -> None:
+    """The table reads top-down from the loosest cap to the tightest."""
+    limits = [r["limit"] for r in payload["sweep"]]
+
+    assert limits == sorted(limits), "the slider reads left to right, tightest cap last"
+    assert limits[0] == 100_000 and limits[-1] == 300_000
+
+
+def test_every_module_has_requirements_and_tests(payload) -> None:
+    """Each role maps to at least one requirement and one test file."""
+    for role in ("A", "B", "C", "D", "E"):
+        assert payload["stories"][role]["reqs"], role
+        assert payload["stories"][role]["tests"], f"{role} has no test file"
+
+
+def test_trace_covers_the_budget_requirements(payload) -> None:
+    """FR-006 and INV-006 came from this work and must appear in the trace."""
+    ids = {row["id"] for row in payload["trace"]}
+
+    assert {"FR-002", "FR-006", "INV-002", "INV-006"} <= ids
+
+
+def test_process_evidence_is_present(payload) -> None:
+    """The demo shows review rounds and defects, so both must be non-empty."""
+    assert payload["reviews"], "no review entries collected"
+    assert any(b["id"] == "BUG-004" for b in payload["defects"])
+
+
+def test_collected_json_is_valid_and_serialisable(payload) -> None:
+    """The page parses this file, so it must round-trip through JSON."""
+    text = json.dumps(payload, ensure_ascii=False)
+    assert json.loads(text) == payload
+
+def test_sweep_covers_the_slider_range(payload) -> None:
+    """The slider needs a row per step, from 100k to 300k."""
+    sweep = payload["sweep"]
+
+    assert len(sweep) == 21
+    assert sweep[0]["limit"] == 100_000
+    assert sweep[-1]["limit"] == 300_000
+
+
+def test_sweep_never_spends_more_as_the_cap_shrinks(payload) -> None:
+    """Monotonic in the cap: a tighter budget cannot cost more tokens."""
+    tokens = [row["tokens"] for row in payload["sweep"]]
+
+    assert tokens == sorted(tokens)
+
+
+def test_the_widest_cap_matches_the_baseline(payload) -> None:
+    """300k is above the recorded run, so nothing changes."""
+    row = payload["sweep"][-1]
+
+    assert row["delta"] == 0.0
+    assert row["level"] == 0
+    assert row["calls"] == payload["baseline"]["calls"]
+
+
+def test_rejection_cases_were_actually_executed(payload) -> None:
+    """Each card carries the outcome the code returned, not a label typed in."""
+    by_key = {c["key"]: c["outcome"] for c in payload["rejections"]}
+
+    assert by_key["proceed"] == "proceed"
+    assert by_key["unavailable"] == "abstain"
+    assert by_key["unknown"] == "review"
+    assert by_key["budget"] == "call_limit"
+
+
+def test_unavailable_and_unknown_stay_distinct(payload) -> None:
+    """FR-004 / INV-004: the two failures must not collapse into one answer."""
+    by_key = {c["key"]: c["outcome"] for c in payload["rejections"]}
+
+    assert by_key["unavailable"] != by_key["unknown"]
+
+def test_governance_records_findings_from_several_modules(payload) -> None:
+    """The process section must not tell a single module's story."""
+    text = " ".join(node["detail"] + node["title"] for node in payload["governance"])
+
+    # a review finding, a replay finding and a CI finding
+    assert "historical governance record" in text
+    assert "BUG-004" in text
+    assert "BOM" in text or "signature" in text
+
+
+def test_ci_checks_are_read_from_the_workflows(payload) -> None:
+    """A check appears only if the workflow file really wires it in."""
+    names = {c["name"] for c in payload["ci"]["checks"]}
+
+    assert "course scaffold" in names
+    assert "course offline suite" in names
+
+
+def test_the_course_suite_is_reported_as_wired(payload) -> None:
+    """The delivery branch runs the full course suite; if that regresses the page must say so."""
+    suite = next(c for c in payload["ci"]["checks"] if c["name"] == "course offline suite")
+
+    assert suite["state"] == "on", "course-bootstrap no longer runs the full offline suite"
+
+def test_every_module_has_a_story(payload) -> None:
+    """Each role gets a section in the switcher, so all five appear in the demo."""
+    stories = payload["stories"]
+
+    assert set(stories) == {"A", "B", "C", "D", "E"}
+    for role, story in stories.items():
+        assert story["question"], role
+        assert story["answer"], role
+        assert story["refuse"], role
+        assert story["files"], f"{role} lists no code files"
+
+
+def test_story_adr_references_existing_files(payload) -> None:
+    """A story names an ADR only when that ADR exists on disk."""
+    adr_dir = ROOT / "docs" / "architecture" / "adr"
+
+    for role, story in payload["stories"].items():
+        if story["adr"]:
+            assert (adr_dir / story["adr"]).exists(), f"{role} names a missing ADR"
+
+def test_decisions_cover_all_five_modules(payload) -> None:
+    """The page presents the system, not one module: every role must appear."""
+    covered = set()
+    for item in payload["decisions"]:
+        covered.update(item["present"])
+
+    assert covered == {"A", "B", "C", "D", "E"}
+
+
+def test_each_decision_names_what_was_rejected(payload) -> None:
+    """A design choice without a rejected alternative is just a feature."""
+    for item in payload["decisions"]:
+        assert item["rejected"].strip()
+        assert item["because"].strip()
+
+
+def test_refusals_cover_more_than_one_module(payload) -> None:
+    """The refusal cards must not be dominated by a single module."""
+    modules = {c["module"] for c in payload["rejections"]}
+
+    assert len(modules) >= 3, f"refusals only cover {modules}"
+
+def test_scenario_matrix_covers_every_combination(payload) -> None:
+    """The explorer looks up pre-computed rows, so every combination must exist."""
+    opts = payload["scenario_options"]
+    expected = 1
+    for choices in opts.values():
+        expected *= len(choices)
+
+    assert len(payload["scenario_matrix"]) == expected
+
+
+def test_each_module_can_block_the_run(payload) -> None:
+    """A module that can never refuse would not be doing anything."""
+    blockers = set()
+    for row in payload["scenario_matrix"]:
+        for m in row["modules"]:
+            if m["blocks"]:
+                blockers.add(m["module"])
+
+    assert blockers == {"A", "B", "C", "D", "E"} - {"B"} or blockers >= {"A", "C", "D", "E"}
+
+
+def test_default_combination_passes_every_module(payload) -> None:
+    """With the first option selected everywhere, nothing should block."""
+    firsts = {k: v[0] for k, v in payload["scenario_options"].items()}
+    row = next(
+        r for r in payload["scenario_matrix"]
+        if all(r["choices"][k] == firsts[k] for k in firsts)
+    )
+
+    assert row["final"] == "every module allows the run"

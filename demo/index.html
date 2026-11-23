@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS5351 — Course Module Evidence</title>
+<style>
+  :root {
+    --ink: #16213c; --ink-soft: #4a5573; --line: #dde3ef; --bg: #f6f8fc;
+    --card: #ffffff; --accent: #1f4bd8; --ok: #17825a; --warn: #b5720d; --bad: #b03a2e;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  header { background: var(--ink); color: #fff; padding: 22px 32px; }
+  header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
+  header p { margin: 0; color: #b8c4e0; font-size: 13px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 32px 64px; }
+  section { margin-bottom: 34px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px;
+       color: var(--ink-soft); margin: 0 0 12px; font-weight: 600; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .stat .k { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .8px; }
+  .stat .v { font-size: 26px; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .stat .u { font-size: 12px; color: var(--ink-soft); margin-left: 3px; font-weight: 400; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .7px; color: var(--ink-soft); font-weight: 600; }
+  td.num { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  tr.base td { background: #f0f3fa; font-weight: 600; }
+  .down { color: var(--ok); font-weight: 600; }
+  .flat { color: var(--ink-soft); }
+  .lvl { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 12px; font-family: var(--mono); }
+  .l0 { background: #e7f5ee; color: var(--ok); }
+  .l1, .l2 { background: #fdf3e0; color: var(--warn); }
+  .l3, .l4, .l5 { background: #fbe9e7; color: var(--bad); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .note { background: #eef2fb; border-left: 3px solid var(--accent); padding: 12px 16px;
+          font-size: 13px; color: var(--ink-soft); border-radius: 0 6px 6px 0; }
+  .tag { font-family: var(--mono); font-size: 12px; padding: 1px 7px; border-radius: 4px;
+         background: #eef2fb; color: var(--accent); }
+  /* design timeline */
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+  .tl-node { padding: 18px 16px 16px 16px; position: relative; }
+  .tl-node::after { content: ""; position: absolute; top: 30px; right: -6px; width: 12px; height: 2px;
+                    background: var(--line); }
+  .tl-node:last-child::after { display: none; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; margin-bottom: 10px; }
+  .tl-good .tl-dot { background: var(--ok); }
+  .tl-bad .tl-dot { background: var(--bad); }
+  .tl-step { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); text-transform: uppercase;
+             letter-spacing: .8px; }
+  .tl-title { font-weight: 650; font-size: 14px; margin: 3px 0 6px; }
+  .tl-detail { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  .tl-result { font-size: 12.5px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .tl-good .tl-result { color: var(--ok); }
+  .tl-bad .tl-result { color: var(--bad); }
+
+  /* architecture diagram */
+  .arch { display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .arch-box { border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px;
+              background: #fbfcff; font-size: 13px; min-width: 320px; }
+  .arch-box.accent { border: 2px solid var(--accent); background: #eef2fb; font-weight: 600; }
+  .arch-box.muted { color: var(--ink-soft); background: #f6f8fc; }
+  .arch-arrow { color: var(--ink-soft); font-size: 14px; line-height: 1; }
+  .arch-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  .arch-label { font-size: 12px; color: var(--ink-soft); text-transform: uppercase;
+                letter-spacing: .8px; margin-bottom: 12px; }
+  .badge-x { display: inline-block; background: #fbe9e7; color: var(--bad); font-family: var(--mono);
+             font-size: 11px; padding: 1px 7px; border-radius: 4px; }
+  .badge-ok2 { display: inline-block; background: #e7f5ee; color: var(--ok); font-family: var(--mono);
+               font-size: 11px; padding: 1px 7px; border-radius: 4px; }
+
+  /* matrix */
+  #matrix td, #matrix th { text-align: center; }
+  #matrix th:first-child, #matrix td:first-child { text-align: left; }
+  #matrix td.label { font-size: 12px; text-transform: uppercase; letter-spacing: .7px;
+                     color: var(--ink-soft); font-weight: 600; }
+  #matrix td.role { font-weight: 600; font-size: 13px; }
+  #matrix td.num { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  #matrix td.refuse { font-size: 12px; color: var(--bad); }
+  #matrix td.adr { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+
+  /* pipeline */
+  .pipeline { display: grid; gap: 0; }
+  .pipe-node { display: grid; grid-template-columns: 54px 1fr; gap: 16px; align-items: center;
+               padding: 12px 14px; border-radius: 9px; background: #fbfcff;
+               border: 1px solid var(--line); position: relative; }
+  .pipe-badge { width: 54px; height: 40px; border-radius: 7px; display: grid; place-items: center;
+                font-family: var(--mono); font-weight: 700; font-size: 14px; }
+  .pipe-a .pipe-badge { background: #eef4ff; color: #2f5bd4; }
+  .pipe-b .pipe-badge { background: #fff4e6; color: #a86412; }
+  .pipe-c .pipe-badge { background: #fdeeee; color: #a83a2e; }
+  .pipe-d .pipe-badge { background: #eefaf3; color: #177a55; }
+  .pipe-e .pipe-badge { background: #f3eefb; color: #5b3aa0; }
+  .pipe-plain .pipe-badge { background: #eef2fb; color: var(--ink-soft); font-size: 11px; }
+  .pipe-label { font-size: 14px; font-weight: 600; }
+  .pipe-sub { font-size: 12.5px; color: var(--ink-soft); }
+  .pipe-gap { height: 16px; width: 2px; background: var(--line); margin-left: 41px; }
+
+  /* decisions */
+  .decisions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .decision { border: 1px solid var(--line); border-radius: 9px; padding: 16px 18px; background: #fbfcff; }
+  .decision .head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .decision .num { font-family: var(--mono); font-size: 12px; font-weight: 700;
+                   background: var(--ink); color: #fff; width: 24px; height: 24px;
+                   border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .decision .mods { font-family: var(--mono); font-size: 11px; color: var(--accent);
+                    background: #eef2fb; padding: 2px 8px; border-radius: 5px; }
+  .decision .q { font-weight: 650; font-size: 14.5px; }
+  .decision .chosen { font-size: 13.5px; margin-top: 8px; }
+  .decision .rejected { font-size: 12.5px; color: var(--bad); margin-top: 8px;
+                        padding-top: 8px; border-top: 1px dashed var(--line); }
+  .decision .note2 { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+
+  /* scenario explorer */
+  .controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .control label { display: block; font-family: var(--mono); font-size: 11px; font-weight: 700;
+                   color: var(--accent); margin-bottom: 6px; letter-spacing: .5px; }
+  .control select { width: 100%; padding: 8px 10px; font-size: 13px; font-family: inherit;
+                    border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+                    color: var(--ink); }
+  .control select:hover { border-color: var(--accent); }
+  .verdicts { display: grid; gap: 6px; }
+  .vrow { display: grid; grid-template-columns: 34px 1fr 190px 1fr; gap: 12px; align-items: center;
+          padding: 9px 12px; border-radius: 7px; background: #fbfcff; border: 1px solid var(--line);
+          font-size: 13px; }
+  .vrow.blocked { background: #fdf3f2; border-color: #f3d6d2; }
+  .vrow .m { font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--ink-soft); }
+  .vrow.blocked .m { color: var(--bad); }
+  .vrow .v { font-family: var(--mono); font-size: 12.5px; padding: 2px 8px; border-radius: 5px;
+             background: #e7f5ee; color: var(--ok); display: inline-block; }
+  .vrow.blocked .v { background: #fbe9e7; color: var(--bad); }
+  .vrow .d { font-size: 12px; color: var(--ink-soft); }
+  .final-line { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 14px;
+                font-weight: 600; background: #eef2fb; color: var(--accent); }
+  .final-line.blocked { background: #fbe9e7; color: var(--bad); }
+
+  /* module switcher */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px;
+         padding: 7px 18px; font-size: 13.5px; cursor: pointer; transition: .15s;
+         font-family: inherit; color: var(--ink); }
+  .tab:hover { border-color: var(--accent); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .story h3 { margin: 0 0 4px; font-size: 17px; }
+  .story .role-tag { font-family: var(--mono); font-size: 11px; color: var(--accent);
+                     background: #eef2fb; padding: 2px 8px; border-radius: 5px; }
+  .story .q { font-size: 13px; text-transform: uppercase; letter-spacing: .7px;
+              color: var(--ink-soft); margin: 16px 0 4px; font-weight: 600; }
+  .story .a { font-size: 14px; }
+  .story .refuse { margin-top: 12px; padding: 10px 14px; background: #fbe9e7;
+                   border-radius: 7px; font-size: 13px; color: #8d2f24; }
+  .story ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .story .meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .story .meta code { font-size: 12px; }
+
+  /* governance */
+  .gov { display: grid; gap: 6px; position: relative; padding-left: 8px; }
+  /* the vertical rail sits behind the number badges */
+  .gov::before { content: ""; position: absolute; left: 31px; top: 26px; bottom: 26px;
+                 width: 2px; background: var(--line); }
+  .gov-step { display: grid; grid-template-columns: 48px 1fr; gap: 18px;
+              align-items: start; padding: 10px 12px 10px 0;
+              position: relative; cursor: pointer; border-radius: 8px; }
+  .gov-step:hover { background: #f7f9fd; }
+  .gov-num { position: relative; z-index: 1; width: 48px; height: 48px;
+             border-radius: 50%; display: grid; place-items: center;
+             font-family: var(--mono); font-size: 15px; font-weight: 600;
+             background: #eef2fb; color: var(--accent);
+             border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--line); }
+  .gov-bad .gov-num { background: #fbe9e7; color: var(--bad); }
+  .gov-good .gov-num { background: #e7f5ee; color: var(--ok); }
+  .gov-body { padding-top: 4px; padding-right: 8px; }
+  .gov-title { font-weight: 650; font-size: 14.5px; }
+  .gov-detail { font-size: 13px; color: var(--ink-soft); margin-top: 4px;
+                max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+  .gov-step.open .gov-detail { max-height: 320px; }
+  .gov-evidence { font-family: var(--mono); font-size: 12px; color: var(--accent);
+                  margin-top: 8px; display: none; }
+  .gov-step.open .gov-evidence { display: block; }
+  .gov-hint { font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+  .gov-step.open .gov-hint { display: none; }
+
+  /* ci board */
+  .ci-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .ci-item { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+             display: flex; gap: 10px; align-items: flex-start; background: #fbfcff; }
+  .ci-item.off { background: #fff8f7; border-color: #f3d6d2; }
+  .ci-mark { font-family: var(--mono); font-weight: 700; font-size: 14px; line-height: 1.2; }
+  .ci-item .on-mark { color: var(--ok); }
+  .ci-item .off-mark { color: var(--bad); }
+  .ci-name { font-size: 13.5px; font-weight: 600; }
+  .ci-detail { font-size: 12px; color: var(--ink-soft); }
+  .ci-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .ci-pill { border-radius: 8px; padding: 12px 16px; font-size: 13px; }
+  .ci-pill.bad { background: #fbe9e7; border: 1px solid #f3d6d2; }
+  .ci-pill.good { background: #e7f5ee; border: 1px solid #cfe9dc; }
+  .ci-pill .ref { font-family: var(--mono); font-size: 12px; }
+
+  footer { color: var(--ink-soft); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+  code { font-family: var(--mono); font-size: 13px; background: #eef2fb; padding: 1px 5px; border-radius: 4px; }
+
+  /* slider block */
+  .slider-wrap { display: grid; grid-template-columns: 1fr 260px; gap: 26px; align-items: center; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .readout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 18px; }
+  .readout .k { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--ink-soft); }
+  .readout .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .scale { display: flex; justify-content: space-between; font-size: 11px;
+           color: var(--ink-soft); font-family: var(--mono); margin-top: 4px; }
+
+  /* rejection cards */
+  .rej { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .rej-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+              padding: 16px; cursor: pointer; transition: .15s; }
+  .rej-card:hover { border-color: var(--accent); }
+  .rej-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px #dce4fb; }
+  .rej-card .m { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .rej-card .t { font-weight: 600; margin: 4px 0 8px; font-size: 14px; }
+  .rej-card .o { font-family: var(--mono); font-size: 13px; padding: 2px 8px;
+                 border-radius: 5px; display: inline-block; }
+  .o-abstain, .o-review, .o-call_limit { background: #fbe9e7; color: var(--bad); }
+  .o-proceed { background: #e7f5ee; color: var(--ok); }
+  .rej-detail { margin-top: 16px; }
+
+  /* trace rows */
+  .trace-row { cursor: pointer; }
+  .trace-row:hover td { background: #f7f9fd; }
+  .trace-detail { display: none; }
+  .trace-detail.open { display: table-row; }
+  .trace-detail td { background: #f7f9fd; font-size: 13px; color: var(--ink-soft); padding-left: 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CS5351 — Course Module Evidence</h1>
+  <p>Five modules on one branch · every figure is produced by the code on this page, not typed by hand</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Baseline run</h2>
+    <div class="stats">
+      <div class="stat"><div class="k">Model calls</div><div class="v" id="s-calls">—</div></div>
+      <div class="stat"><div class="k">Total tokens</div><div class="v" id="s-tokens">—</div></div>
+      <div class="stat"><div class="k">Wall clock</div><div class="v"><span id="s-seconds">—</span><span class="u">s</span></div></div>
+      <div class="stat"><div class="k">Decision</div><div class="v" id="s-signal">—</div></div>
+    </div>
+    <p class="note">Recorded once in <code>docs/baseline.md</code>. A single run is a data point, not a quality claim.</p>
+  </section>
+
+  <!-- ============ SCENARIO EXPLORER ============ -->
+  <section>
+    <h2>Set one option per module — see what the system does</h2>
+    <div class="card">
+      <div class="controls" id="controls"></div>
+      <div class="verdicts" id="verdicts"></div>
+      <div class="final-line" id="final-line"></div>
+    </div>
+    <p class="note">
+      Every combination was executed when the page data was collected: D, A, B, C and E each ran for real.
+      The result is not a lookup table of guesses — it is what the five modules returned.
+    </p>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section>
+    <h2>Five modules, one row each</h2>
+    <div class="card">
+      <table>
+        <thead>
+        </thead>
+        <tbody id="matrix"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      Each module answers a different question and refuses in a different way. The counts are collected
+      by running pytest on each module's own test files.
+    </p>
+  </section>
+
+  <!-- ============ PIPELINE ============ -->
+  <section>
+    <h2>How the five fit into one run</h2>
+    <div class="card">
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+    <p class="note">
+      D gates the request before any model call. A and B work inside the call itself. C decides whether
+      the proposal may be published. E records whatever happened, including the refusals.
+    </p>
+  </section>
+
+  <!-- ============ MODULE SWITCHER ============ -->
+  <section>
+    <h2>Five modules — one question each</h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="card">
+      <div class="story" id="story"></div>
+    </div>
+  </section>
+
+  <!-- ============ 1. SLIDER ============ -->
+  <section>
+    <h2>Before / after — drag the budget cap</h2>
+    <div class="card">
+      <div class="slider-wrap">
+        <div>
+          <input type="range" id="cap" min="0" max="20" value="20" step="1">
+          <div class="scale"><span id="lo">—</span><span id="hi">—</span></div>
+        </div>
+        <div class="readout">
+          <div><div class="k">Budget cap</div><div class="v" id="r-cap">—</div></div>
+          <div><div class="k">Calls made</div><div class="v" id="r-calls">—</div></div>
+          <div><div class="k">Tokens</div><div class="v" id="r-tokens">—</div></div>
+          <div><div class="k">Δ vs baseline</div><div class="v" id="r-delta">—</div></div>
+          <div><div class="k">Degradation</div><div class="v" id="r-level">—</div></div>
+          <div><div class="k">Calls skipped</div><div class="v" id="r-skip">—</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      Same recorded run, five caps. A cap above the baseline leaves every call in place; a tight cap
+      removes input and only then drops calls. Deterministic replay, no model called.
+    </p>
+  </section>
+
+  <!-- ============ 4. DESIGN TIMELINE ============ -->
+  <section>
+    <h2>Four decisions the whole system had to get right</h2>
+    <div class="card">
+      <div class="decisions" id="decisions"></div>
+    </div>
+    <p class="note">
+      Each decision belongs to a different module, and each one names what was rejected.
+      A business feature would only show what was built; these are the choices behind it.
+    </p>
+  </section>
+
+  <section>
+    <h2>Agent governance — how a change got through</h2>
+    <div class="card">
+      <div class="gov" id="gov"></div>
+    </div>
+    <p class="note">
+      Click a step to see the evidence. Two episodes are worth reporting: a review that caught the agent
+      overwriting a historical governance record, and a CI failure that no local run could have produced.
+    </p>
+  </section>
+
+  <!-- ============ 7. CI BOARD ============ -->
+  <section>
+    <h2>What guards the branch</h2>
+    <div class="card">
+      <div class="ci-grid" id="ci"></div>
+      <div class="ci-compare" id="ci-compare"></div>
+    </div>
+    <p class="note">
+      Read from the workflow files: the page cannot claim a check that is not wired in.
+    </p>
+  </section>
+
+  <section>
+    <h2>Refusals across the five modules — click a card</h2>
+    <div class="rej" id="rej-cards"></div>
+    <div class="card rej-detail" id="rej-detail" style="display:none"></div>
+    <p class="note">
+      These four outcomes were executed while collecting the page data; each is a pure function of
+      the input. <strong>unavailable</strong> and <strong>unknown</strong> must not collapse into the same
+      answer — that distinction is the whole point of module D.
+    </p>
+  </section>
+
+  <!-- ============ 3. TRACE ============ -->
+  <section>
+    <h2>Traceability — click a requirement</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Requirement</th><th>Enforcing component</th></tr></thead>
+        <tbody id="trace-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Process evidence</h2>
+    <div class="grid2">
+      <div class="card"><h2 style="margin-bottom:10px">Review rounds</h2>
+        <ul id="reviews" style="margin:0;padding-left:18px;font-size:14px"></ul></div>
+      <div class="card"><h2 style="margin-bottom:10px">Defects recorded</h2>
+        <table><tbody id="defects"></tbody></table></div>
+    </div>
+  </section>
+
+  <footer>
+    Data generated by <code>python -m demo.collect</code> from the repository itself.
+    Offline only: no provider, no key, no network.
+  </footer>
+</main>
+
+<script>
+const fmt = n => n.toLocaleString("en-US");
+const money = n => (n / 1000).toFixed(0) + "k";
+const el = id => document.getElementById(id);
+
+function pct(v) {
+  if (v === 0) return "0.0%";
+  return (v > 0 ? "+" : "") + v.toFixed(1) + "%";
+}
+
+function label(value) {
+  return typeof value === "number" ? "cap " + fmt(value) : String(value);
+}
+
+fetch("data.json")
+  .then(r => r.json())
+  .then(d => {
+    drawBaseline(d);
+    drawSwitcher(d);
+    drawDecisions(d);
+    drawGovernance(d);
+    drawCi(d);
+    drawExplorer(d);
+    drawMatrix(d);
+    drawPipeline(d);
+    drawSlider(d);
+    drawRefusals(d);
+    drawTrace(d);
+    drawProcess(d);
+  })
+  .catch(err => {
+    document.querySelector("main").insertAdjacentHTML("afterbegin",
+      '<p class="note">Could not load <code>data.json</code>: ' + err +
+      '. Run <code>python -m demo.collect</code> first.</p>');
+  });
+
+function drawBaseline(d) {
+  el("s-calls").textContent = fmt(d.baseline.calls || 0);
+  el("s-tokens").textContent = fmt(d.baseline.tokens || 0);
+  el("s-seconds").textContent = d.baseline.seconds || "—";
+  el("s-signal").textContent = d.baseline.signal || "—";
+}
+
+function drawSlider(d) {
+  const sweep = d.sweep || [];
+  const slider = el("cap");
+  if (!sweep.length) return;
+  slider.max = String(sweep.length - 1);
+  slider.value = String(sweep.length - 1);
+  el("lo").textContent = money(sweep[0].limit);
+  el("hi").textContent = money(sweep[sweep.length - 1].limit);
+
+  function render(i) {
+    const row = sweep[i];
+    el("r-cap").textContent = fmt(row.limit);
+    el("r-calls").textContent = row.calls;
+    el("r-tokens").textContent = fmt(row.tokens);
+    const delta = el("r-delta");
+    delta.textContent = pct(row.delta);
+    delta.style.color = row.delta === 0 ? "var(--ink-soft)" : "var(--ok)";
+    el("r-level").innerHTML = '<span class="lvl l' + row.level + '">L' + row.level + "</span>";
+    el("r-skip").textContent = row.skipped || "—";
+  }
+  slider.addEventListener("input", function (e) { render(Number(e.target.value)); });
+  render(sweep.length - 1);
+}
+
+function drawSwitcher(d) {
+  const stories = d.stories || {};
+  const tabs = el("tabs");
+  const box = el("story");
+  const roles = Object.keys(stories);
+  if (!roles.length) return;
+
+  function show(role) {
+    const s = stories[role];
+    if (!s) return;
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.toggle("active", t.dataset.role === role);
+    });
+    box.innerHTML =
+      '<div>' +
+        '<span class="role-tag">Module ' + s.role + "</span>" +
+        '<h3 style="margin-top:8px">' + s.name + "</h3>" +
+        '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px">' +
+          s.reqs.join(" · ") + "</div>" +
+        '<div class="q">The question</div>' +
+        '<div style="font-size:14px">' + s.question + "</div>" +
+        '<div class="q">The answer</div>' +
+        '<div style="font-size:14px">' + s.answer + "</div>" +
+        '<div style="margin-top:14px;padding:10px 14px;background:#fbe9e7;border-radius:7px;' +
+          'font-size:13px;color:#8d2f24"><strong>What it refuses:</strong> ' + s.refuse + "</div>" +
+      "</div>" +
+      "<div>" +
+        '<div class="q">Code</div>' +
+        '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">' +
+          (s.files.map(function (f) { return "<li><code>" + f + "</code></li>"; }).join("") ||
+           "<li>—</li>") +
+        "</ul>" +
+        '<div class="q">Tests</div>' +
+        '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">' +
+          ((s.tests || []).map(function (f) { return "<li><code>" + f + "</code></li>"; }).join("") ||
+           "<li>—</li>") +
+        "</ul>" +
+        '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:14px">' +
+          (s.adr ? "ADR: <code>" + s.adr + "</code>"
+                 : "No ADR for this module — the decision is recorded in its task plan instead.") +
+        "</div>" +
+        '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">' +
+          s.test_count + " test cases</div>" +
+      "</div>";
+  }
+
+  roles.forEach(function (role) {
+    const btn = document.createElement("button");
+    btn.className = "tab";
+    btn.dataset.role = role;
+    btn.textContent = role + " · " + stories[role].name.split(" ")[0];
+    btn.addEventListener("click", function () { show(role); });
+    tabs.appendChild(btn);
+  });
+  show(roles.indexOf("B") !== -1 ? "B" : roles[0]);
+}
+
+function drawDecisions(d) {
+  const box = el("decisions");
+  (d.decisions || []).forEach(function (item) {
+    const node = document.createElement("div");
+    node.className = "decision";
+    node.innerHTML =
+      '<div class="head"><div class="num">' + item.num + "</div>" +
+        '<div class="q">' + item.question + "</div></div>" +
+      '<div class="mods">' + item.present.join(" · ") + "</div>" +
+      '<div class="chosen"><strong>Chosen:</strong> ' + item.chosen + "</div>" +
+      '<div class="rejected"><strong>Rejected:</strong> ' + item.rejected + "</div>" +
+      '<div class="note2">' + item.because + "</div>";
+    box.appendChild(node);
+  });
+}
+
+function drawGovernance(d) {
+  const box = el("gov");
+  (d.governance || []).forEach(function (node) {
+    const row = document.createElement("div");
+    row.className = "gov-step gov-" + node.state;
+    row.innerHTML =
+      '<div class="gov-num">' + node.step + "</div>" +
+      '<div class="gov-body">' +
+        '<div class="gov-title">' + node.title + "</div>" +
+        '<div class="gov-hint">click to see the evidence</div>' +
+        '<div class="gov-detail">' + node.detail + "</div>" +
+        '<div class="gov-evidence">' + node.evidence + "</div>" +
+      "</div>";
+    row.addEventListener("click", function () { row.classList.toggle("open"); });
+    box.appendChild(row);
+  });
+}
+
+function drawCi(d) {
+  const box = el("ci");
+  const ci = d.ci || {};
+  (ci.checks || []).forEach(function (item) {
+    const node = document.createElement("div");
+    node.className = "ci-item " + (item.state === "on" ? "" : "off");
+    const mark = item.state === "on"
+      ? '<span class="ci-mark on-mark">&#10003;</span>'
+      : '<span class="ci-mark off-mark">&#10007;</span>';
+    node.innerHTML = mark +
+      "<div><div class=\"ci-name\">" + item.name + "</div>" +
+      '<div class="ci-detail">' + item.detail + "</div></div>";
+    box.appendChild(node);
+  });
+
+  const cmp = el("ci-compare");
+  if (ci.before && ci.after) {
+    cmp.innerHTML =
+      '<div class="ci-pill bad"><div style="font-weight:600;color:var(--bad)">Before the fix</div>' +
+        '<div class="ref">' + ci.before.ref + "</div>" +
+        '<div style="font-size:12px">' + ci.before.result + "</div></div>" +
+      '<div class="ci-pill good"><div style="font-weight:600;color:var(--ok)">After the fix</div>' +
+        '<div class="ref">' + ci.after.ref + "</div>" +
+        '<div style="font-size:12px">' + ci.after.result + "</div></div>";
+  }
+}
+
+function drawExplorer(d) {
+  const opts = d.scenario_options || {};
+  const matrix = d.scenario_matrix || [];
+  const order = ["D", "A", "B", "C", "E"];
+  const controls = el("controls");
+  const verdicts = el("verdicts");
+  const finalLine = el("final-line");
+  if (!matrix.length) return;
+
+  const selects = {};
+  order.forEach(function (module) {
+    const wrap = document.createElement("div");
+    wrap.className = "control";
+    const id = "sel-" + module;
+    let html = '<label for="' + id + '">Module ' + module + "</label>" +
+               '<select id="' + id + '"></select>';
+    wrap.innerHTML = html;
+    controls.appendChild(wrap);
+    const sel = wrap.querySelector("select");
+    (opts[module] || []).forEach(function (value) {
+      const opt = document.createElement("option");
+      opt.value = JSON.stringify(value);
+      opt.textContent = label(value);
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", update);
+    selects[module] = sel;
+  });
+
+  function update() {
+    const choices = {};
+    order.forEach(function (m) { choices[m] = JSON.parse(selects[m].value); });
+    const row = matrix.find(function (r) {
+      return order.every(function (m) {
+        return JSON.stringify(r.choices[m]) === JSON.stringify(choices[m]);
+      });
+    });
+    if (!row) {
+      verdicts.innerHTML = '<div class="vrow"><div class="m">—</div>' +
+        "<div>This combination was not pre-computed.</div><div></div><div></div></div>";
+      finalLine.textContent = "";
+      return;
+    }
+    verdicts.innerHTML = row.modules.map(function (m) {
+      return '<div class="vrow ' + (m.blocks ? "blocked" : "") + '">' +
+        '<div class="m">' + m.module + "</div>" +
+        "<div>" + label(choices[m.module]) + "</div>" +
+        '<div><span class="v">' + m.verdict + "</span></div>" +
+        '<div class="d">' + m.detail + "</div>" +
+        "</div>";
+    }).join("");
+    finalLine.textContent = row.final;
+    finalLine.className = "final-line" + (row.final.indexOf("blocked") !== -1 ? " blocked" : "");
+  }
+
+  update();
+}
+
+function drawMatrix(d) {
+  const st = d.stories || {};
+  const roles = ["A", "B", "C", "D", "E"];
+  const body = el("matrix");
+  if (!roles.every(function (r) { return st[r]; })) return;
+
+  const rows = [
+    ["Question", function (r) { return st[r].question; }],
+    ["Refuses", function (r) { return '<span class="refuse">' + st[r].refuse_short + "</span>"; }],
+    ["Tests", function (r) { return st[r].test_count; }],
+    ["ADR", function (r) { return st[r].adr ? st[r].adr.slice(0, 3) : "—"; }]
+  ];
+
+  const head = document.createElement("tr");
+  head.innerHTML = '<td class="label"></td>' + roles.map(function (r) {
+    return '<td class="role">' + r +
+      '<div style="font-weight:400;font-size:11px;color:var(--ink-soft)">' +
+      st[r].name.split(" ")[0] + "</div></td>";
+  }).join("");
+  body.appendChild(head);
+
+  rows.forEach(function (pair) {
+    const name = pair[0];
+    const fn = pair[1];
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="label">' + name + "</td>" + roles.map(function (r) {
+      const value = fn(r);
+      const cls = name === "Question" ? "question" : name === "Tests" ? "num"
+                : name === "ADR" ? "adr" : "refuse";
+      const style = name === "Question" ? ' style="font-size:12px;text-align:left;padding:8px 12px"' : "";
+      return '<td class="' + cls + '"' + style + ">" + value + "</td>";
+    }).join("");
+    body.appendChild(tr);
+  });
+
+  const total = roles.reduce(function (n, r) { return n + (st[r].test_count || 0); }, 0);
+  const foot = document.createElement("tr");
+  foot.innerHTML = '<td class="label">Total</td><td colspan="5" ' +
+    'style="text-align:left;font-family:var(--mono);font-size:13px">' + total +
+    " test cases across the five modules</td>";
+  body.appendChild(foot);
+}
+
+function drawPipeline(d) {
+  const st = d.stories || {};
+  const box = el("pipeline");
+  if (!Object.keys(st).length) return;
+  const nodes = [
+    ["pipe-plain", "IN", "CourseRequest", "instrument, date, observations, holdings, audit path"],
+    ["pipe-d", "D", "Data admission", st.D ? "refuses with " + st.D.refuse_short : ""],
+    ["pipe-plain", "G", "The graph runs", "10 agents produce a candidate proposal"],
+    ["pipe-a", "A", "Evidence in the debate", st.A ? "refuses with: " + st.A.refuse_short : ""],
+    ["pipe-b", "B", "Budget on every call", st.B ? "refuses with: " + st.B.refuse_short : ""],
+    ["pipe-c", "C", "Proposal validated", st.C ? "refuses with: " + st.C.refuse_short : ""],
+    ["pipe-e", "E", "Outcome recorded", st.E ? "refuses with: " + st.E.refuse_short : ""]
+  ];
+  nodes.forEach(function (n, i) {
+    if (i) {
+      const gap = document.createElement("div");
+      gap.className = "pipe-gap";
+      box.appendChild(gap);
+    }
+    const node = document.createElement("div");
+    node.className = "pipe-node " + n[0];
+    node.innerHTML = '<div class="pipe-badge">' + n[1] + "</div>" +
+      "<div><div class=\"pipe-label\">" + n[2] + "</div>" +
+      '<div class="pipe-sub">' + n[3] + "</div></div>";
+    box.appendChild(node);
+  });
+}
+
+function drawRefusals(d) {
+  const cards = el("rej-cards");
+  const detail = el("rej-detail");
+  (d.rejections || []).forEach(function (c) {
+    const node = document.createElement("div");
+    node.className = "rej-card";
+    node.innerHTML =
+      '<div class="m">Module ' + c.module + " · " + c.requirement + "</div>" +
+      '<div class="t">' + c.title + "</div>" +
+      '<div class="o o-' + c.outcome + '">' + c.outcome + "</div>";
+    node.addEventListener("click", function () {
+      document.querySelectorAll(".rej-card").forEach(function (n) {
+        n.classList.remove("active");
+      });
+      node.classList.add("active");
+      detail.style.display = "block";
+      detail.innerHTML =
+        '<div style="font-size:15px;font-weight:600;margin-bottom:6px">' + c.title + "</div>" +
+        '<div style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-bottom:10px">' +
+          "input: " + c.input + "</div>" +
+        '<div style="margin-bottom:10px">outcome: <span class="o o-' + c.outcome + '">' +
+          c.outcome + "</span></div>" +
+        '<div style="font-size:14px">' + c.meaning + "</div>" +
+        '<div style="font-size:12px;color:var(--ink-soft);margin-top:10px">requirement: ' +
+          c.requirement + "</div>";
+    });
+    cards.appendChild(node);
+  });
+}
+
+function drawTrace(d) {
+  const body = el("trace-body");
+  (d.trace || []).forEach(function (row) {
+    const tr = document.createElement("tr");
+    tr.className = "trace-row";
+    tr.innerHTML = '<td><span class="tag">' + row.id + "</span></td><td>" + row.component + "</td>";
+    const detail = document.createElement("tr");
+    detail.className = "trace-detail";
+    detail.innerHTML = '<td colspan="2">component: ' + row.component + "<br>" +
+      'tests run in CI: <code>pytest -o testpaths=test/offline test/offline -q</code></td>';
+    tr.addEventListener("click", function () { detail.classList.toggle("open"); });
+    body.appendChild(tr);
+    body.appendChild(detail);
+  });
+}
+
+function drawProcess(d) {
+  const reviews = el("reviews");
+  (d.reviews || []).forEach(function (r) {
+    const li = document.createElement("li");
+    li.textContent = r;
+    reviews.appendChild(li);
+  });
+  const defects = el("defects");
+  (d.defects || []).forEach(function (b) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td><span class="tag">' + b.id + "</span></td>" +
+      '<td style="font-size:13px">' + b.title + "</td>" +
+      '<td style="font-size:12px;color:var(--ink-soft)">' + b.status + "</td>";
+    defects.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
