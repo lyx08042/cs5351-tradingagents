@@ -1,8 +1,10 @@
 name: course-bootstrap
 
-# Course scaffolding check ONLY (schema + trace coverage + required files).
-# This is NOT a full six-gate course compliance check and does not run any
-# F1-F5 feature tests. The original upstream CI (ci.yml) is unchanged.
+# Course checks: requirement schema + trace coverage + the full course offline
+# suite. This is NOT a full six-gate course compliance check, but the offline
+# suite is the only place the five course modules are exercised, so it runs
+# here rather than in ci.yml (which collects tests/ only).
+# The original upstream CI (ci.yml) is unchanged.
 
 on:
   push:
@@ -24,7 +26,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-course.txt pytest
+          pip install -e .
       - name: Check course scaffold
         run: python scripts/check_course.py --root .
       - name: Run course scaffold tests (offline)
         run: pytest -o testpaths=test/offline test/offline/test_course_scaffold.py
+      - name: Run the course offline suite
+        run: pytest -o testpaths=test/offline test/offline -q
