@@ -42,6 +42,38 @@
           font-size: 13px; color: var(--ink-soft); border-radius: 0 6px 6px 0; }
   .tag { font-family: var(--mono); font-size: 12px; padding: 1px 7px; border-radius: 4px;
          background: #eef2fb; color: var(--accent); }
+  /* design timeline */
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+  .tl-node { padding: 18px 16px 16px 16px; position: relative; }
+  .tl-node::after { content: ""; position: absolute; top: 30px; right: -6px; width: 12px; height: 2px;
+                    background: var(--line); }
+  .tl-node:last-child::after { display: none; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; margin-bottom: 10px; }
+  .tl-good .tl-dot { background: var(--ok); }
+  .tl-bad .tl-dot { background: var(--bad); }
+  .tl-step { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); text-transform: uppercase;
+             letter-spacing: .8px; }
+  .tl-title { font-weight: 650; font-size: 14px; margin: 3px 0 6px; }
+  .tl-detail { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  .tl-result { font-size: 12.5px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .tl-good .tl-result { color: var(--ok); }
+  .tl-bad .tl-result { color: var(--bad); }
+
+  /* architecture diagram */
+  .arch { display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .arch-box { border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px;
+              background: #fbfcff; font-size: 13px; min-width: 320px; }
+  .arch-box.accent { border: 2px solid var(--accent); background: #eef2fb; font-weight: 600; }
+  .arch-box.muted { color: var(--ink-soft); background: #f6f8fc; }
+  .arch-arrow { color: var(--ink-soft); font-size: 14px; line-height: 1; }
+  .arch-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  .arch-label { font-size: 12px; color: var(--ink-soft); text-transform: uppercase;
+                letter-spacing: .8px; margin-bottom: 12px; }
+  .badge-x { display: inline-block; background: #fbe9e7; color: var(--bad); font-family: var(--mono);
+             font-size: 11px; padding: 1px 7px; border-radius: 4px; }
+  .badge-ok2 { display: inline-block; background: #e7f5ee; color: var(--ok); font-family: var(--mono);
+               font-size: 11px; padding: 1px 7px; border-radius: 4px; }
+
   footer { color: var(--ink-soft); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
   code { font-family: var(--mono); font-size: 13px; background: #eef2fb; padding: 1px 5px; border-radius: 4px; }
 
@@ -120,7 +152,65 @@
     </p>
   </section>
 
-  <!-- ============ 2. REJECTIONS ============ -->
+  <!-- ============ 4. DESIGN TIMELINE ============ -->
+  <section>
+    <h2>One design that changed — BUG-004</h2>
+    <div class="card">
+      <div class="timeline" id="timeline"></div>
+    </div>
+    <p class="note">
+      The first version compared the remaining budget with fixed fractions of the total. Every healthy run
+      dips below those fractions near its end, so a cap <em>above</em> the baseline still degraded the run.
+      Unit tests could not see it: each one exercised a single stage. A full replay did.
+    </p>
+  </section>
+
+  <!-- ============ 5. ARCHITECTURE ============ -->
+  <section>
+    <h2>Where the budget is enforced — and what was rejected</h2>
+    <div class="card">
+      <div class="arch-cols">
+        <div>
+          <div class="arch-label">Chosen: wrap the two model clients</div>
+          <div class="arch">
+            <div class="arch-box muted">10 agent modules</div>
+            <div class="arch-arrow">↓ (prompt | llm).invoke()</div>
+            <div class="arch-box accent">BudgetedChatModel — reserve / settle</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-box muted">provider</div>
+          </div>
+          <p class="note" style="margin-top:14px">
+            <span class="badge-ok2">14 lines</span> in <code>trading_graph.py</code>. Covers every agent,
+            including the three that use structured output.
+          </p>
+        </div>
+        <div>
+          <div class="arch-label">Rejected alternatives</div>
+          <div class="arch" style="justify-items:start">
+            <div class="arch-box" style="min-width:0;width:100%">
+              <span class="badge-x">rejected</span> accounting inside each agent
+              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
+                ten edits to shared code; a new agent escapes by omission
+              </div>
+            </div>
+            <div class="arch-box" style="min-width:0;width:100%">
+              <span class="badge-x">rejected</span> accounting in the orchestrator
+              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
+                blind to calls inside tool loops, where most tokens go
+              </div>
+            </div>
+            <div class="arch-box" style="min-width:0;width:100%">
+              <span class="badge-x">rejected</span> provider-side quotas
+              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
+                cannot express stage allocation; fails the run instead of degrading it
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section>
     <h2>Four ways the system says no — click a card</h2>
     <div class="rej" id="rej-cards"></div>
@@ -206,6 +296,20 @@ fetch("data.json")
     }
     slider.addEventListener("input", e => renderCap(Number(e.target.value)));
     renderCap(sweep.length - 1);
+
+    /* ---------- design timeline ---------- */
+    const tl = document.getElementById("timeline");
+    (d.timeline || []).forEach(node => {
+      const el = document.createElement("div");
+      el.className = "tl-node " + (node.state === "good" ? "tl-good" : "tl-bad");
+      el.innerHTML = `
+        <div class="tl-dot"></div>
+        <div class="tl-step">${node.step}</div>
+        <div class="tl-title">${node.title}</div>
+        <div class="tl-detail">${node.detail}</div>
+        <div class="tl-result">${node.result}</div>`;
+      tl.appendChild(el);
+    });
 
     /* ---------- 2. rejection cards ---------- */
     const cards = document.getElementById("rej-cards");

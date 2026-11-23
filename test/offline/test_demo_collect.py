@@ -133,3 +133,19 @@ def test_unavailable_and_unknown_stay_distinct(payload) -> None:
     by_key = {c["key"]: c["outcome"] for c in payload["rejections"]}
 
     assert by_key["unavailable"] != by_key["unknown"]
+
+def test_timeline_records_the_design_change(payload) -> None:
+    """The page tells the BUG-004 story, so the steps must be present in order."""
+    steps = [node["step"] for node in payload["timeline"]]
+
+    assert steps == ["v1", "found", "v2", "guard"]
+
+
+def test_timeline_ends_with_the_current_behaviour(payload) -> None:
+    """The v2 line quotes the replay, not a hand-written claim."""
+    row = next(r for r in payload["replay"] if r["limit"] == 240_000)
+    v2 = next(node for node in payload["timeline"] if node["step"] == "v2")
+
+    assert f"L{row['level']}" in v2["result"]
+    assert f"{row['calls']} calls" in v2["result"]
+    assert f"{row['tokens']:,} tokens" in v2["result"]
