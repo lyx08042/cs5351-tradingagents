@@ -149,3 +149,25 @@ def test_timeline_ends_with_the_current_behaviour(payload) -> None:
     assert f"L{row['level']}" in v2["result"]
     assert f"{row['calls']} calls" in v2["result"]
     assert f"{row['tokens']:,} tokens" in v2["result"]
+
+def test_governance_records_both_episodes(payload) -> None:
+    """The process section must show the review catch and the CI catch."""
+    text = " ".join(node["detail"] + node["title"] for node in payload["governance"])
+
+    assert "AI-USE-0002" in text
+    assert "BOM" in text
+
+
+def test_ci_checks_are_read_from_the_workflows(payload) -> None:
+    """A check appears only if the workflow file really wires it in."""
+    names = {c["name"] for c in payload["ci"]["checks"]}
+
+    assert "course scaffold" in names
+    assert "course offline suite" in names
+
+
+def test_the_course_suite_is_reported_as_wired(payload) -> None:
+    """The delivery branch runs the full course suite; if that regresses the page must say so."""
+    suite = next(c for c in payload["ci"]["checks"] if c["name"] == "course offline suite")
+
+    assert suite["state"] == "on", "course-bootstrap no longer runs the full offline suite"

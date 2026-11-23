@@ -257,6 +257,106 @@ def design_timeline() -> list[dict]:
     ]
 
 
+def governance_steps() -> list[dict]:
+    """How a change got through the process, with the checkout evidence.
+
+    The two episodes shown here are the ones the repository can prove: a review
+    that caught the agent overwriting a historical record, and a CI failure that
+    no local run could have produced.
+    """
+    return [
+        {
+            "step": "1",
+            "state": "neutral",
+            "title": "Agent opens a pull request",
+            "detail": "The coding agent writes the module, its tests and the documents.",
+            "evidence": "PR #4 — 21 commits, 37 files",
+        },
+        {
+            "step": "2",
+            "state": "bad",
+            "title": "CI catches what local runs cannot",
+            "detail": (
+                "Two source files carried a UTF-8 BOM. On Linux, ast.parse rejected them, "
+                "so all four Python versions failed. The local suite could not run at all "
+                "(missing runtime dependencies), so CI was the only place this could surface."
+            ),
+            "evidence": "fa0c377e red, a4dff87 green",
+        },
+        {
+            "step": "3",
+            "state": "bad",
+            "title": "Reviewer finds five issues",
+            "detail": (
+                "One mattered most: while adding a new log entry, the agent had rewritten "
+                "AI-USE-0002, the owner's historical record of the G-1/D9 decision. Merged as "
+                "is, the real record would have disappeared."
+            ),
+            "evidence": "docs/review-memo.md — round 1, CHANGES REQUIRED",
+        },
+        {
+            "step": "4",
+            "state": "neutral",
+            "title": "Agent fixes, reviewer re-checks",
+            "detail": (
+                "The historical entry was restored verbatim and the diff against main now shows "
+                "an addition only. A second round caught a canonical stage name falling through "
+                "to the default stage."
+            ),
+            "evidence": "b23f541, e95fb5a",
+        },
+        {
+            "step": "5",
+            "state": "good",
+            "title": "Green, approved, merged",
+            "detail": "Eight checks pass on four Python versions and the reviewer approves.",
+            "evidence": "c306f81 — course scaffold success",
+        },
+    ]
+
+
+def ci_checks() -> dict:
+    """The checks that guard the delivery branch.
+
+    Read from the workflow files so the page cannot claim a check that does not
+    exist.
+    """
+    workflows = ROOT / ".github" / "workflows"
+    checks: list[dict] = []
+
+    ci_text = (workflows / "ci.yml").read_text(encoding="utf-8")
+    if "pytest -q" in ci_text:
+        checks.append(
+            {"name": "tests (py3.11–3.14)", "detail": "the upstream suite", "state": "on"}
+        )
+    if "ruff check" in ci_text:
+        checks.append({"name": "ruff", "detail": "strict, full repo", "state": "on"})
+    if "clean-install" in ci_text:
+        checks.append({"name": "clean-install", "detail": "bare install imports", "state": "on"})
+
+    boot_text = (workflows / "course-bootstrap.yml").read_text(encoding="utf-8")
+    if "check_course.py" in boot_text:
+        checks.append({"name": "course scaffold", "detail": "requirement schema and trace", "state": "on"})
+    if "testpaths=test/offline test/offline -q" in boot_text:
+        checks.append(
+            {"name": "course offline suite", "detail": "the five modules' own tests", "state": "on"}
+        )
+    else:
+        checks.append(
+            {
+                "name": "course offline suite",
+                "detail": "not wired into CI — the suite runs locally only",
+                "state": "off",
+            }
+        )
+
+    return {
+        "checks": checks,
+        "before": {"ref": "fa0c377e", "result": "failure"},
+        "after": {"ref": "c306f81", "result": "success"},
+    }
+
+
 def trace_pairs() -> list[dict]:
     """Requirement -> enforcing component pairs from the trace matrix."""
     text = (ROOT / "docs" / "architecture" / "trace-matrix.md").read_text(encoding="utf-8")
@@ -317,6 +417,8 @@ def main() -> int:
         "sweep": budget_sweep(),
         "rejections": rejection_cases(),
         "timeline": design_timeline(),
+        "governance": governance_steps(),
+        "ci": ci_checks(),
         "trace": trace_pairs(),
         "reviews": review_rounds(),
         "defects": defects(),
@@ -330,6 +432,8 @@ def main() -> int:
     print(f"  sweep    : {len(payload['sweep'])} caps for the slider")
     print(f"  reject   : {len(payload['rejections'])} executed cases")
     print(f"  timeline : {len(payload['timeline'])} design steps")
+    print(f"  govern   : {len(payload['governance'])} process steps")
+    print(f"  ci       : {sum(1 for c in payload['ci']['checks'] if c['state']=='on')} checks on")
     print(f"  trace    : {len(payload['trace'])} requirement rows")
     print(f"  reviews  : {len(payload['reviews'])} entries")
     print(f"  defects  : {len(payload['defects'])} entries")

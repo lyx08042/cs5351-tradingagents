@@ -74,6 +74,43 @@
   .badge-ok2 { display: inline-block; background: #e7f5ee; color: var(--ok); font-family: var(--mono);
                font-size: 11px; padding: 1px 7px; border-radius: 4px; }
 
+  /* governance */
+  .gov { display: grid; gap: 0; }
+  .gov-step { display: grid; grid-template-columns: 46px 1fr; gap: 16px; padding: 14px 0;
+              border-left: 2px solid var(--line); margin-left: 24px; padding-left: 26px;
+              position: relative; cursor: pointer; }
+  .gov-step:last-child { border-left-color: transparent; }
+  .gov-step:hover { background: #f9fafd; }
+  .gov-num { position: absolute; left: -25px; top: 14px; width: 46px; height: 46px;
+             border-radius: 50%; display: grid; place-items: center;
+             font-family: var(--mono); font-size: 14px; font-weight: 600; background: #eef2fb;
+             color: var(--accent); border: 2px solid var(--card); }
+  .gov-bad .gov-num { background: #fbe9e7; color: var(--bad); }
+  .gov-good .gov-num { background: #e7f5ee; color: var(--ok); }
+  .gov-title { font-weight: 650; font-size: 14.5px; }
+  .gov-detail { font-size: 13px; color: var(--ink-soft); margin-top: 3px;
+                max-height: 0; overflow: hidden; transition: max-height .2s; }
+  .gov-step.open .gov-detail { max-height: 300px; }
+  .gov-evidence { font-family: var(--mono); font-size: 12px; color: var(--accent);
+                  margin-top: 6px; display: none; }
+  .gov-step.open .gov-evidence { display: block; }
+
+  /* ci board */
+  .ci-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .ci-item { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+             display: flex; gap: 10px; align-items: flex-start; background: #fbfcff; }
+  .ci-item.off { background: #fff8f7; border-color: #f3d6d2; }
+  .ci-mark { font-family: var(--mono); font-weight: 700; font-size: 14px; line-height: 1.2; }
+  .ci-item .on-mark { color: var(--ok); }
+  .ci-item .off-mark { color: var(--bad); }
+  .ci-name { font-size: 13.5px; font-weight: 600; }
+  .ci-detail { font-size: 12px; color: var(--ink-soft); }
+  .ci-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .ci-pill { border-radius: 8px; padding: 12px 16px; font-size: 13px; }
+  .ci-pill.bad { background: #fbe9e7; border: 1px solid #f3d6d2; }
+  .ci-pill.good { background: #e7f5ee; border: 1px solid #cfe9dc; }
+  .ci-pill .ref { font-family: var(--mono); font-size: 12px; }
+
   footer { color: var(--ink-soft); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
   code { font-family: var(--mono); font-size: 13px; background: #eef2fb; padding: 1px 5px; border-radius: 4px; }
 
@@ -211,6 +248,30 @@
     </div>
   </section>
 
+  <!-- ============ 6. GOVERNANCE ============ -->
+  <section>
+    <h2>Agent governance — how a change got through</h2>
+    <div class="card">
+      <div class="gov" id="gov"></div>
+    </div>
+    <p class="note">
+      Click a step to see the evidence. Two episodes are worth reporting: a review that caught the agent
+      overwriting a historical governance record, and a CI failure that no local run could have produced.
+    </p>
+  </section>
+
+  <!-- ============ 7. CI BOARD ============ -->
+  <section>
+    <h2>What guards the branch</h2>
+    <div class="card">
+      <div class="ci-grid" id="ci"></div>
+      <div class="ci-compare" id="ci-compare"></div>
+    </div>
+    <p class="note">
+      Read from the workflow files: the page cannot claim a check that is not wired in.
+    </p>
+  </section>
+
   <section>
     <h2>Four ways the system says no — click a card</h2>
     <div class="rej" id="rej-cards"></div>
@@ -310,6 +371,53 @@ fetch("data.json")
         <div class="tl-result">${node.result}</div>`;
       tl.appendChild(el);
     });
+
+    /* ---------- governance ---------- */
+    const gov = document.getElementById("gov");
+    (d.governance || []).forEach(node => {
+      const el = document.createElement("div");
+      el.className = "gov-step gov-" + node.state;
+      el.innerHTML = `
+        <div class="gov-num">${node.step}</div>
+        <div>
+          <div class="gov-title">${node.title}</div>
+          <div class="gov-detail">${node.detail}</div>
+          <div class="gov-evidence">${node.evidence}</div>
+        </div>`;
+      el.addEventListener("click", () => el.classList.toggle("open"));
+      gov.appendChild(el);
+    });
+
+    /* ---------- ci board ---------- */
+    const ci = document.getElementById("ci");
+    (d.ci?.checks || []).forEach(item => {
+      const el = document.createElement("div");
+      el.className = "ci-item " + (item.state === "on" ? "" : "off");
+      const mark = item.state === "on"
+        ? '<span class="ci-mark on-mark">&#10003;</span>'
+        : '<span class="ci-mark off-mark">&#10007;</span>';
+      el.innerHTML = `${mark}
+        <div>
+          <div class="ci-name">${item.name}</div>
+          <div class="ci-detail">${item.detail}</div>
+        </div>`;
+      ci.appendChild(el);
+    });
+
+    const cmp = document.getElementById("ci-compare");
+    if (d.ci?.before && d.ci?.after) {
+      cmp.innerHTML = `
+        <div class="ci-pill bad">
+          <div style="font-weight:600;color:var(--bad)">Before the fix</div>
+          <div class="ref">${d.ci.before.ref}</div>
+          <div style="font-size:12px">${d.ci.before.result}</div>
+        </div>
+        <div class="ci-pill good">
+          <div style="font-weight:600;color:var(--ok)">After the fix</div>
+          <div class="ref">${d.ci.after.ref}</div>
+          <div style="font-size:12px">${d.ci.after.result}</div>
+        </div>`;
+    }
 
     /* ---------- 2. rejection cards ---------- */
     const cards = document.getElementById("rej-cards");

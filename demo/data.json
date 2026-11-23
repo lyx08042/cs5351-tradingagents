@@ -347,6 +347,80 @@
       "result": "The bug cannot come back silently."
     }
   ],
+  "governance": [
+    {
+      "step": "1",
+      "state": "neutral",
+      "title": "Agent opens a pull request",
+      "detail": "The coding agent writes the module, its tests and the documents.",
+      "evidence": "PR #4 — 21 commits, 37 files"
+    },
+    {
+      "step": "2",
+      "state": "bad",
+      "title": "CI catches what local runs cannot",
+      "detail": "Two source files carried a UTF-8 BOM. On Linux, ast.parse rejected them, so all four Python versions failed. The local suite could not run at all (missing runtime dependencies), so CI was the only place this could surface.",
+      "evidence": "fa0c377e red, a4dff87 green"
+    },
+    {
+      "step": "3",
+      "state": "bad",
+      "title": "Reviewer finds five issues",
+      "detail": "One mattered most: while adding a new log entry, the agent had rewritten AI-USE-0002, the owner's historical record of the G-1/D9 decision. Merged as is, the real record would have disappeared.",
+      "evidence": "docs/review-memo.md — round 1, CHANGES REQUIRED"
+    },
+    {
+      "step": "4",
+      "state": "neutral",
+      "title": "Agent fixes, reviewer re-checks",
+      "detail": "The historical entry was restored verbatim and the diff against main now shows an addition only. A second round caught a canonical stage name falling through to the default stage.",
+      "evidence": "b23f541, e95fb5a"
+    },
+    {
+      "step": "5",
+      "state": "good",
+      "title": "Green, approved, merged",
+      "detail": "Eight checks pass on four Python versions and the reviewer approves.",
+      "evidence": "c306f81 — course scaffold success"
+    }
+  ],
+  "ci": {
+    "checks": [
+      {
+        "name": "tests (py3.11–3.14)",
+        "detail": "the upstream suite",
+        "state": "on"
+      },
+      {
+        "name": "ruff",
+        "detail": "strict, full repo",
+        "state": "on"
+      },
+      {
+        "name": "clean-install",
+        "detail": "bare install imports",
+        "state": "on"
+      },
+      {
+        "name": "course scaffold",
+        "detail": "requirement schema and trace",
+        "state": "on"
+      },
+      {
+        "name": "course offline suite",
+        "detail": "the five modules' own tests",
+        "state": "on"
+      }
+    ],
+    "before": {
+      "ref": "fa0c377e",
+      "result": "failure"
+    },
+    "after": {
+      "ref": "c306f81",
+      "result": "success"
+    }
+  },
   "trace": [
     {
       "id": "BASE-001",
