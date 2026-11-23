@@ -407,371 +407,379 @@
 <script>
 const fmt = n => n.toLocaleString("en-US");
 const money = n => (n / 1000).toFixed(0) + "k";
+const el = id => document.getElementById(id);
 
 function pct(v) {
   if (v === 0) return "0.0%";
   return (v > 0 ? "+" : "") + v.toFixed(1) + "%";
 }
 
+function label(value) {
+  return typeof value === "number" ? "cap " + fmt(value) : String(value);
+}
+
 fetch("data.json")
   .then(r => r.json())
   .then(d => {
-    /* ---------- baseline ---------- */
-    document.getElementById("s-calls").textContent = fmt(d.baseline.calls ?? 0);
-    document.getElementById("s-tokens").textContent = fmt(d.baseline.tokens ?? 0);
-    document.getElementById("s-seconds").textContent = d.baseline.seconds ?? "—";
-    document.getElementById("s-signal").textContent = d.baseline.signal ?? "—";
-
-    /* ---------- 1. slider ---------- */
-    const sweep = d.sweep || [];
-    const slider = document.getElementById("cap");
-    slider.max = String(sweep.length - 1);
-    slider.value = String(sweep.length - 1);
-    document.getElementById("lo").textContent = money(sweep[0].limit);
-    document.getElementById("hi").textContent = money(sweep[sweep.length - 1].limit);
-
-    function renderCap(i) {
-      const row = sweep[i];
-      document.getElementById("r-cap").textContent = fmt(row.limit);
-      document.getElementById("r-calls").textContent = row.calls;
-      document.getElementById("r-tokens").textContent = fmt(row.tokens);
-
-      const delta = document.getElementById("r-delta");
-      delta.textContent = pct(row.delta);
-      delta.style.color = row.delta === 0 ? "var(--ink-soft)" : "var(--ok)";
-
-      const level = document.getElementById("r-level");
-      level.innerHTML = `<span class="lvl l${row.level}">L${row.level}</span>`;
-      document.getElementById("r-skip").textContent = row.skipped || "—";
-    }
-    slider.addEventListener("input", e => renderCap(Number(e.target.value)));
-    renderCap(sweep.length - 1);
-
-    /* ---------- module switcher ---------- */
-    const tabs = document.getElementById("tabs");
-    const storyBox = document.getElementById("story");
-    const stories = d.stories || {};
-
-    function renderStory(role) {
-      const s = stories[role];
-      if (!s) return;
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.role === role));
-      storyBox.innerHTML = `
-        <div>
-          <span class="role-tag">Module ${s.role}</span>
-          <h3 style="margin-top:8px">${s.name}</h3>
-          <div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px">${s.reqs.join(" · ")}</div>
-
-          <div class="q">The question</div>
-          <div class="a" style="font-size:14px">${s.question}</div>
-
-          <div class="q">The answer</div>
-          <div class="a" style="font-size:14px">${s.answer}</div>
-
-          <div class="refuse" style="margin-top:14px;padding:10px 14px;background:#fbe9e7;border-radius:7px;font-size:13px;color:#8d2f24">
-            <strong>What it refuses:</strong> ${s.refuse}
-          </div>
-        </div>
-        <div>
-          <div class="q">Code</div>
-          <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">
-            ${s.files.map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}
-          </ul>
-
-          <div class="q">Tests</div>
-          <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">
-            ${(s.tests || []).map(f => `<li><code>${f}</code></li>`).join("") || "<li>—</li>"}
-          </ul>
-
-          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:14px">
-            ${s.adr
-              ? `ADR: <code>${s.adr}</code>`
-              : `No ADR for this module — the decision is recorded in its task plan instead.`}
-          </div>
-          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">
-            ${s.test_count} test cases
-          </div>
-        </div>`;
-    }
-
-    const roleKeys = Object.keys(stories);
-    roleKeys.forEach(role => {
-      const btn = document.createElement("button");
-      btn.className = "tab";
-      btn.dataset.role = role;
-      btn.textContent = `${role} · ${stories[role].name.split(" ")[0]}`;
-      btn.addEventListener("click", () => renderStory(role));
-      tabs.appendChild(btn);
-    });
-    if (roleKeys.length) renderStory(roleKeys.includes("B") ? "B" : roleKeys[0]);
-
-    /* ---------- design decisions ---------- */
-    const dec = document.getElementById("decisions");
-    (d.decisions || []).forEach(item => {
-      const el = document.createElement("div");
-      el.className = "decision";
-      el.innerHTML = `
-        <div class="head">
-          <div class="num">${item.num}</div>
-          <div class="q">${item.question}</div>
-        </div>
-        <div class="mods">${item.present.join(" · ")}</div>
-        <div class="chosen"><strong>Chosen:</strong> ${item.chosen}</div>
-        <div class="rejected"><strong>Rejected:</strong> ${item.rejected}</div>
-        <div class="note2">${item.because}</div>`;
-      dec.appendChild(el);
-    });
-
-    /* ---------- governance ---------- */
-    const gov = document.getElementById("gov");
-    (d.governance || []).forEach(node => {
-      const el = document.createElement("div");
-      el.className = "gov-step gov-" + node.state;
-      el.innerHTML = `
-        <div class="gov-num">${node.step}</div>
-        <div class="gov-body">
-          <div class="gov-title">${node.title}</div>
-          <div class="gov-hint">click to see the evidence</div>
-          <div class="gov-detail">${node.detail}</div>
-          <div class="gov-evidence">${node.evidence}</div>
-        </div>`;
-      el.addEventListener("click", () => el.classList.toggle("open"));
-      gov.appendChild(el);
-    });
-
-    /* ---------- ci board ---------- */
-    const ci = document.getElementById("ci");
-    (d.ci?.checks || []).forEach(item => {
-      const el = document.createElement("div");
-      el.className = "ci-item " + (item.state === "on" ? "" : "off");
-      const mark = item.state === "on"
-        ? '<span class="ci-mark on-mark">&#10003;</span>'
-        : '<span class="ci-mark off-mark">&#10007;</span>';
-      el.innerHTML = `${mark}
-        <div>
-          <div class="ci-name">${item.name}</div>
-          <div class="ci-detail">${item.detail}</div>
-        </div>`;
-      ci.appendChild(el);
-    });
-
-    const cmp = document.getElementById("ci-compare");
-    if (d.ci?.before && d.ci?.after) {
-      cmp.innerHTML = `
-        <div class="ci-pill bad">
-          <div style="font-weight:600;color:var(--bad)">Before the fix</div>
-          <div class="ref">${d.ci.before.ref}</div>
-          <div style="font-size:12px">${d.ci.before.result}</div>
-        </div>
-        <div class="ci-pill good">
-          <div style="font-weight:600;color:var(--ok)">After the fix</div>
-          <div class="ref">${d.ci.after.ref}</div>
-          <div style="font-size:12px">${d.ci.after.result}</div>
-        </div>`;
-    }
-
-    /* ---------- scenario explorer ---------- */
-    const controls = document.getElementById("controls");
-    const verdicts = document.getElementById("verdicts");
-    const finalLine = document.getElementById("final-line");
-    const options = d.scenario_options || {};
-    const matrix = d.scenario_matrix || [];
-    const order = ["D", "A", "B", "C", "E"];
-
-    function label(value) {
-      if (typeof value === "number") return "cap " + value.toLocaleString("en-US");
-      return String(value);
-    }
-
-    const selects = {};
-    order.forEach(module => {
-      const wrap = document.createElement("div");
-      wrap.className = "control";
-      const id = "sel-" + module;
-      wrap.innerHTML = `<label for="${id}">Module ${module}</label>
-        <select id="${id}"></select>`;
-      controls.appendChild(wrap);
-      const sel = wrap.querySelector("select");
-      (options[module] || []).forEach(value => {
-        const opt = document.createElement("option");
-        opt.value = JSON.stringify(value);
-        opt.textContent = label(value);
-        sel.appendChild(opt);
-      });
-      sel.addEventListener("change", update);
-      selects[module] = sel;
-    });
-
-    function currentChoices() {
-      const out = {};
-      order.forEach(m => { out[m] = JSON.parse(selects[m].value); });
-      return out;
-    }
-
-    function findRow(choices) {
-      return matrix.find(row => order.every(m => JSON.stringify(row.choices[m]) === JSON.stringify(choices[m])));
-    }
-
-    function update() {
-      const choices = currentChoices();
-      const row = findRow(choices);
-      if (!row) {
-        verdicts.innerHTML = `<div class="vrow"><div class="m">—</div>
-          <div>This combination was not pre-computed.</div><div></div><div></div></div>`;
-        finalLine.textContent = "";
-        return;
-      }
-      verdicts.innerHTML = row.modules.map(m => `
-        <div class="vrow ${m.blocks ? "blocked" : ""}">
-          <div class="m">${m.module}</div>
-          <div>${label(choices[m.module])}</div>
-          <div><span class="v">${m.verdict}</span></div>
-          <div class="d">${m.detail}</div>
-        </div>`).join("");
-      finalLine.textContent = row.final;
-      finalLine.className = "final-line" + (row.final.includes("blocked") ? " blocked" : "");
-    }
-
-    if (matrix.length) update();
-
-    /* ---------- module matrix ---------- */
-    const matrix = document.getElementById("matrix");
-    const roles = ["A", "B", "C", "D", "E"];
-    const st = d.stories || {};
-    if (roles.every(r => st[r])) {
-      const rows = [
-        ["Question", r => st[r].question],
-        ["Refuses", r => `<span class="refuse">${st[r].refuse_short}</span>`],
-        ["Tests", r => st[r].test_count],
-        ["ADR", r => st[r].adr ? st[r].adr.slice(0, 3) : "—"],
-      ];
-      const head = document.createElement("tr");
-      head.innerHTML = `<td class="label"></td>` +
-        roles.map(r => `<td class="role">${r}<div style="font-weight:400;font-size:11px;color:var(--ink-soft)">${st[r].name.split(" ")[0]}</div></td>`).join("");
-      matrix.appendChild(head);
-
-      rows.forEach(([label, fn]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td class="label">${label}</td>` +
-          roles.map(r => {
-            const v = fn(r);
-            const cls = label === "Question" ? "question"
-                      : label === "Tests" ? "num"
-                      : label === "ADR" ? "adr" : "refuse";
-            return `<td class="${cls}" style="${label === 'Question' ? 'font-size:12px;text-align:left;padding:8px 12px' : ''}">${v}</td>`;
-          }).join("");
-        matrix.appendChild(tr);
-      });
-
-      const total = roles.reduce((n, r) => n + (st[r].test_count || 0), 0);
-      const foot = document.createElement("tr");
-      foot.innerHTML = `<td class="label">Total</td><td colspan="5" style="text-align:left;font-family:var(--mono);font-size:13px">${total} test cases across the five modules</td>`;
-      matrix.appendChild(foot);
-    }
-
-    /* ---------- pipeline ---------- */
-    const pipe = document.getElementById("pipeline");
-    if (Object.keys(st).length) {
-      const nodes = [
-        { cls: "pipe-plain", badge: "IN", label: "CourseRequest", sub: "instrument, date, observations, holdings, audit path" },
-        { cls: "pipe-d", badge: "D", label: st.D?.answer ? "Data admission" : "Data admission", sub: st.D?.refuse_short ? `refuses with ${st.D.refuse_short}` : "" },
-        { cls: "pipe-plain", badge: "G", label: "The graph runs", sub: "10 agents produce a candidate proposal" },
-        { cls: "pipe-a", badge: "A", label: "Evidence in the debate", sub: st.A?.refuse_short ? `refuses with: ${st.A.refuse_short}` : "" },
-        { cls: "pipe-b", badge: "B", label: "Budget on every call", sub: st.B?.refuse_short ? `refuses with: ${st.B.refuse_short}` : "" },
-        { cls: "pipe-c", badge: "C", label: "Proposal validated", sub: st.C?.refuse_short ? `refuses with: ${st.C.refuse_short}` : "" },
-        { cls: "pipe-e", badge: "E", label: "Outcome recorded", sub: st.E?.refuse_short ? `refuses with: ${st.E.refuse_short}` : "" },
-      ];
-      nodes.forEach((n, i) => {
-        if (i) {
-          const gap = document.createElement("div");
-          gap.className = "pipe-gap";
-          pipe.appendChild(gap);
-        }
-        const el = document.createElement("div");
-        el.className = "pipe-node " + n.cls;
-        el.innerHTML = `<div class="pipe-badge">${n.badge}</div>
-          <div><div class="pipe-label">${n.label}</div>
-          <div class="pipe-sub">${n.sub}</div></div>`;
-        pipe.appendChild(el);
-      });
-    }
-
-    /* ---------- five refusal cards, one per module ---------- */
-    /* ---------- 2. rejection cards ---------- */
-    const cards = document.getElementById("rej-cards");
-    const detail = document.getElementById("rej-detail");
-    (d.rejections || []).forEach((c, i) => {
-      const el = document.createElement("div");
-      el.className = "rej-card";
-      el.innerHTML = `
-        <div class="m">Module ${c.module} · ${c.requirement}</div>
-        <div class="t">${c.title}</div>
-        <div class="o o-${c.outcome}">${c.outcome}</div>`;
-      el.addEventListener("click", () => {
-        document.querySelectorAll(".rej-card").forEach(n => n.classList.remove("active"));
-        el.classList.add("active");
-        detail.style.display = "block";
-        detail.innerHTML = `
-          <div style="font-size:15px;font-weight:600;margin-bottom:6px">${c.title}</div>
-          <div style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-bottom:10px">
-            input: ${c.input}
-          </div>
-          <div style="margin-bottom:10px">
-            outcome: <span class="o o-${c.outcome}">${c.outcome}</span>
-          </div>
-          <div style="font-size:14px">${c.meaning}</div>
-          <div style="font-size:12px;color:var(--ink-soft);margin-top:10px">
-            requirement: ${c.requirement}
-          </div>`;
-      });
-      cards.appendChild(el);
-    });
-
-    /* ---------- 3. trace with expand ---------- */
-    const trace = document.getElementById("trace-body");
-    const byId = {};
-    (d.tests ? Object.entries(d.tests) : []).forEach(([role, files]) => {
-      files.forEach(f => {
-        const key = role;
-        byId[key] = byId[key] || [];
-        if (!byId[key].includes(f)) byId[key].push(f);
-      });
-    });
-
-    (d.trace || []).forEach(row => {
-      const tr = document.createElement("tr");
-      tr.className = "trace-row";
-      tr.innerHTML = `<td><span class="tag">${row.id}</span></td><td>${row.component}</td>`;
-      const detailRow = document.createElement("tr");
-      detailRow.className = "trace-detail";
-      detailRow.innerHTML = `<td colspan="2">
-          component: ${row.component}<br>
-          tests run in CI: <code>pytest -o testpaths=test/offline test/offline -q</code>
-        </td>`;
-      tr.addEventListener("click", () => detailRow.classList.toggle("open"));
-      trace.appendChild(tr);
-      trace.appendChild(detailRow);
-    });
-
-    /* ---------- process evidence ---------- */
-    const rv = document.getElementById("reviews");
-    (d.reviews || []).forEach(r => {
-      const li = document.createElement("li"); li.textContent = r; rv.appendChild(li);
-    });
-    const df = document.getElementById("defects");
-    (d.defects || []).forEach(b => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td><span class="tag">${b.id}</span></td>
-        <td style="font-size:13px">${b.title}</td>
-        <td style="font-size:12px;color:var(--ink-soft)">${b.status}</td>`;
-      df.appendChild(tr);
-    });
+    drawBaseline(d);
+    drawSwitcher(d);
+    drawDecisions(d);
+    drawGovernance(d);
+    drawCi(d);
+    drawExplorer(d);
+    drawMatrix(d);
+    drawPipeline(d);
+    drawSlider(d);
+    drawRefusals(d);
+    drawTrace(d);
+    drawProcess(d);
   })
   .catch(err => {
     document.querySelector("main").insertAdjacentHTML("afterbegin",
-      `<p class="note">Could not load <code>data.json</code>: ${err}.
-       Run <code>python -m demo.collect</code> first.</p>`);
+      '<p class="note">Could not load <code>data.json</code>: ' + err +
+      '. Run <code>python -m demo.collect</code> first.</p>');
   });
+
+function drawBaseline(d) {
+  el("s-calls").textContent = fmt(d.baseline.calls || 0);
+  el("s-tokens").textContent = fmt(d.baseline.tokens || 0);
+  el("s-seconds").textContent = d.baseline.seconds || "—";
+  el("s-signal").textContent = d.baseline.signal || "—";
+}
+
+function drawSlider(d) {
+  const sweep = d.sweep || [];
+  const slider = el("cap");
+  if (!sweep.length) return;
+  slider.max = String(sweep.length - 1);
+  slider.value = String(sweep.length - 1);
+  el("lo").textContent = money(sweep[0].limit);
+  el("hi").textContent = money(sweep[sweep.length - 1].limit);
+
+  function render(i) {
+    const row = sweep[i];
+    el("r-cap").textContent = fmt(row.limit);
+    el("r-calls").textContent = row.calls;
+    el("r-tokens").textContent = fmt(row.tokens);
+    const delta = el("r-delta");
+    delta.textContent = pct(row.delta);
+    delta.style.color = row.delta === 0 ? "var(--ink-soft)" : "var(--ok)";
+    el("r-level").innerHTML = '<span class="lvl l' + row.level + '">L' + row.level + "</span>";
+    el("r-skip").textContent = row.skipped || "—";
+  }
+  slider.addEventListener("input", function (e) { render(Number(e.target.value)); });
+  render(sweep.length - 1);
+}
+
+function drawSwitcher(d) {
+  const stories = d.stories || {};
+  const tabs = el("tabs");
+  const box = el("story");
+  const roles = Object.keys(stories);
+  if (!roles.length) return;
+
+  function show(role) {
+    const s = stories[role];
+    if (!s) return;
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.toggle("active", t.dataset.role === role);
+    });
+    box.innerHTML =
+      '<div>' +
+        '<span class="role-tag">Module ' + s.role + "</span>" +
+        '<h3 style="margin-top:8px">' + s.name + "</h3>" +
+        '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px">' +
+          s.reqs.join(" · ") + "</div>" +
+        '<div class="q">The question</div>' +
+        '<div style="font-size:14px">' + s.question + "</div>" +
+        '<div class="q">The answer</div>' +
+        '<div style="font-size:14px">' + s.answer + "</div>" +
+        '<div style="margin-top:14px;padding:10px 14px;background:#fbe9e7;border-radius:7px;' +
+          'font-size:13px;color:#8d2f24"><strong>What it refuses:</strong> ' + s.refuse + "</div>" +
+      "</div>" +
+      "<div>" +
+        '<div class="q">Code</div>' +
+        '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">' +
+          (s.files.map(function (f) { return "<li><code>" + f + "</code></li>"; }).join("") ||
+           "<li>—</li>") +
+        "</ul>" +
+        '<div class="q">Tests</div>' +
+        '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft)">' +
+          ((s.tests || []).map(function (f) { return "<li><code>" + f + "</code></li>"; }).join("") ||
+           "<li>—</li>") +
+        "</ul>" +
+        '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:14px">' +
+          (s.adr ? "ADR: <code>" + s.adr + "</code>"
+                 : "No ADR for this module — the decision is recorded in its task plan instead.") +
+        "</div>" +
+        '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">' +
+          s.test_count + " test cases</div>" +
+      "</div>";
+  }
+
+  roles.forEach(function (role) {
+    const btn = document.createElement("button");
+    btn.className = "tab";
+    btn.dataset.role = role;
+    btn.textContent = role + " · " + stories[role].name.split(" ")[0];
+    btn.addEventListener("click", function () { show(role); });
+    tabs.appendChild(btn);
+  });
+  show(roles.indexOf("B") !== -1 ? "B" : roles[0]);
+}
+
+function drawDecisions(d) {
+  const box = el("decisions");
+  (d.decisions || []).forEach(function (item) {
+    const node = document.createElement("div");
+    node.className = "decision";
+    node.innerHTML =
+      '<div class="head"><div class="num">' + item.num + "</div>" +
+        '<div class="q">' + item.question + "</div></div>" +
+      '<div class="mods">' + item.present.join(" · ") + "</div>" +
+      '<div class="chosen"><strong>Chosen:</strong> ' + item.chosen + "</div>" +
+      '<div class="rejected"><strong>Rejected:</strong> ' + item.rejected + "</div>" +
+      '<div class="note2">' + item.because + "</div>";
+    box.appendChild(node);
+  });
+}
+
+function drawGovernance(d) {
+  const box = el("gov");
+  (d.governance || []).forEach(function (node) {
+    const row = document.createElement("div");
+    row.className = "gov-step gov-" + node.state;
+    row.innerHTML =
+      '<div class="gov-num">' + node.step + "</div>" +
+      '<div class="gov-body">' +
+        '<div class="gov-title">' + node.title + "</div>" +
+        '<div class="gov-hint">click to see the evidence</div>' +
+        '<div class="gov-detail">' + node.detail + "</div>" +
+        '<div class="gov-evidence">' + node.evidence + "</div>" +
+      "</div>";
+    row.addEventListener("click", function () { row.classList.toggle("open"); });
+    box.appendChild(row);
+  });
+}
+
+function drawCi(d) {
+  const box = el("ci");
+  const ci = d.ci || {};
+  (ci.checks || []).forEach(function (item) {
+    const node = document.createElement("div");
+    node.className = "ci-item " + (item.state === "on" ? "" : "off");
+    const mark = item.state === "on"
+      ? '<span class="ci-mark on-mark">&#10003;</span>'
+      : '<span class="ci-mark off-mark">&#10007;</span>';
+    node.innerHTML = mark +
+      "<div><div class=\"ci-name\">" + item.name + "</div>" +
+      '<div class="ci-detail">' + item.detail + "</div></div>";
+    box.appendChild(node);
+  });
+
+  const cmp = el("ci-compare");
+  if (ci.before && ci.after) {
+    cmp.innerHTML =
+      '<div class="ci-pill bad"><div style="font-weight:600;color:var(--bad)">Before the fix</div>' +
+        '<div class="ref">' + ci.before.ref + "</div>" +
+        '<div style="font-size:12px">' + ci.before.result + "</div></div>" +
+      '<div class="ci-pill good"><div style="font-weight:600;color:var(--ok)">After the fix</div>' +
+        '<div class="ref">' + ci.after.ref + "</div>" +
+        '<div style="font-size:12px">' + ci.after.result + "</div></div>";
+  }
+}
+
+function drawExplorer(d) {
+  const opts = d.scenario_options || {};
+  const matrix = d.scenario_matrix || [];
+  const order = ["D", "A", "B", "C", "E"];
+  const controls = el("controls");
+  const verdicts = el("verdicts");
+  const finalLine = el("final-line");
+  if (!matrix.length) return;
+
+  const selects = {};
+  order.forEach(function (module) {
+    const wrap = document.createElement("div");
+    wrap.className = "control";
+    const id = "sel-" + module;
+    let html = '<label for="' + id + '">Module ' + module + "</label>" +
+               '<select id="' + id + '"></select>';
+    wrap.innerHTML = html;
+    controls.appendChild(wrap);
+    const sel = wrap.querySelector("select");
+    (opts[module] || []).forEach(function (value) {
+      const opt = document.createElement("option");
+      opt.value = JSON.stringify(value);
+      opt.textContent = label(value);
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", update);
+    selects[module] = sel;
+  });
+
+  function update() {
+    const choices = {};
+    order.forEach(function (m) { choices[m] = JSON.parse(selects[m].value); });
+    const row = matrix.find(function (r) {
+      return order.every(function (m) {
+        return JSON.stringify(r.choices[m]) === JSON.stringify(choices[m]);
+      });
+    });
+    if (!row) {
+      verdicts.innerHTML = '<div class="vrow"><div class="m">—</div>' +
+        "<div>This combination was not pre-computed.</div><div></div><div></div></div>";
+      finalLine.textContent = "";
+      return;
+    }
+    verdicts.innerHTML = row.modules.map(function (m) {
+      return '<div class="vrow ' + (m.blocks ? "blocked" : "") + '">' +
+        '<div class="m">' + m.module + "</div>" +
+        "<div>" + label(choices[m.module]) + "</div>" +
+        '<div><span class="v">' + m.verdict + "</span></div>" +
+        '<div class="d">' + m.detail + "</div>" +
+        "</div>";
+    }).join("");
+    finalLine.textContent = row.final;
+    finalLine.className = "final-line" + (row.final.indexOf("blocked") !== -1 ? " blocked" : "");
+  }
+
+  update();
+}
+
+function drawMatrix(d) {
+  const st = d.stories || {};
+  const roles = ["A", "B", "C", "D", "E"];
+  const body = el("matrix");
+  if (!roles.every(function (r) { return st[r]; })) return;
+
+  const rows = [
+    ["Question", function (r) { return st[r].question; }],
+    ["Refuses", function (r) { return '<span class="refuse">' + st[r].refuse_short + "</span>"; }],
+    ["Tests", function (r) { return st[r].test_count; }],
+    ["ADR", function (r) { return st[r].adr ? st[r].adr.slice(0, 3) : "—"; }]
+  ];
+
+  const head = document.createElement("tr");
+  head.innerHTML = '<td class="label"></td>' + roles.map(function (r) {
+    return '<td class="role">' + r +
+      '<div style="font-weight:400;font-size:11px;color:var(--ink-soft)">' +
+      st[r].name.split(" ")[0] + "</div></td>";
+  }).join("");
+  body.appendChild(head);
+
+  rows.forEach(function (pair) {
+    const name = pair[0];
+    const fn = pair[1];
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="label">' + name + "</td>" + roles.map(function (r) {
+      const value = fn(r);
+      const cls = name === "Question" ? "question" : name === "Tests" ? "num"
+                : name === "ADR" ? "adr" : "refuse";
+      const style = name === "Question" ? ' style="font-size:12px;text-align:left;padding:8px 12px"' : "";
+      return '<td class="' + cls + '"' + style + ">" + value + "</td>";
+    }).join("");
+    body.appendChild(tr);
+  });
+
+  const total = roles.reduce(function (n, r) { return n + (st[r].test_count || 0); }, 0);
+  const foot = document.createElement("tr");
+  foot.innerHTML = '<td class="label">Total</td><td colspan="5" ' +
+    'style="text-align:left;font-family:var(--mono);font-size:13px">' + total +
+    " test cases across the five modules</td>";
+  body.appendChild(foot);
+}
+
+function drawPipeline(d) {
+  const st = d.stories || {};
+  const box = el("pipeline");
+  if (!Object.keys(st).length) return;
+  const nodes = [
+    ["pipe-plain", "IN", "CourseRequest", "instrument, date, observations, holdings, audit path"],
+    ["pipe-d", "D", "Data admission", st.D ? "refuses with " + st.D.refuse_short : ""],
+    ["pipe-plain", "G", "The graph runs", "10 agents produce a candidate proposal"],
+    ["pipe-a", "A", "Evidence in the debate", st.A ? "refuses with: " + st.A.refuse_short : ""],
+    ["pipe-b", "B", "Budget on every call", st.B ? "refuses with: " + st.B.refuse_short : ""],
+    ["pipe-c", "C", "Proposal validated", st.C ? "refuses with: " + st.C.refuse_short : ""],
+    ["pipe-e", "E", "Outcome recorded", st.E ? "refuses with: " + st.E.refuse_short : ""]
+  ];
+  nodes.forEach(function (n, i) {
+    if (i) {
+      const gap = document.createElement("div");
+      gap.className = "pipe-gap";
+      box.appendChild(gap);
+    }
+    const node = document.createElement("div");
+    node.className = "pipe-node " + n[0];
+    node.innerHTML = '<div class="pipe-badge">' + n[1] + "</div>" +
+      "<div><div class=\"pipe-label\">" + n[2] + "</div>" +
+      '<div class="pipe-sub">' + n[3] + "</div></div>";
+    box.appendChild(node);
+  });
+}
+
+function drawRefusals(d) {
+  const cards = el("rej-cards");
+  const detail = el("rej-detail");
+  (d.rejections || []).forEach(function (c) {
+    const node = document.createElement("div");
+    node.className = "rej-card";
+    node.innerHTML =
+      '<div class="m">Module ' + c.module + " · " + c.requirement + "</div>" +
+      '<div class="t">' + c.title + "</div>" +
+      '<div class="o o-' + c.outcome + '">' + c.outcome + "</div>";
+    node.addEventListener("click", function () {
+      document.querySelectorAll(".rej-card").forEach(function (n) {
+        n.classList.remove("active");
+      });
+      node.classList.add("active");
+      detail.style.display = "block";
+      detail.innerHTML =
+        '<div style="font-size:15px;font-weight:600;margin-bottom:6px">' + c.title + "</div>" +
+        '<div style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-bottom:10px">' +
+          "input: " + c.input + "</div>" +
+        '<div style="margin-bottom:10px">outcome: <span class="o o-' + c.outcome + '">' +
+          c.outcome + "</span></div>" +
+        '<div style="font-size:14px">' + c.meaning + "</div>" +
+        '<div style="font-size:12px;color:var(--ink-soft);margin-top:10px">requirement: ' +
+          c.requirement + "</div>";
+    });
+    cards.appendChild(node);
+  });
+}
+
+function drawTrace(d) {
+  const body = el("trace-body");
+  (d.trace || []).forEach(function (row) {
+    const tr = document.createElement("tr");
+    tr.className = "trace-row";
+    tr.innerHTML = '<td><span class="tag">' + row.id + "</span></td><td>" + row.component + "</td>";
+    const detail = document.createElement("tr");
+    detail.className = "trace-detail";
+    detail.innerHTML = '<td colspan="2">component: ' + row.component + "<br>" +
+      'tests run in CI: <code>pytest -o testpaths=test/offline test/offline -q</code></td>';
+    tr.addEventListener("click", function () { detail.classList.toggle("open"); });
+    body.appendChild(tr);
+    body.appendChild(detail);
+  });
+}
+
+function drawProcess(d) {
+  const reviews = el("reviews");
+  (d.reviews || []).forEach(function (r) {
+    const li = document.createElement("li");
+    li.textContent = r;
+    reviews.appendChild(li);
+  });
+  const defects = el("defects");
+  (d.defects || []).forEach(function (b) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td><span class="tag">' + b.id + "</span></td>" +
+      '<td style="font-size:13px">' + b.title + "</td>" +
+      '<td style="font-size:12px;color:var(--ink-soft)">' + b.status + "</td>";
+    defects.appendChild(tr);
+  });
+}
 </script>
 </body>
 </html>
